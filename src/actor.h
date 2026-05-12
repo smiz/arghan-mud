@@ -26,17 +26,21 @@ class Actor: public Model {
 
     std::string get_name() const { return name; }
     void set_msg_fd(int fd) { this->fd = fd; }
+    int match_keywords(const KeyWordList& key_words) const;
 
     protected:
 
+    std::string detail;
     std::string description;
     std::string name;
     std::string file;
+    KeyWordList key_words;
 
     /// @brief Write a message to the console if fd is valid
     /// @param msg The message to write 
     void message(std::string msg);
 
+    void look_command_event(const Event& event);
     void join_prox_group_event(const Event& event);
     void leave_prox_group_event(const Event& event);
     void enter_mud_event(const Event& event);
@@ -44,11 +48,13 @@ class Actor: public Model {
     void see_event(const Event& event);
     void quit_mud_event(const Event& event);
     void move_event(const Event& event);
+    void look_event(const Event& event);
 
     private:
 
     void change_prox_groups(int new_group);
     void save();
+    void init();
 
     int fd;
     /// @brief Node at which the actor left the mud

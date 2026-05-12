@@ -29,6 +29,8 @@ struct direction_t {
     std::string description;
 };
 
+using KeyWordList = std::list<std::string>;
+
 /**
  * All model states evolve by events.
  * @see Model
@@ -51,6 +53,10 @@ struct Event {
         LEAVE_PROX_GROUP,
         /// @brief Move in a given direction
         MOVE,
+        /// @brief Look command issued to an actor by a player
+        LOOK_COMMAND,
+        /// @brief Look at something (or being looked at)
+        LOOK,
         /// @brief See a description of something
         SEE,
         /// @brief See a description of something after all SEE are processed
@@ -65,14 +71,12 @@ struct Event {
     int src_id;
     /// @brief Destination for the event (can be ANY_ID or ANY_ID_BUT_SRC)
     int dst_id;
-    /// @brief Name of the src for creating text
-    std::string src_name;
-    /// @brief Name of the destination for creating text
-    std::string dst_name;
     /// @brief Message, if any, associated with the event
     std::string msg;
     /// @brief Pin that this event will be transmitted on
     adevs::pin_t pin;
+    /// @brief Any key words associated with a command
+    std::shared_ptr<KeyWordList> key_words;
     /// @brief Primitive, type specific data
     union {
         /// @brief Prox group to enter or leave
@@ -121,7 +125,7 @@ class ProximityGroupMember {
      * @param words The set of keywords to search for
      * @return Number of matches
      */
-    virtual unsigned match_keywords(std::set<std::string>& words) const { return 0; }
+    virtual int match_keywords(const KeyWordList& words) const { return 0; }
     /**
      * @brief Get the unique id of the group member. 
      * 
@@ -201,6 +205,36 @@ class ProximityGroup {
         return false;
     }
 
+    /**
+     *  @brief Find the id of the member that matches the most keywords
+     * 
+     *  If no keywords match, it returns the id of the first member.
+     *  If rooms always join first, then this returns the room that
+     *  models the group. Assumes the group is not empty and that
+     *  at least the room it represents is present.
+     * 
+     * @param key_words The list of keywords to match
+     * @return id of the closest match or first member
+     */
+    int find_best_match(const KeyWordList& key_words) {
+        auto iter = m_members.begin();
+        int best_id = (*iter)->id();
+        int score = (*iter)->match_keywords(key_words);
+        iter++;
+        for (; iter != m_members.end(); iter++) {
+            int new_score = (*iter)->match_keywords(key_words);
+            if (new_score > score) {
+                best_id = (*iter)->id();
+                score = new_score;
+            }
+        }
+        return best_id;
+    }
+    /// Get id of the first member of the proximity group
+    int first_member_id() {
+        return m_members.front()->id();
+    }
+
     private:
 
     /// @brief Node number of the group
@@ -270,6 +304,10 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void quit_mud_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void move_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void look_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void look_command_event(const Event& event){}
 
     /// @brief List of our proximity groups
     std::list<ProximityGroup*> prox_groups;

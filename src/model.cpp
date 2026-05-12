@@ -77,6 +77,12 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::MOVE:
                 move_event(x.value);
                 break;
+            case Event::LOOK_COMMAND:
+                look_command_event(x.value);
+                break;
+            case Event::LOOK:
+                look_event(x.value);
+                break;
             default:
                 break;
         }

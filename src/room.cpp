@@ -16,6 +16,9 @@ Model(graph) {
     ProximityGroup* group = new ProximityGroup(prox_group_id);
     prox_map[prox_group_id] = group;
     prox_groups.push_back(group);
+    /// Will be first member in the group so that look with
+    /// no argument queries the room.
+    /// See ProximityGroup::find_best_match()
     group->add_member(this);
     receive_from(group->pin);
     /// Get our exits
@@ -34,7 +37,6 @@ Model(graph) {
         Event enter;
         enter.type = Event::JOIN_PROX_GROUP;
         const YAML::Node& monster_list = yaml["monsters"];
-        // Option A: Use a range-based for loop (preferred)
         for (const auto& monster : monster_list) {
             Actor* actor = new Actor(graph,"monsters/"+monster.as<std::string>(),true,"",prox_group_id);
             std::cout << "monster " << monster.as<std::string>() << std::endl;
@@ -47,10 +49,10 @@ Model(graph) {
     }
 }
 
-void Room::join_prox_group_event(const Event& event) {
+void Room::sched_see_event(int src_id) {
     Event see;
     see.type = Event::SEE;
-    see.dst_id = event.src_id;
+    see.dst_id = src_id;
     see.src_id = id();
     see.pin = prox_groups.front()->pin;
     see.msg = description;
@@ -62,4 +64,15 @@ void Room::join_prox_group_event(const Event& event) {
         }
     }
     sched_event(see);
+}
+
+void Room::join_prox_group_event(const Event& event) {
+    sched_see_event(event.src_id);
+}
+
+void Room::look_event(const Event& event) {
+    if (event.dst_id != id() && event.dst_id != ANY_ID_BUT_SRC && event.dst_id != ANY_ID) {
+        return;
+    }
+    sched_see_event(event.src_id);
 }

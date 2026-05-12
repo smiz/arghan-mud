@@ -22,15 +22,39 @@ exit_node_id(exit_node) {
         YAML::Node yaml = YAML::LoadFile(file.c_str());
         this->name = yaml["name"].as<std::string>();
         description = yaml["description"].as<std::string>();
+        detail = yaml["detail"].as<std::string>();
+        const YAML::Node& keyword_list = yaml["keywords"];
+        for (const auto& word : keyword_list) {
+            key_words.push_back(word.as<std::string>());
+        }
     } else {
+        init();
         save();
     }
+}
+
+int Actor::match_keywords(const KeyWordList& key_words) const {
+    int score = 0;
+    for (auto word: this->key_words) {
+        if (std::find(key_words.begin(),key_words.end(),word) != key_words.end()) {
+            score++;
+        }
+    }
+    return score;
+}
+
+void Actor::init() {
+    description = name+" is here.";
+    detail = name+" is pretty good lookin'!";
+    key_words.push_back(name);
 }
 
 void Actor::save() {
     YAML::Node config;
     config["name"] = name;
     config["description"] = description;
+    config["detail"] = detail;
+    config["keywords"] = key_words;
     std::ofstream fout(file.c_str());
     fout << config; 
     fout.close();
@@ -51,7 +75,6 @@ void Actor::change_prox_groups(int new_group) {
     Event leave, enter;
     leave.src_id = enter.src_id = id();
     leave.dst_id = enter.dst_id = id();
-    leave.src_name = enter.src_name = name;
 
     leave.type = Event::LEAVE_PROX_GROUP;
     leave.event_data.prox_group = prox_groups.front()->group_number();
@@ -74,7 +97,6 @@ void Actor::enter_mud_event(const Event& event) {
     Event enter;
     enter.src_id = id();
     enter.dst_id = id();
-    enter.src_name = name;
     enter.type = Event::JOIN_PROX_GROUP;
     enter.event_data.prox_group = exit_node_id; 
     enter.pin = prox_map[exit_node_id]->pin;
@@ -98,7 +120,6 @@ void Actor::leave_mud_event(const Event& event) {
         leave.pin = group->pin;
         leave.src_id = id();
         leave.dst_id = id();
-        leave.src_name = name;
         sched_event(leave);
         leave.type = Event::SEE1;
         leave.pin = group->pin;
@@ -167,4 +188,37 @@ void Actor::see_event(const Event& event) {
     if (event.dst_id == id() || event.dst_id == ANY_ID || (event.dst_id == ANY_ID_BUT_SRC && event.src_id != id())) {
         message(event.msg);
     }
+}
+
+void Actor::look_command_event(const Event& event) {
+    if (event.dst_id != id()) {
+        return;
+    }
+    Event look;
+    look.type = Event::LOOK;
+    look.src_id = id();
+    look.dst_id = prox_groups.front()->find_best_match(*(event.key_words));
+    if (look.dst_id == prox_groups.front()->first_member_id()) {
+        look.dst_id = ANY_ID_BUT_SRC;
+    }
+    look.key_words = event.key_words;
+    look.pin = prox_groups.front()->pin;
+    sched_event(look);
+}
+
+void Actor::look_event(const Event& event) {
+    if (event.dst_id != id() && event.dst_id != ANY_ID && !(event.dst_id == ANY_ID_BUT_SRC && event.src_id != id())) {
+        return;
+    }
+    Event see;
+    see.type = Event::SEE1;
+    see.src_id = id();
+    see.dst_id = event.src_id;
+    if (event.dst_id == id()) {
+        see.msg = detail; 
+    } else {
+        see.msg = description;
+    }
+    see.pin = prox_groups.front()->pin;
+    sched_event(see);
 }

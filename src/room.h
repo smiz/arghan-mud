@@ -21,6 +21,11 @@ class Room: public Model {
 
     std::string description;
     void join_prox_group_event(const Event& event);
+    void look_event(const Event& event);
+
+    private:
+    
+    void sched_see_event(int src_id);
 };
 
 #endif

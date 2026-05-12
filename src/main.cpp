@@ -9,6 +9,7 @@
 #include <mutex>
 #include <filesystem>
 #include <csignal>
+#include <sstream>
 #include "model.h"
 #include "room.h"
 #include "actor.h"
@@ -85,6 +86,38 @@ void move(Actor* obj, Direction dir) {
     cv.notify_one();
 }
 
+void look(Actor* obj, std::list<std::string>& tokens) {
+    Event event;
+    event.type = Event::LOOK_COMMAND;
+    event.src_id = event.dst_id = obj->id();
+    event.pin = obj->pin;
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
+bool parse_line_with_tokens(std::string& line, Actor* obj) {
+    /// If this not a single word command, then
+    /// break it into tokens
+    std::istringstream sin(line);
+    std::list<std::string> tokens;
+    std::string token, cmd;
+    sin >> cmd;
+    while (sin >> token) {
+        tokens.push_back(token);
+    }
+    if (cmd == "look") {
+        look(obj,tokens);
+        return true;
+    }
+    return false;
+}
+
 bool parse_line(std::string& line, Actor* obj) {
     /// Motion
     if (line == "e") {
@@ -113,6 +146,9 @@ bool parse_line(std::string& line, Actor* obj) {
     }
     if (line == "d") {
         move(obj,Down);
+        return true;
+    }
+    if (parse_line_with_tokens(line,obj)) {
         return true;
     }
     return false;
