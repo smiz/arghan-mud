@@ -13,7 +13,7 @@ static const std::string reverse_direction_name[6] = {
 
 Actor::Actor(Graph& graph, std::string file, bool load, std::string name, int exit_node):
 Model(graph),
-description("A brave adventurer!"),
+description(name+ " is here."),
 name(name),
 file(file),
 fd(-1),
@@ -124,7 +124,7 @@ void Actor::join_prox_group_event(const Event& event) {
         see.type = Event::SEE1;
         see.src_id = id();
         see.dst_id = ANY_ID_BUT_SRC;
-        see.msg = name+" is here.";
+        see.msg = description;
         see.pin = group->pin;
         sched_event(see);
     }
