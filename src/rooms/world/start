@@ -1,0 +1,9 @@
+---
+node: 1
+description : "A muddy field."
+up:
+  description: "This field is soaked after a hard run."
+  node: 0
+monsters:
+  - cat
+  - dog
