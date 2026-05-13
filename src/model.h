@@ -5,31 +5,9 @@
 #include <set>
 #include <list>
 #include <cassert>
-
-/**
- * Directions of travel in the mud.
- */
-enum Direction {
-    North,
-    South,
-    East,
-    West,
-    Up,
-    Down,
-    EndOfDirectionEnum
-};
-
-/// @brief A direction of travel from the room
-struct direction_t {
-    /// @brief To which room does it lead
-    int id;
-    /// @brief Which direction are we going?
-    Direction dir;
-    /// @brief What does the exit look like
-    std::string description;
-};
-
-using KeyWordList = std::list<std::string>;
+#include "types.h"
+#include "item.h"
+#include "name.h"
 
 /**
  * All model states evolve by events.
@@ -51,6 +29,12 @@ struct Event {
         JOIN_PROX_GROUP,
         /// @brief Leave a proximity group
         LEAVE_PROX_GROUP,
+        /// @brief Transfer an item
+        TRANSFER_ITEM,
+        /// @brief Command to drop an item
+        DROP_COMMAND,
+        /// @brief Command to pick up an item
+        GET_COMMAND,
         /// @brief Move in a given direction
         MOVE,
         /// @brief Look command issued to an actor by a player
@@ -61,8 +45,8 @@ struct Event {
         SEE,
         /// @brief See a description of something after all SEE are processed
         SEE1,
-        /// Exit the mud
-        QUIT
+        /// @brief Save the model to disk
+        SAVE_MODEL
     };
 
     /// @brief The type of the event
@@ -77,12 +61,16 @@ struct Event {
     adevs::pin_t pin;
     /// @brief Any key words associated with a command
     std::shared_ptr<KeyWordList> key_words;
+    /// @brief Item for a transfer
+    std::shared_ptr<Item> item;
     /// @brief Primitive, type specific data
     union {
         /// @brief Prox group to enter or leave
         int prox_group;
         /// @brief Direction of motion for a MOVE event
         Direction dir;
+        /// @brief Transfer the item from src_id to dst_id
+        bool transfer_src_to_dst;
     } event_data;
 };
 
@@ -135,6 +123,10 @@ class ProximityGroupMember {
      * @param return The unique id of the group member 
      */
     int id() const { return m_id; }
+    virtual Name get_name() const { return Name("",true); }
+
+    /// @brief Send an event directly to the member
+    const adevs::pin_t pin;
 
     private:
 
@@ -169,17 +161,17 @@ class ProximityGroup {
     m_group_number(group_number){}
     /// @brief Add a member to the group when joining
     /// @param member The member to add
-    void add_member(const ProximityGroupMember* member) {
+    void add_member(ProximityGroupMember* member) {
         m_members.push_back(member);
     }
     /// @brief Remove a member when leaving
     /// @param member The member to remove
-    void remove_member(const ProximityGroupMember* member) {
+    void remove_member(ProximityGroupMember* member) {
         m_members.remove(member);
     }
     /// @brief Get the members of the group
     /// @return List of group members.
-    const std::list<const ProximityGroupMember*>& members() {
+    const std::list<ProximityGroupMember*>& members() {
         return m_members;
     }
     /// @brief Get the room number (node id) of the group.
@@ -242,7 +234,7 @@ class ProximityGroup {
     /// @brief List of all exits from the room
     std::list<direction_t> exits;
     /// @brief Set of group members
-    std::list<const ProximityGroupMember*> m_members;
+    std::list<ProximityGroupMember*> m_members;
 };
 
 /**
@@ -264,9 +256,6 @@ class Model: public Atomic, public ProximityGroupMember {
     void delta_conf(const Bag& input);
     Time ta();
     void output_func(Bag& output);
-
-    /** Pin for direct events to the model */
-    const adevs::pin_t pin;
 
     protected:
 
@@ -301,17 +290,36 @@ class Model: public Atomic, public ProximityGroupMember {
     /// @brief Default behavior does nothing
     virtual void leave_mud_event(const Event& event){}
     /// @brief Default behavior does nothing
-    virtual void quit_mud_event(const Event& event){}
-    /// @brief Default behavior does nothing
     virtual void move_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void look_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void look_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void get_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void drop_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void transfer_item_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void save_model_event(const Event& event){}
+    
+    /// @brief Our proximity group
+    ProximityGroup* group;
+    /// @brief Items that belong to the model
+    std::list<std::shared_ptr<Item>> items;
 
-    /// @brief List of our proximity groups
-    std::list<ProximityGroup*> prox_groups;
- 
+    /**
+     * @brief Find an item by key word
+     * 
+     * Finds the best match to the key words supplies.
+     * Returns nullptr if there is no match.
+     * 
+     * @param key_words The keys to match
+     * @return The best match or nullptr if no match
+     */
+    std::shared_ptr<Item> find_item(const KeyWordList& key_words);
+
     /// @brief get the current game time
     /// @return the current time
     int current_time() const { return tNow.real(); }

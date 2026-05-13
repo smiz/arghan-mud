@@ -1,15 +1,17 @@
 #include "name.h"
+#include <cctype>
+#include <algorithm>
 
-const std::string Name::A = "A";
-const std::string Name::a = "a";
-const std::string Name::An = "An";
-const std::string Name::an = "an";
+const std::string Name::A = "A ";
+const std::string Name::a = "a ";
+const std::string Name::An = "An ";
+const std::string Name::an = "an ";
 
 Name::Name(std::string name, bool proper):
 name(name),proper(proper){}
 
 std::string Name::capitalized_name() const {
-    if (!proper) {
+    if (proper) {
         return name;
     } else if (is_vowel()) {
         return An+name;
@@ -18,8 +20,15 @@ std::string Name::capitalized_name() const {
     }
 }
 
+std::string Name::lower_case() const {
+    std::string result(name);
+    std::transform(result.begin(), result.end(), result.begin(), 
+                   [](unsigned char c) { return std::tolower(c); });
+    return result;
+}
+
 std::string Name::regular_name() const {
-    if (!proper) {
+    if (proper) {
         return name;
     } else if (is_vowel()) {
         return an+name;

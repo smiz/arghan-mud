@@ -1,4 +1,9 @@
 name: Jack
 proper_name: true
-description: Jack the brave adventurer stands here.
-detail: Ho hum.
+description: Jack is here.
+detail: Jack is pretty good lookin'!
+keywords:
+  - Jack
+  - jack
+items:
+  []

@@ -1,14 +1,14 @@
 # Compiler
 CXX = g++
 # Compiler flags
-CXXFLAGS = -Wall -g -I$(HOME)/Code/adevs/include -I.
+CXXFLAGS = -Wall -O -g -I$(HOME)/Code/adevs/include -I.
 # Target executable
 TARGET = server
 LIBS = -ladevs -lyaml-cpp -L$(HOME)/Code/adevs
 
 # Source files
-HEADERS = model.h room.h actor.h name.h
-SRCS = model.cpp room.cpp main.cpp actor.cpp name.cpp
+HEADERS = model.h room.h actor.h name.h item.h types.h
+SRCS = model.cpp room.cpp main.cpp actor.cpp name.cpp item.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)

@@ -1,4 +1,9 @@
 name: Jimmy
 proper_name: true
-description: Jimmy stands before you.
-detail: That flannel jacket is filthy!
+description: Jimmy is here.
+detail: Jimmy is pretty good lookin'!
+keywords:
+  - Jimmy
+  - jimmy
+items:
+  - knife

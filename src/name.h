@@ -8,6 +8,7 @@
  */
 class Name {
     public:
+    Name():proper(false){}
     /**
      * @brief Creates a name
      * @param name The proper name or noun used as a name
@@ -25,6 +26,7 @@ class Name {
     std::string capitalized_name() const;
     std::string regular_name() const;
 
+    std::string lower_case() const;
     std::string get_name() const { return name; }
     bool is_proper() const { return proper; }
 

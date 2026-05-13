@@ -4,3 +4,5 @@ description : "Limbo!"
 down : 
   description : "Below you is a lit tunnel."
   node: 1
+items:
+  - knife

@@ -8,6 +8,7 @@ ProximityGroupMember::ProximityGroupMember():m_id(next_id++){}
 Model::Model(Graph& graph):
 Atomic(),
 ProximityGroupMember(),
+group(nullptr),
 graph(graph),
 me(this),
 departed(false) {
@@ -25,6 +26,18 @@ void Model::leave_game() {
     graph.remove_atomic(me);
     pending.clear();
     me.reset();
+}
+
+std::shared_ptr<Item> Model::find_item(const KeyWordList& key_words) {
+    std::shared_ptr<Item> result = nullptr;
+    int best_score = 0;
+    for (auto item: items) {
+        int score = item->match_keywords(key_words);
+        if (best_score < score) {
+            result = item;
+        }
+    }
+    return result;
 }
 
 void Model::receive_from(adevs::pin_t pin) {
@@ -80,8 +93,20 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::LOOK_COMMAND:
                 look_command_event(x.value);
                 break;
+            case Event::GET_COMMAND:
+                get_command_event(x.value);
+                break;
+            case Event::DROP_COMMAND:
+                drop_command_event(x.value);
+                break;
             case Event::LOOK:
                 look_event(x.value);
+                break;
+            case Event::TRANSFER_ITEM:
+                transfer_item_event(x.value);
+                break;
+            case Event::SAVE_MODEL:
+                save_model_event(x.value);
                 break;
             default:
                 break;

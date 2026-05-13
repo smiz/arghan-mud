@@ -1,4 +1,9 @@
 name: Joey
 proper_name: true
 description: Joey is here.
-detail: Joey is enjoying a hard cider!
+detail: Joey is pretty good lookin'!
+keywords:
+  - Joey
+  - joey
+items:
+  []
