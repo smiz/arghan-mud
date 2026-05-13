@@ -1,6 +1,7 @@
 #ifndef _actor_h_
 #define _actor_h_
 #include "model.h"
+#include "name.h"
 
 /**
  * Models a creature. These should be 
@@ -24,7 +25,7 @@ class Actor: public Model {
      */
     Actor(Graph& graph, std::string filename, bool load, std::string name = "", int exit_node = START_GROUP);
 
-    std::string get_name() const { return name; }
+    std::string get_name() const { return name.get_name(); }
     void set_msg_fd(int fd) { this->fd = fd; }
     int match_keywords(const KeyWordList& key_words) const;
 
@@ -32,7 +33,7 @@ class Actor: public Model {
 
     std::string detail;
     std::string description;
-    std::string name;
+    Name name;
     std::string file;
     KeyWordList key_words;
 

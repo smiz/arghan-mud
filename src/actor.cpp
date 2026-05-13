@@ -14,13 +14,13 @@ static const std::string reverse_direction_name[6] = {
 Actor::Actor(Graph& graph, std::string file, bool load, std::string name, int exit_node):
 Model(graph),
 description(name+ " is here."),
-name(name),
+name(name,true),
 file(file),
 fd(-1),
 exit_node_id(exit_node) {
     if (load) {
         YAML::Node yaml = YAML::LoadFile(file.c_str());
-        this->name = yaml["name"].as<std::string>();
+        this->name = Name(yaml["name"].as<std::string>(),yaml["proper_name"].as<bool>());
         description = yaml["description"].as<std::string>();
         detail = yaml["detail"].as<std::string>();
         const YAML::Node& keyword_list = yaml["keywords"];
@@ -44,14 +44,15 @@ int Actor::match_keywords(const KeyWordList& key_words) const {
 }
 
 void Actor::init() {
-    description = name+" is here.";
-    detail = name+" is pretty good lookin'!";
-    key_words.push_back(name);
+    description = name.capitalized_name()+" is here.";
+    detail = name.capitalized_name()+" is pretty good lookin'!";
+    key_words.push_back(name.get_name());
 }
 
 void Actor::save() {
     YAML::Node config;
-    config["name"] = name;
+    config["name"] = name.get_name();
+    config["proper_name"] = name.is_proper();
     config["description"] = description;
     config["detail"] = detail;
     config["keywords"] = key_words;
@@ -106,7 +107,7 @@ void Actor::enter_mud_event(const Event& event) {
     enter.type = Event::SEE1;
     enter.pin = prox_map[exit_node_id]->pin;
     enter.dst_id = ANY_ID_BUT_SRC;
-    enter.msg = name+" returns from the Real World!";
+    enter.msg = name.capitalized_name()+" returns from the Real World!";
     sched_event(enter);
 }
 
@@ -124,7 +125,7 @@ void Actor::leave_mud_event(const Event& event) {
         leave.type = Event::SEE1;
         leave.pin = group->pin;
         leave.dst_id = ANY_ID_BUT_SRC;
-        leave.msg = name+" mutters something about the Real World and vanishes!";
+        leave.msg = name.capitalized_name()+" mutters something about the Real World and vanishes!";
         sched_event(leave);
     }
 }
@@ -176,10 +177,10 @@ void Actor::move_event(const Event& event) {
     see.type = Event::SEE;
     see.src_id = id();
     see.dst_id = ANY_ID_BUT_SRC;
-    see.msg = name+" arrives from "+reverse_direction_name[move_dir.dir]+".";
+    see.msg = name.capitalized_name()+" arrives from "+reverse_direction_name[move_dir.dir]+".";
     see.pin = prox_map[move_dir.id]->pin;
     sched_event(see);
-    see.msg = name+" goes "+direction_name[move_dir.dir]+".";
+    see.msg = name.capitalized_name()+" goes "+direction_name[move_dir.dir]+".";
     see.pin = group->pin;
     sched_event(see);
 }
