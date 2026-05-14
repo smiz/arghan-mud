@@ -1,4 +1,5 @@
 #include "actor.h"
+#include "dice.h"
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
@@ -17,11 +18,22 @@ Actor::Actor(
     std::string file,
     bool load,
     std::string name,
-    bool pc):
+    bool pc,
+    const initial_stats_t* const stats):
 Model(graph),
 description(name+ " is here."),
 name(name,true),
 file(file),
+strength(10),
+dexterity(10),
+constitution(10),
+intelligence(10),
+wisdom(10),
+charisma(10),
+hit_points(2),
+damage(0),
+armor_class(10),
+ac_modifier(0),
 fd(-1),
 exit_node_id(START_GROUP),
 pc(pc) {
@@ -42,8 +54,32 @@ pc(pc) {
                 items.push_back(new_item);
             }
         }
+        if (yaml["strength"]) {
+            strength = yaml["strength"].as<int>();
+        }
+        if (yaml["dexterity"]) {
+            dexterity = yaml["dexterity"].as<int>();
+        }
+        if (yaml["constitution"]) {
+            constitution = yaml["constitution"].as<int>();
+        }
+        if (yaml["intelligence"]) {
+            intelligence = yaml["intelligence"].as<int>();
+        }
+        if (yaml["wisdom"]) {
+            wisdom = yaml["wisdom"].as<int>();
+        }
+        if (yaml["charisma"]) {
+            charisma = yaml["charisma"].as<int>();
+        }
+        if (yaml["armor_class"]) {
+            armor_class = yaml["armor_class"].as<int>();
+        }
+        if (yaml["hit_points"]) {
+            hit_points = yaml["hit_points"].as<int>();
+        }
     } else {
-        init();
+        init(stats);
         save();
     }
 }
@@ -58,7 +94,30 @@ int Actor::match_keywords(const KeyWordList& key_words) const {
     return score;
 }
 
-void Actor::init() {
+initial_stats_t Actor::initial_stats() {
+    initial_stats_t stats;
+    Dice attr_die(3,6);
+    stats.str = attr_die();
+    stats.dex = attr_die();
+    stats.con = attr_die();
+    stats.intel = attr_die();
+    stats.wis = attr_die();
+    stats.chr = attr_die();
+    stats.hp = std::max(1,4+attribute_modifier(stats.con));
+    return stats;
+}
+
+void Actor::init(const initial_stats_t* const stats) {
+    armor_class = 10;
+    if (stats != nullptr) {
+        strength = stats->str;
+        dexterity = stats->dex;
+        constitution = stats->con;
+        intelligence = stats->intel;
+        wisdom = stats->wis;
+        charisma = stats->chr;
+        hit_points = stats->hp;
+    }
     description = name.capitalized_name()+" is here.";
     detail = name.capitalized_name()+" is pretty good lookin'!";
     key_words.push_back(name.get_name());
@@ -75,6 +134,14 @@ void Actor::save() {
     config["description"] = description;
     config["detail"] = detail;
     config["keywords"] = key_words;
+    config["strength"] = strength;
+    config["dexterity"] = dexterity;
+    config["constitution"] = constitution;
+    config["intelligence"] = intelligence;
+    config["wisdom"] = wisdom;
+    config["charisma"] = charisma;
+    config["armor_class"] = armor_class;
+    config["hit_points"] = hit_points;
     std::vector<std::string> item_files;
     for (auto item: items) {
         item_files.push_back(item->filename());
@@ -83,6 +150,20 @@ void Actor::save() {
     std::ofstream fout(file.c_str());
     fout << config; 
     fout.close();
+}
+
+void Actor::report_stats() {
+    std::string line;
+    std::ostringstream sout(line);
+    sout << "str " << strength << std::endl;;
+    sout << "dex " << dexterity << std::endl;;
+    sout << "con " << constitution << std::endl;;
+    sout << "int " << intelligence << std::endl;;
+    sout << "wis " << wisdom << std::endl;;
+    sout << "chr " << charisma << std::endl;;
+    sout << "hp  " << hit_points << " / " << damage << std::endl;;
+    sout << "ac  " << armor_class+ac_modifier << std::endl;;
+    message(sout.str());
 }
 
 void Actor::report_inventory() {
@@ -318,4 +399,42 @@ void Actor::save_model_event(const Event& event) {
     save();
     /// Save every second
     sched_save();
+}
+
+int Actor::attribute_modifier(int attribute_score) {
+    if (attribute_score < 1) {
+        return -6;
+    }
+    switch(attribute_score) {
+        case 1: return -5;
+        case 2: return -4;
+        case 3: return -4;
+        case 4: return -3;
+        case 5: return -3;
+        case 6: return -2;
+        case 7: return -2;
+        case 8: return -1;
+        case 9: return -1;
+        case 10: return 0;
+        case 11: return 0;
+        case 12: return 1;
+        case 13: return 1;
+        case 14: return 2;
+        case 15: return 2;
+        case 16: return 3;
+        case 17: return 3;
+        case 18: return 4;
+        case 19: return 4;
+        case 20: return 5;
+        case 21: return 5;
+        case 22: return 6;
+        case 23: return 6;
+        case 24: return 7;
+        case 25: return 7;
+        case 26: return 8;
+        case 27: return 8;
+        case 28: return 9;
+        case 29: return 9;
+    }
+    return 10;
 }

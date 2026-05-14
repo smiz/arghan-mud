@@ -5,5 +5,13 @@ detail: Jimmy is pretty good lookin'!
 keywords:
   - Jimmy
   - jimmy
+strength: 8
+dexterity: 10
+constitution: 10
+intelligence: 12
+wisdom: 12
+charisma: 15
+armor_class: 10
+hit_points: 4
 items:
-  - knife
+  []

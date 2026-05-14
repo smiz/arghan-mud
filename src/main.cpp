@@ -139,6 +139,12 @@ void drop(Actor* obj, std::list<std::string>& tokens) {
     cv.notify_one();
 }
 
+void status(Actor* obj) {
+    mutex.lock();
+    obj->report_stats();
+    mutex.unlock();
+}
+
 void inventory(Actor *obj) {
     // Lock the simulation to avoid a change while we list the good
     mutex.lock();
@@ -203,6 +209,10 @@ bool parse_line(std::string& line, Actor* obj) {
     }
     if (line == "inventory") {
         inventory(obj);
+        return true;
+    }
+    if (line == "stats") {
+        status(obj);
         return true;
     }
     if (parse_line_with_tokens(line,obj)) {
@@ -283,19 +293,53 @@ repeat_name:
         }
     }
     if (obj == nullptr) {
-        graph->set_provisional(false);
-        std::string path = character_dir+line;
-        obj = new Actor(*(graph.get()),path,false,line,true);
-        graph->set_provisional(true);
-        characters[lower_case(line)] = obj;
-        line = "Welcome " + obj->get_name().capitalized_name() +"!\n";
+        mutex.unlock();
+        initial_stats_t stats;
+        std::string response;
+        std::string name = line;
+        line = "Welcome " + name +"!\n";
         bytes = write(fd,line.c_str(),line.size());
         if (bytes < 0) {
             return;
         }
+        reroll:
+        stats = Actor::initial_stats();
+        {
+            line.clear();
+            std::ostringstream sout(line);
+            sout << "str: " << stats.str << std::endl;
+            sout << "dex: " << stats.dex << std::endl;
+            sout << "con: " << stats.con << std::endl;
+            sout << "int: " << stats.intel << std::endl;
+            sout << "wis: " << stats.wis << std::endl;
+            sout << "chr: " << stats.chr << std::endl;
+            sout << "hp : " << stats.hp << std::endl;
+            line = sout.str();
+            if (write(fd,line.c_str(),line.size()) < 0) {
+                return;
+            }
+            do {
+                line = "Keep these (yes or no)? ";
+                if (write(fd,line.c_str(),line.size()) < 0) {
+                    return;
+                }
+                if (read_line(fd,response) <= 0) {
+                    return;
+                }
+            } while (response != "yes" && response != "no");
+            if (response == "no") {
+                goto reroll;
+            }
+            mutex.lock();
+        }
+        graph->set_provisional(false);
+        std::string path = character_dir+name;
+        obj = new Actor(*(graph.get()),path,false,name,true,&stats);
+        graph->set_provisional(true);
+        characters[lower_case(line)] = obj;
     }
-    mutex.unlock();
     obj->set_msg_fd(fd);
+    mutex.unlock();
     join_game(obj);
     while (!quit_sim) {
         bytes = read_line(fd,line);
@@ -356,11 +400,9 @@ int serverSocket;
 void ctrlCHandler(int dummy) {
     quit_sim = true;
     close(serverSocket);
-    printf("CLOSED SERVER SOCKET\n");
 }
 
 int main(int argc, char** argv) {
-    std::signal(SIGINT,ctrlCHandler);
     // Create the simulator
     create_sim();
     if (argc < 2) {
@@ -368,6 +410,7 @@ int main(int argc, char** argv) {
         thrd.join();
         return 0;
     }
+    std::signal(SIGINT,ctrlCHandler);
     short port = atoi(argv[1]);
     // Ignore SIGNAL when a telnet client leaves
     std::signal(SIGHUP,SIG_IGN);
