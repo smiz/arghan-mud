@@ -187,23 +187,19 @@ void Actor::report_inventory() {
 }
 
 void Actor::message(std::string msg) {
-    int bytes;
     static char newline = '\n';
     if (fd != -1) {
         if (msg.back() != '\n') {
             msg += newline;
         }
-        bytes = write(fd,msg.c_str(),msg.size());
-        if (bytes < 0) {
+        if (write(fd,msg.c_str(),msg.size()) < 0) {
             fd = -1;
         }
     }
 }
 
 void Actor::emit(std::string msg, int dst_id) {
-    Event event;
-    event.type = Event::SEE1;
-    event.src_id = id();
+    Event event(Event::SEE1,id());
     event.msg = msg;
     event.dst_id = dst_id;
     event.pin = group->pin;
@@ -261,17 +257,13 @@ void Actor::enter_mud_event(const Event& event) {
 
 void Actor::leave_mud_event(const Event& event) {
     exit_node_id = group->group_number();
-    Event leave;
-    leave.type = Event::LEAVE_PROX_GROUP;
+    Event leave(Event::LEAVE_PROX_GROUP,id());
     leave.event_data.prox_group = group->group_number();
     leave.pin = group->pin;
-    leave.src_id = id();
     leave.dst_id = id();
     sched_event(leave);
-    leave.type = Event::SEE1;
-    leave.pin = group->pin;
-    leave.dst_id = ANY_ID_BUT_SRC;
-    leave.msg = name.capitalized_name()+" mutters something about the Real World and vanishes!";
+    emit(name.capitalized_name()+" mutters something about the Real World and vanishes!",
+        ANY_ID_BUT_SRC);
     sched_event(leave);
 }
 
@@ -281,13 +273,7 @@ void Actor::join_prox_group_event(const Event& event) {
         group->add_member(this);
         receive_from(group->pin);
     } else {
-        Event see;
-        see.type = Event::SEE1;
-        see.src_id = id();
-        see.dst_id = ANY_ID_BUT_SRC;
-        see.msg = description;
-        see.pin = group->pin;
-        sched_event(see);
+        emit(description,ANY_ID_BUT_SRC);
     }
 }
 
@@ -310,9 +296,7 @@ void Actor::move_event(const Event& event) {
         return;
     }
     change_prox_groups(move_dir.id);
-    Event see;
-    see.type = Event::SEE;
-    see.src_id = id();
+    Event see(Event::SEE,id());
     see.dst_id = ANY_ID_BUT_SRC;
     see.msg = name.capitalized_name()+" arrives from "+reverse_direction_name[move_dir.dir]+".";
     see.pin = prox_map[move_dir.id]->pin;
@@ -355,11 +339,6 @@ void Actor::drop_command_event(const Event& event) {
         return;
     }
     Event drop(event);
-    Event see;
-    see.type = Event::SEE1;
-    see.src_id = id();
-    see.dst_id = ANY_ID_BUT_SRC;
-    see.pin = group->pin;
     drop.type = Event::TRANSFER_ITEM;
     drop.dst_id = group->first_member_id();
     drop.pin = group->members().front()->pin;
@@ -379,9 +358,9 @@ void Actor::drop_command_event(const Event& event) {
     }
     if (drop.item != nullptr) {
         save();
-        see.msg = name.capitalized_name()+ " drops " + drop.item->name().regular_name()+".";
+        emit(name.capitalized_name()+ " drops " + drop.item->name().regular_name()+".",
+            ANY_ID_BUT_SRC);
         sched_event(drop);
-        sched_event(see);
         message("You drop "+drop.item->name().regular_name()+".");
     } else {
         message("You don't have that.");
@@ -392,9 +371,7 @@ void Actor::look_command_event(const Event& event) {
     if (event.dst_id != id()) {
         return;
     }
-    Event look;
-    look.type = Event::LOOK;
-    look.src_id = id();
+    Event look(Event::LOOK,id());
     look.dst_id = group->find_best_match(*(event.key_words));
     if (look.dst_id == group->first_member_id()) {
         look.dst_id = ANY_ID_BUT_SRC;
@@ -408,9 +385,7 @@ void Actor::look_event(const Event& event) {
     if (event.dst_id != id() && event.dst_id != ANY_ID && !(event.dst_id == ANY_ID_BUT_SRC && event.src_id != id())) {
         return;
     }
-    Event see;
-    see.type = Event::SEE1;
-    see.src_id = id();
+    Event see(Event::SEE1,id());
     see.dst_id = event.src_id;
     if (event.dst_id == id()) {
         see.msg = detail; 

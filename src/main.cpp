@@ -14,13 +14,32 @@
 #include "room.h"
 #include "actor.h"
 
+/**
+ * @brief List of all characters in the game
+ * 
+ * This includes inactive characters. All of them are
+ * held in memory. Characters are loaded from disk
+ * when the server starts. They are saved to disk
+ * as the game progresses.
+ * 
+ * @see Actor::save()
+ */
 std::map<std::string,Actor*> characters;
+/// @brief List of commands from the player to inject into
+/// the running simulation.
 std::list<std::pair<adevs::pin_t,Event>> commands;
+/// @brief Mutex to protect the simulation
 std::mutex mutex;
+/// @brief Condition variable for waiting on player input
 std::condition_variable cv;
+/// @brief The simulation itself
 Simulator* sim;
+/// @brief The graph that holds all of our objects in the simulation
 std::shared_ptr<Graph> graph;
 
+// Intended to support an orderly shutdown, but it doesn't
+// work at the moment. The port can still be hung after 
+// the server quits.
 volatile bool quit_sim = false;
 
 void run_sim() {

@@ -37,7 +37,7 @@ class Item {
         int speed;
         int hands;
 
-        weapon_info_t():dmg_die(0,1),speed(0),hands(1){}
+        weapon_info_t():speed(0),hands(1){}
     };
 
     const weapon_info_t& weapon_info() const {

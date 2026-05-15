@@ -53,6 +53,8 @@ struct Event {
         SAVE_MODEL
     };
 
+    Event(){}
+    Event(Type type, int src_id):type(type),src_id(src_id){}
     /// @brief The type of the event
     Type type;
     /// @brief Originator of the event
