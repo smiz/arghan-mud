@@ -82,9 +82,9 @@ Dice::Dice(std::string die_type) {
 }
 
 int Dice::operator()() {
-    int total = die(gen);
-    for (int i = 1; i < number; i++) {
+    int total = 0;
+    for (int i = 0; i < number; i++) {
         total += die(gen);
     }
-    return std::max(1,total+modifier);
+    return std::max(0,total+modifier);
 }
