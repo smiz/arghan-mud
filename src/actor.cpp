@@ -371,7 +371,8 @@ void Actor::drop_command_event(const Event& event) {
         items.remove(drop.item);
     } else {
         // Is it equipped?
-        if (primary_hand != nullptr) {
+        if (primary_hand != nullptr &&
+            primary_hand->match_keywords(*(event.key_words.get())) > 0) {
             drop.item = primary_hand;
             primary_hand = nullptr;
         }
@@ -382,6 +383,8 @@ void Actor::drop_command_event(const Event& event) {
         sched_event(drop);
         sched_event(see);
         message("You drop "+drop.item->name().regular_name()+".");
+    } else {
+        message("You don't have that.");
     }
 }
 
@@ -419,8 +422,9 @@ void Actor::look_event(const Event& event) {
 }
 
 void Actor::stow_command_event(const Event& event) {
-    if (primary_hand == nullptr) {
-        message("You aren't holding anything.");
+    if (primary_hand == nullptr ||
+        primary_hand->match_keywords(*(event.key_words.get())) == 0) {
+        message("You aren't holding that.");
     } else {
         items.push_back(primary_hand);
         message("You stow "+primary_hand->name().regular_name()+".");
