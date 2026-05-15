@@ -15,6 +15,11 @@ m_filename(file) {
     for (const auto& word : keyword_list) {
         key_words->push_back(word.as<std::string>());
     }
+    if (yaml["weapon_data"]) {
+        m_weapon_info.speed = yaml["weapon_data"]["speed"].as<int>();
+        m_weapon_info.dmg_die = Dice(yaml["weapon_data"]["damage"].as<std::string>());
+        m_weapon_info.hands = yaml["weapon_data"]["hands"].as<int>();
+    }
 }
 
 int Item::match_keywords(const KeyWordList& key_words) const {

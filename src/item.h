@@ -2,6 +2,7 @@
 #define _item_h_
 #include "types.h"
 #include "name.h"
+#include "dice.h"
 
 /**
  * @brief An item with simple state
@@ -31,6 +32,18 @@ class Item {
 
     static const std::string items_directory;
 
+    struct weapon_info_t {
+        Dice dmg_die;
+        int speed;
+        int hands;
+
+        weapon_info_t():dmg_die(0,1),speed(0),hands(1){}
+    };
+
+    const weapon_info_t& weapon_info() const {
+        return m_weapon_info;
+    }
+
     private:
 
     std::shared_ptr<KeyWordList> key_words;
@@ -38,6 +51,7 @@ class Item {
     std::string m_description;
     std::string m_detail;
     std::string m_filename;
+    weapon_info_t m_weapon_info;
 };
 
 #endif

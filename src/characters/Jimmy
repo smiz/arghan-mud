@@ -14,4 +14,4 @@ charisma: 15
 armor_class: 10
 hit_points: 4
 items:
-  []
+  - knife

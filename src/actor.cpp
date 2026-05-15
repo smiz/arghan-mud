@@ -97,13 +97,14 @@ int Actor::match_keywords(const KeyWordList& key_words) const {
 initial_stats_t Actor::initial_stats() {
     initial_stats_t stats;
     Dice attr_die(3,6);
+    Dice hp_die(1,6);
     stats.str = attr_die();
     stats.dex = attr_die();
     stats.con = attr_die();
     stats.intel = attr_die();
     stats.wis = attr_die();
     stats.chr = attr_die();
-    stats.hp = std::max(1,4+attribute_modifier(stats.con));
+    stats.hp = std::max(1,hp_die()+attribute_modifier(stats.con));
     return stats;
 }
 
@@ -145,6 +146,9 @@ void Actor::save() {
     std::vector<std::string> item_files;
     for (auto item: items) {
         item_files.push_back(item->filename());
+    }
+    if (primary_hand != nullptr) {
+        item_files.push_back(primary_hand->filename());
     }
     config["items"] = item_files;
     std::ofstream fout(file.c_str());

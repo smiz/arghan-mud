@@ -45,6 +45,10 @@ class Actor: public Model {
 
     static initial_stats_t initial_stats();
 
+    /// @brief Write a message to the console if fd is valid
+    /// @param msg The message to write 
+    void message(std::string msg);
+
     protected:
 
     std::string detail;
@@ -77,9 +81,7 @@ class Actor: public Model {
     /// Equipment slot for the primary hand (weapon hand)
     std::shared_ptr<Item> primary_hand;
 
-    /// @brief Write a message to the console if fd is valid
-    /// @param msg The message to write 
-    void message(std::string msg);
+
     /**
      * @brief Emit a message to the proximity group or an individual
      * 

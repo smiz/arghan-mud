@@ -169,6 +169,22 @@ void stow(Actor* obj, std::list<std::string>& tokens) {
     cv.notify_one();
 }
 
+void dice(Actor* obj, std::list<std::string>& tokens) {
+    if (tokens.empty()) {
+        obj->message("Roll which dice?");
+        return;
+    }
+    try {
+        std::string line;
+        std::ostringstream sout(line);
+        Dice die(tokens.front());
+        sout << "Shake shake shake ... " << die();
+        obj->message(sout.str());
+    } catch(std::string msg ) {
+        obj->message(msg);
+    }
+}
+
 void status(Actor* obj) {
     mutex.lock();
     obj->report_stats();
@@ -208,6 +224,9 @@ bool parse_line_with_tokens(std::string& line, Actor* obj) {
         return true;
     } else if (cmd == "stow") {
         stow(obj,tokens);
+        return true;
+    } else if (cmd == "dice") {
+        dice(obj,tokens);
         return true;
     }
     return false;

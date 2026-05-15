@@ -5,3 +5,7 @@ detail: That knife looks dangerous. Be careful!
 keywords:
   - knife
   - sharp
+weapon_data:
+  speed: 1
+  damage: 1d3
+  hands: 1
