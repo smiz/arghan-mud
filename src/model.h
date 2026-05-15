@@ -37,6 +37,10 @@ struct Event {
         GET_COMMAND,
         /// @brief Move in a given direction
         MOVE,
+        /// @brief Command to wield a weapon
+        WIELD_COMMAND,
+        /// @brief Command to stow an equiped item
+        STOW_COMMAND,
         /// @brief Look command issued to an actor by a player
         LOOK_COMMAND,
         /// @brief Look at something (or being looked at)
@@ -303,6 +307,10 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void transfer_item_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void save_model_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void wield_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void stow_command_event(const Event& event){}
     
     /// @brief Our proximity group
     ProximityGroup* group;

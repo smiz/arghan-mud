@@ -139,6 +139,36 @@ void drop(Actor* obj, std::list<std::string>& tokens) {
     cv.notify_one();
 }
 
+void wield(Actor* obj, std::list<std::string>& tokens) {
+    Event event;
+    event.type = Event::WIELD_COMMAND;
+    event.src_id = event.dst_id = obj->id();
+    event.pin = obj->pin;
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
+void stow(Actor* obj, std::list<std::string>& tokens) {
+    Event event;
+    event.type = Event::STOW_COMMAND;
+    event.src_id = event.dst_id = obj->id();
+    event.pin = obj->pin;
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
 void status(Actor* obj) {
     mutex.lock();
     obj->report_stats();
@@ -172,6 +202,12 @@ bool parse_line_with_tokens(std::string& line, Actor* obj) {
         return true;
     } else if (cmd == "drop") {
         drop(obj,tokens);
+        return true;
+    } else if (cmd == "wield") {
+        wield(obj,tokens);
+        return true;
+    } else if (cmd == "stow") {
+        stow(obj,tokens);
         return true;
     }
     return false;

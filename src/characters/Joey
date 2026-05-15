@@ -5,5 +5,13 @@ detail: Joey is pretty good lookin'!
 keywords:
   - Joey
   - joey
+strength: 10
+dexterity: 10
+constitution: 10
+intelligence: 10
+wisdom: 10
+charisma: 10
+armor_class: 10
+hit_points: 2
 items:
   []

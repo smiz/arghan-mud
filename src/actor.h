@@ -74,10 +74,22 @@ class Actor: public Model {
     /// total AC modifier
     int ac_modifier;
 
+    /// Equipment slot for the primary hand (weapon hand)
+    std::shared_ptr<Item> primary_hand;
+
     /// @brief Write a message to the console if fd is valid
     /// @param msg The message to write 
     void message(std::string msg);
+    /**
+     * @brief Emit a message to the proximity group or an individual
+     * 
+     * @param msg The message to send
+     * @param dst_id The target of the message
+     */
+    void emit(std::string msg, int dst_id);
 
+    void stow_command_event(const Event& event);
+    void wield_command_event(const Event& event);
     void look_command_event(const Event& event);
     void get_command_event(const Event& event);
     void drop_command_event(const Event& event);

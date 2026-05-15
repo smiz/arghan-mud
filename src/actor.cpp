@@ -167,7 +167,7 @@ void Actor::report_stats() {
 }
 
 void Actor::report_inventory() {
-    std::string msg = "You have";
+    std::string msg = "In your pack you have";
     if (items.empty()) {
         msg += " nothing.";
     } else {
@@ -177,6 +177,9 @@ void Actor::report_inventory() {
         }
     }
     message(msg);
+    if (primary_hand != nullptr) {
+        message("You hold "+primary_hand->name().regular_name()+".");
+    }
 }
 
 void Actor::message(std::string msg) {
@@ -191,6 +194,22 @@ void Actor::message(std::string msg) {
             fd = -1;
         }
     }
+}
+
+void Actor::emit(std::string msg, int dst_id) {
+    Event event;
+    event.type = Event::SEE1;
+    event.src_id = id();
+    event.msg = msg;
+    event.dst_id = dst_id;
+    event.pin = group->pin;
+    /// Is it direct to a group member?
+    for (auto member: group->members()) {
+        if (dst_id == member->id()) {
+            event.pin = member->pin;
+        }
+    }
+    sched_event(event);
 }
 
 void Actor::change_prox_groups(int new_group) {
@@ -343,10 +362,17 @@ void Actor::drop_command_event(const Event& event) {
     drop.src_id = id();
     drop.event_data.transfer_src_to_dst = true;
     drop.item = find_item(*(event.key_words.get()));
-    if (drop.item == nullptr) {
-        message("You don't have that item.");
-    } else {
+    // Not in our pack
+    if (drop.item != nullptr) {
         items.remove(drop.item);
+    } else {
+        // Is it equipped?
+        if (primary_hand != nullptr) {
+            drop.item = primary_hand;
+            primary_hand = nullptr;
+        }
+    }
+    if (drop.item != nullptr) {
         save();
         see.msg = name.capitalized_name()+ " drops " + drop.item->name().regular_name()+".";
         sched_event(drop);
@@ -386,6 +412,34 @@ void Actor::look_event(const Event& event) {
     }
     see.pin = group->pin;
     sched_event(see);
+}
+
+void Actor::stow_command_event(const Event& event) {
+    if (primary_hand == nullptr) {
+        message("You aren't holding anything.");
+    } else {
+        items.push_back(primary_hand);
+        message("You stow "+primary_hand->name().regular_name()+".");
+        emit(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".",ANY_ID_BUT_SRC);
+        primary_hand = nullptr;
+    }
+}
+
+void Actor::wield_command_event(const Event& event) {
+    std::shared_ptr<Item> pick = find_item(*(event.key_words.get()));
+    if (pick == nullptr) {
+        message("You don't have that.");
+    } else {
+        if (primary_hand != nullptr) {
+            message("You stow "+primary_hand->name().regular_name()+".");
+            emit(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".",ANY_ID_BUT_SRC);
+            items.push_back(primary_hand);
+        }
+        items.remove(pick);
+        primary_hand = pick;
+        message("You wield "+primary_hand->name().regular_name()+".");
+        emit(name.capitalized_name()+" wields "+primary_hand->name().regular_name()+".",ANY_ID_BUT_SRC);
+    }
 }
 
 void Actor::sched_save() {

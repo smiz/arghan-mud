@@ -108,6 +108,12 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::SAVE_MODEL:
                 save_model_event(x.value);
                 break;
+            case Event::WIELD_COMMAND:
+                wield_command_event(x.value);
+                break;
+            case Event::STOW_COMMAND:
+                stow_command_event(x.value);
+                break;
             default:
                 break;
         }
