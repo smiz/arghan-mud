@@ -35,17 +35,31 @@ class Item {
     struct weapon_info_t {
         Dice dmg_die;
         int speed;
-        int hands;
-
-        weapon_info_t():speed(0),hands(1){}
+        weapon_info_t():speed(0){}
     };
 
-    const weapon_info_t& weapon_info() const {
+    weapon_info_t& weapon_info() {
         return m_weapon_info;
     }
 
+    /// @brief Which attribute modifies the use of this item
+    MonsterAttributes modifier() const { return m_modifier; }
+    /// @brief Which skill modifies the use of this item
+    std::string skill() const { return m_skill; };
+    /// @brief Where can this item be worn?
+    WearableSlots wearable() const { return m_wearable; }
+    /// @brief What is the ac bonus when the item is held?
+    int ac_bonus_when_held() const { return m_held_ac_bonus; }
+    /// @brief What is the ac bonus when the item is worn?
+    int ac_bonus_when_worn() const { return m_worn_ac_bonus; }
+
     private:
 
+    int m_held_ac_bonus;
+    int m_worn_ac_bonus;
+    WearableSlots m_wearable;
+    MonsterAttributes m_modifier;
+    std::string m_skill;
     std::shared_ptr<KeyWordList> key_words;
     Name m_name;
     std::string m_description;

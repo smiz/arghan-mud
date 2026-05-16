@@ -14,7 +14,24 @@ enum Direction {
     West,
     Up,
     Down,
+    Flee, // Flee from combat
     EndOfDirectionEnum
+};
+
+enum MonsterAttributes {
+    Str,
+    Dex,
+    Con,
+    Int,
+    Wis,
+    Chr,
+    NoAttr
+};
+
+/// @brief Slots for equipment that worn
+enum WearableSlots {
+    Body,
+    Unwearable
 };
 
 /// @brief A direction of travel from the room

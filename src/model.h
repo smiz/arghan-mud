@@ -5,6 +5,7 @@
 #include <set>
 #include <list>
 #include <cassert>
+#include <set>
 #include "types.h"
 #include "item.h"
 #include "name.h"
@@ -41,16 +42,35 @@ struct Event {
         WIELD_COMMAND,
         /// @brief Command to stow an equiped item
         STOW_COMMAND,
+        /// @brief Hold an item in your secondary hand
+        HOLD_COMMAND,
+        /// @brief Put an item on
+        WEAR_COMMAND,
         /// @brief Look command issued to an actor by a player
         LOOK_COMMAND,
+        /// @brief kill command issued to an actor by a player
+        KILL_COMMAND,
+        /// @brief Warning issued prior to an attack
+        PENDING_ATTACK,
         /// @brief Look at something (or being looked at)
         LOOK,
-        /// @brief See a description of something
-        SEE,
         /// @brief See a description of something after all SEE are processed
         SEE1,
+        /// @brief See a description of something
+        SEE,
+        /// @brief A melee attack
+        MELEE_ATTACK,
+        /// @brief Result of an attack
+        MELEE_RESULT,
         /// @brief Save the model to disk
-        SAVE_MODEL
+        SAVE_MODEL,
+        /// @brief The model was killed, disintegrated, etc
+        /// This should stay at the end so that all other
+        /// immediate events by the actor (e.g., emitting)
+        /// get processed before the actor leaves.
+        DESTROYED,
+        /// Really the last thing to happen
+        RESET_ZONE
     };
 
     Event(){}
@@ -67,8 +87,10 @@ struct Event {
     adevs::pin_t pin;
     /// @brief Any key words associated with a command
     std::shared_ptr<KeyWordList> key_words;
-    /// @brief Item for a transfer
+    /// @brief Item for a transfer or weapon in an attack
     std::shared_ptr<Item> item;
+    /// @brief Actor ids that should NOT receive this event
+    std::shared_ptr<std::set<int>> exclude;
     /// @brief Primitive, type specific data
     union {
         /// @brief Prox group to enter or leave
@@ -77,6 +99,16 @@ struct Event {
         Direction dir;
         /// @brief Transfer the item from src_id to dst_id
         bool transfer_src_to_dst;
+        struct { 
+            /// @brief Damage roll (attach) or received (result)
+            int dmg_roll;
+            /// @brief Attack roll
+            int atk_roll;
+            /// @brief Was the target killed (result)
+            bool killed;
+            /// @brief How wounded is the target (result)
+            double dmg_fraction;
+        } melee;
     } event_data;
 };
 
@@ -94,6 +126,8 @@ using Simulator = adevs::Simulator<Event,Time>;
 #define ANY_ID_BUT_SRC -2
 // First active proximity group
 #define START_GROUP 0
+// Not part of a zone
+#define NO_ZONE -1
 
 /**
  * Interface that is added to a proximity group when
@@ -163,17 +197,25 @@ class ProximityGroup {
 
     /// @brief Create a proximity group with a room id
     /// @param group_number The node number assigned by the Room
-    ProximityGroup(int group_number = 0):
-    m_group_number(group_number){}
+    ProximityGroup(int group_number = 0, int zone_number = NO_ZONE):
+    m_group_number(group_number),m_zone_number(zone_number){
+        if (zone_number != NO_ZONE) {
+            zone_occupancy[zone_number] = 0;
+        }
+    }
     /// @brief Add a member to the group when joining
     /// @param member The member to add
     void add_member(ProximityGroupMember* member) {
         m_members.push_back(member);
+        zone_occupancy[m_zone_number] = zone_occupancy[m_zone_number]+1;
+        assert(zone_occupancy[m_zone_number] >= 0);
     }
     /// @brief Remove a member when leaving
     /// @param member The member to remove
     void remove_member(ProximityGroupMember* member) {
         m_members.remove(member);
+        zone_occupancy[m_zone_number] = zone_occupancy[m_zone_number]-1;
+        assert(zone_occupancy[m_zone_number] >= 0);
     }
     /// @brief Get the members of the group
     /// @return List of group members.
@@ -203,6 +245,26 @@ class ProximityGroup {
         return false;
     }
 
+    Direction random_exit() const {
+        if (exits.empty()) {
+            return Direction::EndOfDirectionEnum;
+        }
+        int pick = rand()%exits.size();
+        auto iter = exits.begin();
+        for (int i = 0; i < pick; i++) {
+            iter++;
+        }
+        return (*iter).dir;
+    }
+
+    /**
+     * @brief Is the zone that this group is part of empty
+     * @return true if all groups within the zone have no members
+     */
+    bool zone_is_empty() {
+        /// Only the owning room occupies it
+        return zone_occupancy[m_zone_number] == 1;
+    }
     /**
      *  @brief Find the id of the member that matches the most keywords
      * 
@@ -233,14 +295,27 @@ class ProximityGroup {
         return m_members.front()->id();
     }
 
+    ProximityGroupMember* find_member(int id) {
+        for (auto member: m_members) {
+            if (id == member->id()) {
+                return member;
+            }
+        }
+        return nullptr;
+    }
+
     private:
 
     /// @brief Node number of the group
     const int m_group_number;
+    /// @brief Which zone is this group part of
+    const int m_zone_number;
     /// @brief List of all exits from the room
     std::list<direction_t> exits;
     /// @brief Set of group members
     std::list<ProximityGroupMember*> m_members;
+
+    static std::map<int,int> zone_occupancy;
 };
 
 /**
@@ -265,6 +340,11 @@ class Model: public Atomic, public ProximityGroupMember {
 
     protected:
 
+    /**
+     * @brief Filter on src and dst ids.
+     * @return true if it should be discarded
+     */
+    bool filter(const Event& event);
     /**
      * @brief Put an event into this model's schedule
      * 
@@ -312,8 +392,24 @@ class Model: public Atomic, public ProximityGroupMember {
     /// @brief Default behavior does nothing
     virtual void wield_command_event(const Event& event){}
     /// @brief Default behavior does nothing
+    virtual void hold_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void wear_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
     virtual void stow_command_event(const Event& event){}
-    
+    /// @brief Default behavior does nothing
+    virtual void kill_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void melee_attack_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void melee_result_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void destroyed_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void pending_attack_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void reset_zone_event(const Event& event){}
+
     /// @brief Our proximity group
     ProximityGroup* group;
     /// @brief Items that belong to the model
@@ -357,6 +453,16 @@ class Model: public Atomic, public ProximityGroupMember {
 
     /// @brief Map of room numbers to proximity groups
     static std::map<int,ProximityGroup*> prox_map;
+
+    /**
+     * @brief Is this model engaged in combat?
+     * 
+     * The model is engaged in combat if it has
+     * any combat related event is scheduled.
+     * 
+     * @return true if an combat related event is scheduled
+     */
+    bool in_combat();
 
     private:
 

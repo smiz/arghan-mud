@@ -1,0 +1,14 @@
+name: shield
+proper_name: false
+description: A round shield has been carelessly discarded.
+detail: That shield looks sturdy!
+skill: melee
+attribute: str
+keywords:
+  - shield
+  - round
+  - sturdy
+weapon_data:
+  speed: 1
+  damage: 1d1
+  ac: 1

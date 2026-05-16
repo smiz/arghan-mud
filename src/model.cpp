@@ -4,6 +4,7 @@ int ProximityGroupMember::next_id = NO_ID+1;
 std::map<int,ProximityGroup*> Model::prox_map;
 
 ProximityGroupMember::ProximityGroupMember():m_id(next_id++){}
+std::map<int,int> ProximityGroup::zone_occupancy;
 
 Model::Model(Graph& graph):
 Atomic(),
@@ -18,6 +19,19 @@ departed(false) {
 
 Model::~Model() {
 
+}
+
+bool Model::filter(const Event& event) {
+    if (event.src_id == id() && event.dst_id == ANY_ID_BUT_SRC) {
+        return true;
+    }
+    if (event.dst_id != id() && event.dst_id >= 0) {
+        return true;
+    }
+    if (event.exclude != nullptr && event.exclude->contains(id())) {
+        return true;
+    }
+    return false;
 }
 
 void Model::leave_game() {
@@ -65,7 +79,7 @@ void Model::delta_ext(Time e, const Bag& input) {
     }
     tNow += e;
     // Account for elapsed time
-    for (auto in_q: pending) {
+    for (auto& in_q: pending) {
         in_q.first -= e;
     }
     // Process new events
@@ -111,8 +125,32 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::WIELD_COMMAND:
                 wield_command_event(x.value);
                 break;
+            case Event::HOLD_COMMAND:
+                hold_command_event(x.value);
+                break;
+            case Event::WEAR_COMMAND:
+                wear_command_event(x.value);
+                break;
             case Event::STOW_COMMAND:
                 stow_command_event(x.value);
+                break;
+            case Event::KILL_COMMAND:
+                kill_command_event(x.value);
+                break;
+            case Event::PENDING_ATTACK:
+                pending_attack_event(x.value);
+                break;
+            case Event::MELEE_ATTACK:
+                melee_attack_event(x.value);
+                break;
+            case Event::MELEE_RESULT:
+                melee_result_event(x.value);
+                break;
+            case Event::DESTROYED:
+                destroyed_event(x.value);
+                break;
+            case Event::RESET_ZONE:
+                reset_zone_event(x.value);
                 break;
             default:
                 break;
@@ -151,4 +189,17 @@ void Model::sched_event(Event& event, int time_to_event) {
         iter++;
     }
     pending.insert(iter,sched_event);
+}
+
+bool Model::in_combat() {
+    for (auto event: pending) {
+        switch(event.second.type) {
+            case Event::MELEE_ATTACK:
+            case Event::MELEE_RESULT:
+                return true;
+            default:
+                break;
+        }
+    }
+    return false;
 }

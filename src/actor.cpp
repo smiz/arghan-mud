@@ -33,7 +33,6 @@ charisma(10),
 hit_points(2),
 damage(0),
 armor_class(10),
-ac_modifier(0),
 fd(-1),
 exit_node_id(START_GROUP),
 pc(pc) {
@@ -150,6 +149,12 @@ void Actor::save() {
     if (primary_hand != nullptr) {
         item_files.push_back(primary_hand->filename());
     }
+    if (secondary_hand != nullptr) {
+        item_files.push_back(secondary_hand->filename());
+    }
+    if (body != nullptr) {
+        item_files.push_back(body->filename());
+    }
     config["items"] = item_files;
     std::ofstream fout(file.c_str());
     fout << config; 
@@ -166,7 +171,7 @@ void Actor::report_stats() {
     sout << "wis " << wisdom << std::endl;;
     sout << "chr " << charisma << std::endl;;
     sout << "hp  " << hit_points << " / " << damage << std::endl;;
-    sout << "ac  " << armor_class+ac_modifier << std::endl;;
+    sout << "ac  " << total_ac() << std::endl;;
     message(sout.str());
 }
 
@@ -182,7 +187,13 @@ void Actor::report_inventory() {
     }
     message(msg);
     if (primary_hand != nullptr) {
-        message("You hold "+primary_hand->name().regular_name()+".");
+        message("You wield "+primary_hand->name().regular_name()+".");
+    }
+    if (secondary_hand != nullptr) {
+        message("You hold "+secondary_hand->name().regular_name()+".");
+    }
+    if (body != nullptr) {
+        message("You are clothed in "+body->name().regular_name()+".");
     }
 }
 
@@ -198,16 +209,14 @@ void Actor::message(std::string msg) {
     }
 }
 
-void Actor::emit(std::string msg, int dst_id) {
+void Actor::emit(std::string msg, int dst_id, int exclude) {
     Event event(Event::SEE1,id());
     event.msg = msg;
     event.dst_id = dst_id;
     event.pin = group->pin;
-    /// Is it direct to a group member?
-    for (auto member: group->members()) {
-        if (dst_id == member->id()) {
-            event.pin = member->pin;
-        }
+    if (exclude >= 0) {
+        event.exclude = std::make_shared<std::set<int>>();
+        event.exclude->insert(exclude);
     }
     sched_event(event);
 }
@@ -255,6 +264,167 @@ void Actor::enter_mud_event(const Event& event) {
     }
 }
 
+void Actor::melee_attack_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    double fraction = double(damage) / double(hit_points);
+    Event result(event);
+    result.type = Event::MELEE_RESULT;
+    result.src_id = id();
+    result.dst_id = event.src_id;
+    result.event_data.melee.killed = false;
+    auto attacker = group->find_member(event.src_id);
+    if (attacker == nullptr) {
+        return;
+    }
+    result.pin = group->pin;
+    if (event.event_data.melee.atk_roll > total_ac()) {
+        std::string wpn_name = "";
+        std::string adj1, adj2;
+        if (event.item != nullptr) {
+            wpn_name = event.item->name().regular_name();
+        }
+        damage += event.event_data.melee.dmg_roll;
+        fraction = double(damage) / double(hit_points);
+        result.event_data.melee.dmg_fraction = fraction;
+        if (damage >= hit_points) {
+            adj1 = "kills";
+            adj2 = "kill";
+            result.event_data.melee.killed = true;
+        } else if (fraction > 0.9) {
+            adj1 = "critically injures";
+            adj2 = "critically injure";
+        } else if (fraction > 0.75) {
+            adj1 = "seriously injures";
+            adj2 = "seriously injure";
+        } else if (fraction > 0.5) {
+            adj1 = "badly wounds";
+            adj2 = "badly wound";
+        } else if (fraction > 0.25) {
+            adj1 = "lightly wounds";
+            adj2 = "lightly wound";
+        } else if (fraction > 0.1) {
+            adj1 = "barely wounds";
+            adj2 = "barely wound";
+        } else {
+            adj1 = "scratches";
+            adj2 = "scratch";
+        }
+        std::string msg1(attacker->get_name().capitalized_name()+" "+adj1+" ");
+        std::string msg2;
+        if (wpn_name.empty()) {
+            msg2 = "!";
+        } else {
+            msg2 = " with "+wpn_name+"!";
+        }
+        message(msg1+"you"+msg2);
+        emit(msg1+name.regular_name()+msg2,ANY_ID_BUT_SRC,attacker->id());
+        emit("You "+adj2+" "+name.regular_name()+msg2,attacker->id());
+        if (!pc) {
+            hates.insert(attacker->id());
+        }
+    } else {
+        result.event_data.melee.dmg_roll = 0;
+        std::string msg = attacker->get_name().capitalized_name() + " misses you!";
+        message(msg);
+        msg = attacker->get_name().capitalized_name() + " misses " + name.regular_name()+"!";
+        emit(msg,ANY_ID_BUT_SRC,attacker->id());
+        msg = "You miss " + name.regular_name()+"!";
+        emit(msg,attacker->id());
+    } 
+    sched_event(result);
+    if (damage >= hit_points) {
+        schedule_destroyed();
+    }
+}
+
+void Actor::schedule_destroyed() {
+    Event event(Event::DESTROYED,id());
+    event.pin = pin;
+    event.dst_id = id();
+    sched_event(event); 
+}
+
+void Actor::destroyed_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    group->remove_member(this);
+    do_not_receive_from(group->pin);
+    if (pc) {
+        group = prox_map[START_GROUP];
+        receive_from(group->pin);
+        group->add_member(this);
+        emit(name.capitalized_name()+" suddenly appears!");
+        exit_node_id = START_GROUP;
+        damage = 0;
+    } else {
+        Model::leave_game();
+    }
+}
+
+void Actor::melee_result_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    if (event.event_data.melee.killed) {
+        if (!pc) {
+            hates.erase(event.src_id);
+        }
+        return;
+    }
+    schedule_attack(event.src_id,false);
+}
+
+void Actor::kill_command_event(const Event& event) {
+    std::string msg1, msg2;
+    int target_id = group->find_best_match(*(event.key_words.get()));
+    if (target_id == group->first_member_id()) {
+        message("You don't see anything like that.");
+        return;
+    } else {
+        schedule_attack(target_id,true);
+        message("You rush to the attack!");
+        msg1 = name.capitalized_name()+" attacks ";
+        if (primary_hand != nullptr) {
+            msg2 = " with "+primary_hand->name().regular_name();
+        }
+        msg2 += "!";
+        emit(msg1+group->find_member(target_id)->get_name().regular_name()+msg2,ANY_ID_BUT_SRC,target_id);
+        emit(msg1+"you"+msg2,target_id);
+    }
+}
+
+void Actor::schedule_attack(int target_id, bool warn) {
+    Event attack(Event::MELEE_ATTACK,id());
+    attack.dst_id = target_id;
+    attack.pin = group->pin;
+    if (primary_hand != nullptr) {
+        attack.event_data.melee.dmg_roll =
+            std::max(1,primary_hand->weapon_info().dmg_die()+attribute_modifier(strength));
+            attack.event_data.melee.atk_roll = use_item(primary_hand);
+    } else {
+        attack.event_data.melee.dmg_roll = std::max(1,attribute_modifier(strength));
+        attack.event_data.melee.atk_roll = std::max(1,Dice(1,20)()+attribute_modifier(strength));
+    }
+    attack.item = primary_hand;
+    sched_event(attack,melee_attack_delay(primary_hand));
+    if (warn) {
+        Event event(Event::PENDING_ATTACK,id());
+        event.dst_id = target_id;
+        event.pin = group->pin;
+        sched_event(event);
+    }
+}
+
+void Actor::pending_attack_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    schedule_attack(event.src_id,false);
+}
+
 void Actor::leave_mud_event(const Event& event) {
     exit_node_id = group->group_number();
     Event leave(Event::LEAVE_PROX_GROUP,id());
@@ -262,8 +432,7 @@ void Actor::leave_mud_event(const Event& event) {
     leave.pin = group->pin;
     leave.dst_id = id();
     sched_event(leave);
-    emit(name.capitalized_name()+" mutters something about the Real World and vanishes!",
-        ANY_ID_BUT_SRC);
+    emit(name.capitalized_name()+" mutters something about the Real World and vanishes!");
     sched_event(leave);
 }
 
@@ -273,7 +442,14 @@ void Actor::join_prox_group_event(const Event& event) {
         group->add_member(this);
         receive_from(group->pin);
     } else {
-        emit(description,ANY_ID_BUT_SRC);
+        if (hates.contains(event.src_id)) {
+            emit(description+
+                " "+name.capitalized_name()+
+                " looks murderously at you.",event.src_id);
+            schedule_attack(event.src_id,true);
+        } else {
+            emit(description);
+        }
     }
 }
 
@@ -286,11 +462,25 @@ void Actor::leave_prox_group_event(const Event& event) {
 }
 
 void Actor::move_event(const Event& event) {
-     if (event.dst_id != id()) {
+     if (filter(event)) {
         return;
     }
     direction_t move_dir;
+    bool combat = in_combat();
     move_dir.dir = event.event_data.dir;
+    if (combat && move_dir.dir != Direction::Flee) {
+        message("You can't escape that way!");
+    } else if (!combat && move_dir.dir == Direction::Flee) {
+        message("You aren't in combat.");
+        return;
+    } else if (combat && move_dir.dir == Direction::Flee) {
+        if (Dice(1,20)()+attribute_modifier(dexterity) < 10) {
+            message("You couldn't escape!");
+            return;
+        } else {
+            move_dir.dir = group->random_exit();
+        }
+    }
     if (!group->find_direction(move_dir)) {
         message("You can't go in that direction.");
         return;
@@ -301,19 +491,23 @@ void Actor::move_event(const Event& event) {
     see.msg = name.capitalized_name()+" arrives from "+reverse_direction_name[move_dir.dir]+".";
     see.pin = prox_map[move_dir.id]->pin;
     sched_event(see);
-    see.msg = name.capitalized_name()+" goes "+direction_name[move_dir.dir]+".";
+    if (event.event_data.dir != Direction::Flee) {
+        see.msg = name.capitalized_name()+" goes "+direction_name[move_dir.dir]+".";
+    } else {
+        see.msg = name.capitalized_name()+" flees "+direction_name[move_dir.dir]+".";
+    }
     see.pin = group->pin;
     sched_event(see);
 }
 
 void Actor::see_event(const Event& event) {
-    if (event.dst_id == id() || event.dst_id == ANY_ID || (event.dst_id == ANY_ID_BUT_SRC && event.src_id != id())) {
+    if (!filter(event)) {
         message(event.msg);
     }
 }
 
 void Actor::transfer_item_event(const Event& event) {
-    if (event.dst_id != id()) {
+    if (filter(event)) {
         return;
     }
     assert(event.event_data.transfer_src_to_dst);
@@ -322,7 +516,11 @@ void Actor::transfer_item_event(const Event& event) {
 }
 
 void Actor::get_command_event(const Event& event) {
-    if (event.dst_id != id()) {
+    if (filter(event)) {
+        return;
+    }
+    if (in_combat()) {
+        message("You are fighting for your life!");
         return;
     }
     Event get(event);
@@ -335,7 +533,11 @@ void Actor::get_command_event(const Event& event) {
 }
 
 void Actor::drop_command_event(const Event& event) {
-    if (event.dst_id != id()) {
+    if (filter(event)) {
+        return;
+    }
+    if (in_combat()) {
+        message("You are fighting for your life!");
         return;
     }
     Event drop(event);
@@ -349,17 +551,40 @@ void Actor::drop_command_event(const Event& event) {
     if (drop.item != nullptr) {
         items.remove(drop.item);
     } else {
+        int best_score = 0, score = 0;
         // Is it equipped?
-        if (primary_hand != nullptr &&
-            primary_hand->match_keywords(*(event.key_words.get())) > 0) {
-            drop.item = primary_hand;
+        if (primary_hand != nullptr) {
+            score = primary_hand->match_keywords(*(event.key_words.get()));
+            if (score > best_score) {
+                best_score = score;
+                drop.item = primary_hand;
+            }
+        }
+        if (secondary_hand != nullptr) {
+            score = secondary_hand->match_keywords(*(event.key_words.get()));
+            if (score > best_score) {
+                best_score = score;
+                drop.item = secondary_hand;
+            }
+        }
+        if (body != nullptr) {
+            score = body->match_keywords(*(event.key_words.get()));
+            if (score > best_score) {
+                best_score = score;
+                drop.item = body;
+            }
+        }
+        if (drop.item == primary_hand) {
             primary_hand = nullptr;
+        } else if (drop.item == secondary_hand) {
+            secondary_hand = nullptr;
+        } else if (drop.item == body) {
+            body = nullptr;
         }
     }
     if (drop.item != nullptr) {
         save();
-        emit(name.capitalized_name()+ " drops " + drop.item->name().regular_name()+".",
-            ANY_ID_BUT_SRC);
+        emit(name.capitalized_name()+ " drops " + drop.item->name().regular_name()+".");
         sched_event(drop);
         message("You drop "+drop.item->name().regular_name()+".");
     } else {
@@ -368,7 +593,7 @@ void Actor::drop_command_event(const Event& event) {
 }
 
 void Actor::look_command_event(const Event& event) {
-    if (event.dst_id != id()) {
+    if (filter(event)) {
         return;
     }
     Event look(Event::LOOK,id());
@@ -382,7 +607,7 @@ void Actor::look_command_event(const Event& event) {
 }
 
 void Actor::look_event(const Event& event) {
-    if (event.dst_id != id() && event.dst_id != ANY_ID && !(event.dst_id == ANY_ID_BUT_SRC && event.src_id != id())) {
+    if (filter(event)) {
         return;
     }
     Event see(Event::SEE1,id());
@@ -392,36 +617,140 @@ void Actor::look_event(const Event& event) {
     } else {
         see.msg = description;
     }
+    if (see.msg.back() != '\n') {
+            see.msg += '\n';
+    }
+    if (primary_hand != nullptr) {
+        see.msg += name.capitalized_name()+" wields "+primary_hand->name().regular_name()+".\n";
+    }
+    if (secondary_hand != nullptr) {
+        see.msg += name.capitalized_name()+" holds "+secondary_hand->name().regular_name()+".\n";
+    }
+    if (body != nullptr) {
+        see.msg += name.capitalized_name()+" wears "+secondary_hand->name().regular_name()+".\n";
+    }
+    if (!items.empty()) {
+        see.msg += name.capitalized_name()+" is carrying:\n";
+        for (auto item: items) {
+            see.msg += item->name().capitalized_name()+"\n";
+        }
+    }
     see.pin = group->pin;
     sched_event(see);
 }
 
 void Actor::stow_command_event(const Event& event) {
-    if (primary_hand == nullptr ||
-        primary_hand->match_keywords(*(event.key_words.get())) == 0) {
-        message("You aren't holding that.");
+    std::shared_ptr<Item> best_slot;
+    int best_score = 0, score;
+    if (in_combat()) {
+        message("You are fighting for your life!");
+        return;
+    }
+    if (primary_hand != nullptr) {
+        score = primary_hand->match_keywords(*(event.key_words.get())); 
+        if (score > best_score) {
+            best_score = score;
+            best_slot = primary_hand;
+        }
+    }
+    if (secondary_hand != nullptr) {
+        score = secondary_hand->match_keywords(*(event.key_words.get())); 
+        if (score > best_score) {
+            best_score = score;
+            best_slot = secondary_hand;
+        }
+    }
+    if (body != nullptr) {
+        score = body->match_keywords(*(event.key_words.get())); 
+        if (score > best_score) {
+            best_score = score;
+            best_slot = body;
+        }
+    }
+    if (best_slot == nullptr) {
+        message("You aren't holding or wearing that.");
     } else {
-        items.push_back(primary_hand);
-        message("You stow "+primary_hand->name().regular_name()+".");
-        emit(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".",ANY_ID_BUT_SRC);
-        primary_hand = nullptr;
+        items.push_back(best_slot);
+        if (best_slot == primary_hand) {
+            message("You stow "+primary_hand->name().regular_name()+".");
+            emit(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".");
+            primary_hand = nullptr; 
+        } else if (best_slot == secondary_hand) {
+            message("You stow "+secondary_hand->name().regular_name()+".");
+            emit(name.capitalized_name()+" stows "+secondary_hand->name().regular_name()+".");
+            secondary_hand = nullptr;
+        } else {
+            message("You remove "+body->name().regular_name()+".");
+            emit(name.capitalized_name()+" removes "+body->name().regular_name()+".");
+            body = nullptr;
+        }
+    }
+}
+
+void Actor::wear_command_event(const Event& event) {
+    if (in_combat()) {
+        message("You are fighting for your life!");
+        return;
+    }
+    std::shared_ptr<Item> pick = find_item(*(event.key_words.get()));
+    if (pick == nullptr) {
+        message("You don't have that.");
+    } else if (pick->wearable() == WearableSlots::Unwearable) {
+        message("You can't wear that.");
+    } else {
+        if (body != nullptr) {
+            items.push_back(body);
+        }
+        items.remove(pick);
+        body = pick;
+        message("You put on "+body->name().regular_name()+".");
+        emit(name.capitalized_name()+" puts on "+body->name().regular_name()+".");
     }
 }
 
 void Actor::wield_command_event(const Event& event) {
-    std::shared_ptr<Item> pick = find_item(*(event.key_words.get()));
+   std::shared_ptr<Item> pick = find_item(*(event.key_words.get()));
     if (pick == nullptr) {
-        message("You don't have that.");
+        if (secondary_hand != nullptr && secondary_hand->match_keywords(*(event.key_words.get())) > 0) {
+            message("You move "+secondary_hand->name().regular_name()+" to your primary hand.");
+            emit(name.capitalized_name()+" moves "+secondary_hand->name().regular_name()+" to the primary hand.");
+            std::swap(secondary_hand,primary_hand);
+        } else {
+            message("You don't have that.");
+        }
     } else {
         if (primary_hand != nullptr) {
             message("You stow "+primary_hand->name().regular_name()+".");
-            emit(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".",ANY_ID_BUT_SRC);
+            emit(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".");
             items.push_back(primary_hand);
         }
         items.remove(pick);
         primary_hand = pick;
         message("You wield "+primary_hand->name().regular_name()+".");
-        emit(name.capitalized_name()+" wields "+primary_hand->name().regular_name()+".",ANY_ID_BUT_SRC);
+        emit(name.capitalized_name()+" wields "+primary_hand->name().regular_name()+".");
+    }
+}
+
+void Actor::hold_command_event(const Event& event) {
+    std::shared_ptr<Item> pick = find_item(*(event.key_words.get()));
+    if (pick == nullptr) {
+        if (primary_hand != nullptr && primary_hand->match_keywords(*(event.key_words.get())) > 0) {
+            message("You move "+primary_hand->name().regular_name()+" to your off hand.");
+            emit(name.capitalized_name()+" moves "+primary_hand->name().regular_name()+" to the off hand.");
+            std::swap(secondary_hand,primary_hand);
+        } else {
+            message("You don't have that.");
+        }
+    } else {
+        if (secondary_hand != nullptr) {
+            message("You stow "+secondary_hand->name().regular_name()+".");
+            emit(name.capitalized_name()+" stows "+secondary_hand->name().regular_name()+".");
+            items.push_back(secondary_hand);
+        }
+        items.remove(pick);
+        secondary_hand = pick;
+        message("You hold "+secondary_hand->name().regular_name()+".");
+        emit(name.capitalized_name()+" holds "+secondary_hand->name().regular_name()+".");
     }
 }
 
@@ -474,4 +803,60 @@ int Actor::attribute_modifier(int attribute_score) {
         case 29: return 9;
     }
     return 10;
+}
+
+int Actor::use_item(std::shared_ptr<Item>& item) {
+    Dice dice(1,20);
+    int mod = 0;
+    auto iter = skills.find(item->skill());
+    if (iter != skills.end()) {
+        mod = (*iter).second;
+    }
+    switch (item->modifier()) {
+        case MonsterAttributes::Str:
+            mod += attribute_modifier(strength);
+            break;
+        case MonsterAttributes::Dex:
+            mod += attribute_modifier(dexterity);
+            break;
+        case MonsterAttributes::Con:
+            mod += attribute_modifier(constitution);
+            break;
+        case MonsterAttributes::Int:
+            mod += attribute_modifier(intelligence);
+            break;
+        case MonsterAttributes::Wis:
+            mod += attribute_modifier(wisdom);
+            break;
+        case MonsterAttributes::Chr:
+            mod += attribute_modifier(charisma);
+            break;
+        case MonsterAttributes::NoAttr:
+            break;
+    }
+    return std::max(1,dice()+mod);
+}
+
+int Actor::melee_attack_delay(std::shared_ptr<Item>& item) {
+    int delay = 500; // Half second is basic combat round
+    if (item != nullptr) {
+        delay += item->weapon_info().speed*5;
+    }
+    delay -= attribute_modifier(dexterity)*5;
+    delay = std::max(delay,100);
+    return delay;
+}
+
+int Actor::total_ac() {
+    int mod = 0;
+    if (primary_hand != nullptr) {
+        mod += primary_hand->ac_bonus_when_held();
+    }
+    if (secondary_hand != nullptr) {
+        mod += secondary_hand->ac_bonus_when_held();
+    }
+    if (body != nullptr) {
+        mod += body->ac_bonus_when_worn();
+    }
+    return armor_class + mod;
 }

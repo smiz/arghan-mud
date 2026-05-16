@@ -2,18 +2,67 @@
 #include "actor.h"
 #include <yaml-cpp/yaml.h>
 
+static const int reload_long_interval = 120000;
+static const int reload_short_interval = 60000;
+
+#define NO_ZONE -1
+
 /// Must be in order of Direction enumeration in model.h!
 static const std::string direction_key[6] = {
     "north", "south", "east", "west", "up", "down"
 };
 
+void Room::reload() {
+    YAML::Node yaml = YAML::LoadFile(file.c_str());
+    /// Get creatures in the room. Notice that a zone is empty only if every
+    /// creature in it is dead or has left.
+    if (yaml["monsters"]) {
+        Event enter;
+        enter.type = Event::JOIN_PROX_GROUP;
+        const YAML::Node& monster_list = yaml["monsters"];
+        for (const auto& monster : monster_list) {
+            Actor* actor = new Actor(graph,"monsters/"+monster.as<std::string>(),true);
+            if (initial_load) {
+                std::cout << "monster " << monster.as<std::string>() << std::endl;
+            }
+            enter.pin = actor->pin;
+            enter.event_data.prox_group = group->group_number();
+            enter.dst_id = actor->id();
+            enter.src_id = actor->id();
+            sched_event(enter);
+        }
+    }
+    /// Get items in the room
+    items.clear();
+    if (yaml["items"]) {
+        Event enter;
+        enter.type = Event::JOIN_PROX_GROUP;
+        const YAML::Node& item_list = yaml["items"];
+        for (const auto& item : item_list) {
+            auto new_item = std::make_shared<Item>(item.as<std::string>());
+            if (initial_load) {
+                std::cout << "item " << item.as<std::string>() << std::endl;
+            }
+            items.push_back(new_item);
+        }
+    }
+}
+
 Room::Room(Graph& graph, std::string file):
-Model(graph) {
+Model(graph),
+file(file),
+graph(graph) {
+    int zone = NO_ZONE;
     YAML::Node yaml = YAML::LoadFile(file.c_str());
     int prox_group_id = yaml["node"].as<int>();
     description = yaml["description"].as<std::string>();
     assert(prox_map.find(prox_group_id) == prox_map.end());
-    group = new ProximityGroup(prox_group_id);
+    if (yaml["zone"]) {
+        zone = yaml["zone"].as<int>();
+        group = new ProximityGroup(prox_group_id,zone);
+    } else {
+        group = new ProximityGroup(prox_group_id);
+    }
     prox_map[prox_group_id] = group;
     /// Will be first member in the group so that look with
     /// no argument queries the room.
@@ -32,32 +81,26 @@ Model(graph) {
             group->add_direction(dir);
         }
     }
-    /// Get creatures in the room
-    if (yaml["monsters"]) {
-        Event enter;
-        enter.type = Event::JOIN_PROX_GROUP;
-        const YAML::Node& monster_list = yaml["monsters"];
-        for (const auto& monster : monster_list) {
-            Actor* actor = new Actor(graph,"monsters/"+monster.as<std::string>(),true,"",prox_group_id);
-            std::cout << "monster " << monster.as<std::string>() << std::endl;
-            enter.pin = actor->pin;
-            enter.event_data.prox_group = prox_group_id;
-            enter.dst_id = actor->id();
-            enter.src_id = actor->id();
-            sched_event(enter);
-        }
+    reload();
+    if (zone != NO_ZONE) {
+        Event event(Event::RESET_ZONE,id());
+        event.dst_id = id();
+        event.pin = pin;
+        sched_event(event,reload_long_interval);
     }
-    /// Get items in the room
-    if (yaml["items"]) {
-        Event enter;
-        enter.type = Event::JOIN_PROX_GROUP;
-        const YAML::Node& item_list = yaml["items"];
-        for (const auto& item : item_list) {
-            auto new_item = std::make_shared<Item>(item.as<std::string>());
-            std::cout << "item " << item.as<std::string>() << std::endl;
-            items.push_back(new_item);
-        }
+}
+
+void Room::reset_zone_event(const Event& event) {
+    Event reset(Event::RESET_ZONE,id());
+    reset.dst_id = id();
+    reset.pin = pin;
+    if (group->zone_is_empty()) {
+        reload();
+        sched_event(reset,reload_long_interval);
+    } else {
+        sched_event(reset,reload_short_interval);
     }
+
 }
 
 void Room::sched_see_event(int src_id, const KeyWordList& key_words) {

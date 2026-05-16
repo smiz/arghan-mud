@@ -75,12 +75,13 @@ class Actor: public Model {
     int damage;
     /// Natural, unmodified ac
     int armor_class;
-    /// total AC modifier
-    int ac_modifier;
 
     /// Equipment slot for the primary hand (weapon hand)
     std::shared_ptr<Item> primary_hand;
-
+    /// Equipment slot for the secondary hand (shield hand)
+    std::shared_ptr<Item> secondary_hand;
+    /// Equipment slot for an object that is worn on the body
+    std::shared_ptr<Item> body;
 
     /**
      * @brief Emit a message to the proximity group or an individual
@@ -88,10 +89,12 @@ class Actor: public Model {
      * @param msg The message to send
      * @param dst_id The target of the message
      */
-    void emit(std::string msg, int dst_id);
+    void emit(std::string msg, int dst_id = ANY_ID_BUT_SRC, int exclude = -1);
 
     void stow_command_event(const Event& event);
     void wield_command_event(const Event& event);
+    void hold_command_event(const Event& event);
+    void wear_command_event(const Event& event);
     void look_command_event(const Event& event);
     void get_command_event(const Event& event);
     void drop_command_event(const Event& event);
@@ -105,8 +108,41 @@ class Actor: public Model {
     void look_event(const Event& event);
     void transfer_item_event(const Event& event);
     void save_model_event(const Event& event);
+    void kill_command_event(const Event& event);
+    void melee_attack_event(const Event& event);
+    void melee_result_event(const Event& event);
+    void pending_attack_event(const Event& event);
+    void destroyed_event(const Event& event);
+
+    void schedule_destroyed();
+    void schedule_attack(int target_id, bool warn = true);
+
+    /**
+     * Return a skill roll for using an item. Returns
+     * -1 if the item cannot be used.
+     */
+    int use_item(std::shared_ptr<Item>& item);
+
+    /**
+     * This is how long it takes for the actor to make
+     * an attack.
+     */
+    int melee_attack_delay(std::shared_ptr<Item>& item);
+
+    /** 
+     * Calculate the ac of the actor. This is natural ac
+     * plus equipment and other bonuses.
+     */
+    int total_ac();
 
     static int attribute_modifier(int attribute_score);
+
+    /// Table containing all of the actor's skills
+    std::map<std::string,int> skills;
+
+    /// List of entities that are hated by the actor and
+    /// will be attacked on site
+    std::set<int> hates;
 
     private:
 

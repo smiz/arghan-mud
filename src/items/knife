@@ -2,10 +2,12 @@ name: knife
 proper_name: false
 description: A sharp knife is stuck in the floor.
 detail: That knife looks dangerous. Be careful!
+skill: melee
+attribute: dex
 keywords:
   - knife
   - sharp
 weapon_data:
   speed: 1
   damage: 1d3
-  hands: 1
+  ac: 0

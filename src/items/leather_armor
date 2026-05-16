@@ -1,0 +1,11 @@
+name: suit of leather armor
+proper_name: false
+description: A suit of leather armor is discarded in a corner.
+detail: That shield looks sturdy!
+keywords:
+  - suit
+  - leather
+  - armor
+wearable:
+  location: body
+  ac: 2

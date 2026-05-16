@@ -111,6 +111,20 @@ void move(Actor* obj, Direction dir) {
     cv.notify_one();
 }
 
+void kill(Actor* obj, std::list<std::string>& tokens) {
+    Event event(Event::KILL_COMMAND,obj->id());
+    event.pin = obj->pin;
+    event.dst_id = obj->id();
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
 void look(Actor* obj, std::list<std::string>& tokens) {
     Event event;
     event.type = Event::LOOK_COMMAND;
@@ -162,6 +176,32 @@ void wield(Actor* obj, std::list<std::string>& tokens) {
     Event event;
     event.type = Event::WIELD_COMMAND;
     event.src_id = event.dst_id = obj->id();
+    event.pin = obj->pin;
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
+void hold(Actor* obj, std::list<std::string>& tokens) {
+    Event event(Event::HOLD_COMMAND,obj->id());
+    event.pin = obj->pin;
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
+void wear(Actor* obj, std::list<std::string>& tokens) {
+    Event event(Event::WEAR_COMMAND,obj->id());
     event.pin = obj->pin;
     event.key_words = std::make_shared<KeyWordList>();
     for (auto token: tokens) {
@@ -247,12 +287,25 @@ bool parse_line_with_tokens(std::string& line, Actor* obj) {
     } else if (cmd == "dice") {
         dice(obj,tokens);
         return true;
+    } else if (cmd == "kill") {
+        kill(obj,tokens);
+        return true;
+    } else if (cmd == "hold") {
+        hold(obj,tokens);
+        return true;
+    } else if (cmd == "wear") {
+        wear(obj,tokens);
+        return true;
     }
     return false;
 }
 
 bool parse_line(std::string& line, Actor* obj) {
     /// Motion
+    if (line == "flee") {
+        move(obj,Flee);
+        return true;
+    }
     if (line == "e") {
         move(obj,East);
         return true;

@@ -24,10 +24,20 @@ class Room: public Model {
     void join_prox_group_event(const Event& event);
     void look_event(const Event& event);
     void transfer_item_event(const Event& event);
+    void reset_zone_event(const Event& event);
 
     private:
-    
+ 
+    /// @brief File to reload the room
+    std::string file;
+    /// @brief Graph for reloading monsters
+    Graph& graph;
+    /// @brief Is this the initial load?
+    bool initial_load;
+
     void sched_see_event(int src_id, const KeyWordList& key_words);
+    void reload();
+
 };
 
 #endif
