@@ -6,3 +6,4 @@ down :
   node: 1
 items:
   - knife
+  - sack

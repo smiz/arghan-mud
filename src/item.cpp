@@ -54,6 +54,31 @@ m_filename(file) {
         }
         m_worn_ac_bonus = yaml["wearable"]["ac"].as<int>();
     }
+    if (yaml["contents"]) {
+        m_contents = std::make_shared<std::list<std::shared_ptr<Item>>>();
+        const YAML::Node& item_list = yaml["contents"];
+        for (const auto& item : item_list) {
+            auto new_item = std::make_shared<Item>(item.as<std::string>());
+            m_contents->push_back(new_item);
+        }
+    }
+}
+
+std::shared_ptr<Item> Item::remove_item(const KeyWordList& key_words) {
+    int best_score = 0;
+    std::shared_ptr<Item> pick;
+    auto iter = m_contents->begin();
+    for (; iter != m_contents->end(); iter++) {
+        int score = (*iter)->match_keywords(key_words);
+        if (score > best_score) {
+            best_score = score;
+            pick = *iter;
+        }
+    }
+    if (pick != nullptr) {
+        m_contents->remove(pick);
+    }
+    return pick;
 }
 
 int Item::match_keywords(const KeyWordList& key_words) const {

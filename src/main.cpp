@@ -131,6 +131,11 @@ void look(Actor* obj, std::list<std::string>& tokens) {
     event.src_id = event.dst_id = obj->id();
     event.pin = obj->pin;
     event.key_words = std::make_shared<KeyWordList>();
+    event.event_data.transfer.first_keyword_is_container = false;
+    if (tokens.front() == "in") {
+        tokens.pop_front();
+        event.event_data.transfer.first_keyword_is_container = true;
+    }
     for (auto token: tokens) {
         event.key_words->push_back(token);
     }
@@ -146,7 +151,12 @@ void get(Actor* obj, std::list<std::string>& tokens) {
     event.src_id = event.dst_id = obj->id();
     event.pin = obj->pin;
     event.key_words = std::make_shared<KeyWordList>();
-    event.event_data.transfer_src_to_dst = false;
+    event.event_data.transfer.src_to_dst = false;
+    event.event_data.transfer.first_keyword_is_container = false;
+    if (tokens.front() == "from") {
+        tokens.pop_front();
+        event.event_data.transfer.first_keyword_is_container = true;
+    }
     for (auto token: tokens) {
         event.key_words->push_back(token);
     }
@@ -162,7 +172,12 @@ void drop(Actor* obj, std::list<std::string>& tokens) {
     event.src_id = event.dst_id = obj->id();
     event.pin = obj->pin;
     event.key_words = std::make_shared<KeyWordList>();
-    event.event_data.transfer_src_to_dst = false;
+    event.event_data.transfer.src_to_dst = true;
+    event.event_data.transfer.first_keyword_is_container = false;
+    if (tokens.front() == "in") {
+        tokens.pop_front();
+        event.event_data.transfer.first_keyword_is_container = true;
+    }
     for (auto token: tokens) {
         event.key_words->push_back(token);
     }

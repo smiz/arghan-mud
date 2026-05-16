@@ -103,15 +103,37 @@ void Room::reset_zone_event(const Event& event) {
 
 }
 
-void Room::sched_see_event(int src_id, const KeyWordList& key_words) {
+void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_are_container) {
     Event see;
     see.type = Event::SEE;
     see.dst_id = src_id;
     see.src_id = id();
     see.pin = group->pin;
+    auto item = find_item(key_words);
+    if (words_are_container) {
+        if (item != nullptr) {
+            if (item->container()) {
+                see.msg = "Inside the "+item->name().regular_name()+" you find ";
+                auto contents = item->contents();
+                if (contents.empty()) {
+                    see.msg += "nothing.";
+                } else {
+                    see.msg += "\n";
+                    for (auto item: contents) {
+                        see.msg += item->name().capitalized_name()+"\n";
+                    }
+                }
+            } else {
+                see.msg = "There is nothing inside of that!";
+            }
+        } else {
+            see.msg = "Look inside of what?";
+        }
+        sched_event(see);
+        return;
+    }
     // If any keywords match our items, then report the item
     // description
-    auto item = find_item(key_words);
     if (item != nullptr) {
         see.msg = item->detail();
         see.type = Event::SEE1;
@@ -137,53 +159,100 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words) {
 
 void Room::join_prox_group_event(const Event& event) {
     KeyWordList empty;
-    sched_see_event(event.src_id,empty);
+    sched_see_event(event.src_id,empty,false);
 }
 
 void Room::look_event(const Event& event) {
     if (event.dst_id != id() && event.dst_id != ANY_ID_BUT_SRC && event.dst_id != ANY_ID) {
         return;
     }
-    sched_see_event(event.src_id, *(event.key_words.get()));
+    sched_see_event(event.src_id, *(event.key_words.get()),event.event_data.transfer.first_keyword_is_container);
 }
 
 void Room::transfer_item_event(const Event& event) {
     if (event.dst_id != id()) {
         return;
     }
+    ProximityGroupMember* target = nullptr;
+    for (auto rx_group: group->members()) {
+        if (rx_group->id() == event.src_id) {
+            target = rx_group;
+            break;
+        }
+    }
+    if (target == nullptr) {
+        return;
+    }
+    std::shared_ptr<Item> container;
     Event transfer(event);
-    Event see;
-    see.type = Event::SEE1;
+    Event see(Event::SEE1,id());
     see.dst_id = event.src_id;
-    see.src_id = id();
     see.pin = group->pin;
+    /// Look for a container to transfer from or to
+    if (event.event_data.transfer.first_keyword_is_container) {
+        KeyWordList container_words;
+        container_words.push_back(event.key_words->front());
+        container = find_item(container_words);
+        if (container == nullptr) {
+            see.msg = "You don't see that.";
+            sched_event(see);
+            return;
+        }
+        if (!container->container()) {
+            see.msg = "That is can't hold anything!";
+            sched_event(see);
+            return;
+        }
+    }
     /// Receive an item
-    if (event.event_data.transfer_src_to_dst) {
-        items.push_back(event.item);
+    if (event.event_data.transfer.src_to_dst) {
+        if (container != nullptr) {
+            container->add_item(event.item);
+            see.msg = target->get_name().capitalized_name()+
+                " puts " + event.item->name().regular_name()+" into "+container->name().regular_name()+".";
+            see.src_id = event.src_id;
+            see.dst_id = ANY_ID_BUT_SRC;
+            sched_event(see);
+            see.msg = "You put " + event.item->name().regular_name()+" into "+container->name().regular_name()+".";
+            see.src_id = event.src_id;
+            see.dst_id = event.src_id;
+            sched_event(see);
+        } else {
+            items.push_back(event.item);
+            see.msg = target->get_name().capitalized_name()+
+                " picks up " + event.item->name().regular_name()+".";
+            see.src_id = event.src_id;
+            see.dst_id = ANY_ID_BUT_SRC;
+            sched_event(see);
+            see.msg = "You drop " + event.item->name().regular_name()+".";
+            see.src_id = event.src_id;
+            see.dst_id = event.src_id;
+            sched_event(see);
+        }
     } else { // Give up an item if we have it
-        transfer.item = find_item(*(event.key_words.get()));
-        ProximityGroupMember* target = nullptr;
         transfer.src_id = id();
         transfer.dst_id = event.src_id;
-        transfer.event_data.transfer_src_to_dst = true;
-        /// Send it directly to the model that should receive the item
-        for (auto rx_group: group->members()) {
-            if (rx_group->id() == event.src_id) {
-                target = rx_group;
-                break;
-            }
-        }
-        if (target == nullptr) {
-            return;
+        transfer.event_data.transfer.src_to_dst = true;
+        if (container == nullptr) {
+            transfer.item = find_item(*(event.key_words.get()));
+        } else {
+            KeyWordList obj_words(*(event.key_words.get()));
+            obj_words.pop_front();
+            transfer.item = container->remove_item(obj_words);
         }
         if (transfer.item == nullptr) {
             see.pin = target->pin;
             see.msg = "That object isn't here.";
             sched_event(see);
         } else {
-            items.remove(transfer.item);
-            see.msg = target->get_name().capitalized_name()+
-                " picks up " + transfer.item->name().regular_name()+".";
+            if (container == nullptr) {
+                items.remove(transfer.item);
+                see.msg = target->get_name().capitalized_name()+
+                    " picks up " + transfer.item->name().regular_name()+".";
+            } else {
+                see.msg = target->get_name().capitalized_name()+
+                    " gets " + transfer.item->name().regular_name()+" from " + container->name().regular_name()+".";
+            }
             see.src_id = event.src_id;
             see.dst_id = ANY_ID_BUT_SRC;
             sched_event(see);
@@ -191,7 +260,11 @@ void Room::transfer_item_event(const Event& event) {
             sched_event(transfer);
             see.dst_id = event.src_id;
             see.pin = target->pin;
-            see.msg = "You pick it up.";
+            if (container == nullptr) {
+                see.msg = "You pick it up.";
+            } else {
+                see.msg = "You get it from "+container->name().regular_name()+".";
+            }
             sched_event(see);
         }
     }

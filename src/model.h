@@ -97,8 +97,6 @@ struct Event {
         int prox_group;
         /// @brief Direction of motion for a MOVE event
         Direction dir;
-        /// @brief Transfer the item from src_id to dst_id
-        bool transfer_src_to_dst;
         struct { 
             /// @brief Damage roll (attach) or received (result)
             int dmg_roll;
@@ -109,6 +107,12 @@ struct Event {
             /// @brief How wounded is the target (result)
             double dmg_fraction;
         } melee;
+        /// @brief Is the first keyword the name of a container
+        struct {
+            /// @brief Transfer the item from src_id to dst_id
+            bool src_to_dst;
+            bool first_keyword_is_container;
+        } transfer;
     } event_data;
 };
 
@@ -409,6 +413,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void pending_attack_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void reset_zone_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void inspect_command_event(const Event& event){}
 
     /// @brief Our proximity group
     ProximityGroup* group;

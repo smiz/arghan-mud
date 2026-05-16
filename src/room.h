@@ -35,7 +35,7 @@ class Room: public Model {
     /// @brief Is this the initial load?
     bool initial_load;
 
-    void sched_see_event(int src_id, const KeyWordList& key_words);
+    void sched_see_event(int src_id, const KeyWordList& key_words, bool first_word_is_container);
     void reload();
 
 };

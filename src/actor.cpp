@@ -124,6 +124,16 @@ void Actor::init(const initial_stats_t* const stats) {
     key_words.push_back(name.lower_case());
 }
 
+static void build_inventory(std::shared_ptr<Item>& item, std::vector<std::string>& item_files) {
+    item_files.push_back(item->filename());
+    if (!item->container()) {
+        return;
+    }
+    for (auto item: item->contents()) {
+        build_inventory(item,item_files);
+    }
+}
+
 void Actor::save() {
     if (!pc) {
         return;
@@ -144,16 +154,16 @@ void Actor::save() {
     config["hit_points"] = hit_points;
     std::vector<std::string> item_files;
     for (auto item: items) {
-        item_files.push_back(item->filename());
+        build_inventory(item,item_files);
     }
     if (primary_hand != nullptr) {
-        item_files.push_back(primary_hand->filename());
+        build_inventory(primary_hand,item_files);
     }
     if (secondary_hand != nullptr) {
-        item_files.push_back(secondary_hand->filename());
+        build_inventory(secondary_hand,item_files);
     }
     if (body != nullptr) {
-        item_files.push_back(body->filename());
+        build_inventory(body,item_files);
     }
     config["items"] = item_files;
     std::ofstream fout(file.c_str());
@@ -510,7 +520,7 @@ void Actor::transfer_item_event(const Event& event) {
     if (filter(event)) {
         return;
     }
-    assert(event.event_data.transfer_src_to_dst);
+    assert(event.event_data.transfer.src_to_dst);
     items.push_back(event.item);
     save();
 }
@@ -528,7 +538,6 @@ void Actor::get_command_event(const Event& event) {
     get.dst_id = group->first_member_id();
     get.pin = group->members().front()->pin;
     get.src_id = id();
-    get.event_data.transfer_src_to_dst = false;
     sched_event(get);
 }
 
@@ -545,7 +554,6 @@ void Actor::drop_command_event(const Event& event) {
     drop.dst_id = group->first_member_id();
     drop.pin = group->members().front()->pin;
     drop.src_id = id();
-    drop.event_data.transfer_src_to_dst = true;
     drop.item = find_item(*(event.key_words.get()));
     // Not in our pack
     if (drop.item != nullptr) {
@@ -584,9 +592,7 @@ void Actor::drop_command_event(const Event& event) {
     }
     if (drop.item != nullptr) {
         save();
-        emit(name.capitalized_name()+ " drops " + drop.item->name().regular_name()+".");
         sched_event(drop);
-        message("You drop "+drop.item->name().regular_name()+".");
     } else {
         message("You don't have that.");
     }
@@ -596,7 +602,9 @@ void Actor::look_command_event(const Event& event) {
     if (filter(event)) {
         return;
     }
-    Event look(Event::LOOK,id());
+    Event look(event);
+    look.type = Event::LOOK;
+    look.src_id = id();
     look.dst_id = group->find_best_match(*(event.key_words));
     if (look.dst_id == group->first_member_id()) {
         look.dst_id = ANY_ID_BUT_SRC;

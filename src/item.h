@@ -52,7 +52,28 @@ class Item {
     int ac_bonus_when_held() const { return m_held_ac_bonus; }
     /// @brief What is the ac bonus when the item is worn?
     int ac_bonus_when_worn() const { return m_worn_ac_bonus; }
+    /// @brief Can this item hold other items?
+    bool container() const { return m_contents != nullptr; }
+    /// @brief Get the contents. Only valid if this is a container.
+    const std::list<std::shared_ptr<Item>>& contents() {
+        return *(m_contents.get());
+    }
+    void add_item(std::shared_ptr<Item> item) {
+        m_contents->push_back(item);
+    }
+    /// @brief Find best match and remove it
+    /// @param key_words The keywords to search on
+    /// @return An item or nullptr if no matches
+    std::shared_ptr<Item> remove_item(const KeyWordList& key_words);
 
+    /**
+     * Delete all items from a container. They are gone forever.
+     * This is used to load player data where all inventory is
+     * stored flat.
+     */
+    void clear() {
+        m_contents->clear();
+    }
     private:
 
     int m_held_ac_bonus;
@@ -66,6 +87,7 @@ class Item {
     std::string m_detail;
     std::string m_filename;
     weapon_info_t m_weapon_info;
+    std::shared_ptr<std::list<std::shared_ptr<Item>>> m_contents;
 };
 
 #endif
