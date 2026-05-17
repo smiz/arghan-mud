@@ -1,10 +1,11 @@
 name: hog
 proper_name: false
-description: A small but mean looking hog is rooting nuts.
-detail: The hog is intent on its hunt, paying little attention to you.
+description: A small, mean looking hog is rooting nuts.
+detail: The hog is intent on finding nuts and pays scant attention to you.
 keywords:
   - hog
   - small
+wanders: 60000
 hit_points: 4
 strength: 16
 items:

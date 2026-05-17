@@ -8,7 +8,7 @@
 #include <cctype>
 
 static const std::string direction_name[6] = {
-    "the north", "the south", "the east", "the west", "up", "down"
+    "north", "south", "east", "west", "up", "down"
 };
 static const std::string reverse_direction_name[6] = {
     "the south", "the north", "the west", "the east", "below", "above"
@@ -34,6 +34,7 @@ charisma(10),
 hit_points(2),
 damage(0),
 armor_class(10),
+wanders(0),
 fd(-1),
 exit_node_id(START_GROUP),
 pc(pc) {
@@ -83,6 +84,15 @@ pc(pc) {
         }
         if (yaml["hit_points"]) {
             hit_points = yaml["hit_points"].as<int>();
+        }
+        if (yaml["wanders"]) {
+            wanders = yaml["wanders"].as<int>();
+            if (wanders > 0) {
+                Event event(Event::WANDER,id());
+                event.dst_id = id();
+                event.pin = pin;
+                sched_event(event,wanders);
+            }
         }
     } else {
         init(stats);
@@ -232,11 +242,13 @@ void Actor::report_inventory() {
 }
 
 void Actor::message(std::string msg) {
-    static char newline = '\n';
+    static const char newline = '\n';
     if (fd != -1) {
-        if (msg.back() != '\n') {
-            msg += newline;
+        // Make sure we end with one newline
+        while (msg.back() == newline) {
+            msg.pop_back();
         }
+        msg += newline;
         if (write(fd,msg.c_str(),msg.size()) < 0) {
             fd = -1;
         }
@@ -352,9 +364,9 @@ void Actor::melee_attack_event(const Event& event) {
         } else {
             msg2 = " with "+wpn_name+"!";
         }
-        message(msg1+"you"+msg2);
         emit(msg1+name.regular_name()+msg2,ANY_ID_BUT_SRC,attacker->id());
         emit("You "+adj2+" "+name.regular_name()+msg2,attacker->id());
+        message(msg1+"you"+msg2);
         if (!pc) {
             hates.insert(attacker->id());
         }
@@ -411,6 +423,8 @@ void Actor::destroyed_event(const Event& event) {
         receive_from(group->pin);
         group->add_member(this);
         emit(name.capitalized_name()+" suddenly appears!");
+        message("Ashes to ashes...dust to dust...and then remade.");
+        message("Try looking around.");
         exit_node_id = START_GROUP;
         damage = 0;
     } else {
@@ -513,6 +527,24 @@ void Actor::leave_prox_group_event(const Event& event) {
         group->remove_member(this);
         do_not_receive_from(group->pin);
     }
+}
+
+void Actor::wander_event(const Event& event) {
+    if (wanders <= 0) {
+        return;
+    }
+    direction_t dir;
+    dir.dir = group->random_exit();
+    group->find_direction(dir);
+    if (prox_map[dir.id]->zone_number() == group->zone_number()) {
+        Event move_event(Event::MOVE,id());
+        move_event.dst_id = id();
+        move_event.pin = group->pin;
+        move_event.event_data.dir = dir.dir;
+        sched_event(move_event);
+    }
+    Event wander_event(event);
+    sched_event(wander_event,wanders);
 }
 
 void Actor::move_event(const Event& event) {
@@ -899,9 +931,14 @@ int Actor::use_item(std::shared_ptr<Item>& item) {
 int Actor::melee_attack_delay(std::shared_ptr<Item>& item) {
     int delay = 500; // Half second is basic combat round
     if (item != nullptr) {
+        // Weapon speed delay
         delay += item->weapon_info().speed*5;
     }
+    // Dexterity bonus/penalty
     delay -= attribute_modifier(dexterity)*5;
+    // Random factor
+    delay += -10+rand()%20;
+    // Fastet is 1/10 of a second
     delay = std::max(delay,100);
     return delay;
 }

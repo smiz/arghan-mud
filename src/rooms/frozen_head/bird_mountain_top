@@ -1,12 +1,12 @@
 node: 2
 description: |
-  A steep climb brings you to the top of bird moutain. The
+  A steep climb brings you to the top of Bird Moutain. The
   view of the surrounding valleys is majestic. A granite
   stone marks the elevation: 3,143'. How did they measure
   that?
 south: 
   node: 1
-  description: A trail descends through the thick woods descends to the south.
+  description: The trail descends south through thick woods.
 north:
   node: 3
-  description: A trail descends through the thick woods descends to the north.
+  description: The trail descends north through the forest.

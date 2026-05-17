@@ -116,6 +116,7 @@ class Actor: public Model {
     void melee_result_event(const Event& event);
     void pending_attack_event(const Event& event);
     void destroyed_event(const Event& event);
+    void wander_event(const Event& event);
 
     void schedule_destroyed();
     void schedule_attack(int target_id, bool warn = true);
@@ -146,6 +147,11 @@ class Actor: public Model {
     /// List of entities that are hated by the actor and
     /// will be attacked on site
     std::set<int> hates;
+    /// @brief This monster will wander throughout its zone
+    /// Monster wanders if > 0.
+    int wanders;
+
+    void wander();
 
     private:
 

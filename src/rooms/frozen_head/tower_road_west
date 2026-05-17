@@ -1,0 +1,10 @@
+node: 5
+description: |
+  The dirt road climbs gently into the hills, or descends gently
+  towards the forest floor depending on how you look at it. Deep
+  ruts in the road have filled with water. The croaking of frogs
+  can be heard as you approach each pond, and then the sudden plop!
+  plop! plop! of peepers hopping for safety.
+west:
+  node: 3
+  description: The road winds westward around Bald Knob.

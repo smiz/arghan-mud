@@ -142,11 +142,11 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
         for (int i = 0; i < int(EndOfDirectionEnum); i++) {
             exit_dir.dir = Direction(i);
             if (group->find_direction(exit_dir)) {
-                see.msg += "\n"+exit_dir.description;
+                see.msg += exit_dir.description+'\n';
             }
         }
         for (auto item: items) {
-            see.msg += "\n"+item->description();
+            see.msg += item->description()+'\n';
         }
     } else {
         see.type = Event::SEE1;

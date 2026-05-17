@@ -152,6 +152,9 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::RESET_ZONE:
                 reset_zone_event(x.value);
                 break;
+            case Event::WANDER:
+                wander_event(x.value);
+                break;
             default:
                 break;
         }

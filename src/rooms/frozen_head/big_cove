@@ -1,11 +1,11 @@
 ---
 node: 0
 description: |
-  You stand on a small foot bridge above the Flat Fork creek.
-  The creek flows slowly and you can see small fish playing
-  happily in its depths.
+  You stand on a small foot bridge above the Flat Fork Creek.
+  The creek flows slowly under the bridge and you can see small
+  fish playing happily in the cool water.
 west: 
   node: 1
   description: To the west you see Bird Mountain, tree shrouded and mysterious.
 items:
-  - sack
+  - knife

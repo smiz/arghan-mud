@@ -1,6 +1,6 @@
 name: cudgel
 proper_name: false
-description: This fallen tree branch could serve well as a cudgel.
+description: A tree branch has fallen here. This branch could serve well as a cudgel.
 detail: Heavy and broad with a conveniently gripped knob, it might double as a small buckler!
 skill: melee
 attribute: str

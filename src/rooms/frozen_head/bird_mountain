@@ -1,15 +1,16 @@
 ---
 node: 1
 description: |
-  A short but steep climb brings you to flat, broad field. There is
-  a spring seeping from the rocks that rise above you, and the trail
-  continues its climb.
+  A short, steep trail brings you to this flat, broad field beneath
+  the stoney rise of Bird Mountain. There is a spring seeping from
+  from the rocks that rise above you. The trail climbs to the north
+  and descends to the east.
 east: 
   node: 0
-  description: A trail through the thick woods descends to the east.
+  description: A trail enters thick woods to the east.
 north:
   node: 2
-  description: The trail continues climbing to the north.
+  description: A trail climbs north between the rocks.
 monsters:
  - squirel
 items:

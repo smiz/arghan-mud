@@ -38,6 +38,8 @@ struct Event {
         GET_COMMAND,
         /// @brief Move in a given direction
         MOVE,
+        /// @brief Wandering monsters
+        WANDER,
         /// @brief Command to wield a weapon
         WIELD_COMMAND,
         /// @brief Command to stow an equiped item
@@ -229,7 +231,7 @@ class ProximityGroup {
     /// @brief Get the room number (node id) of the group.
     /// @return The node number of the group.
     int group_number() const { return m_group_number; }
-
+    int zone_number() const { return m_zone_number; }
     /// @brief Add a direction to exit the group
     /// @param dir Description of the exit direction
     void add_direction(const direction_t& dir) {
@@ -415,6 +417,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void reset_zone_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void inspect_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void wander_event(const Event& event){}
 
     /// @brief Our proximity group
     ProximityGroup* group;
