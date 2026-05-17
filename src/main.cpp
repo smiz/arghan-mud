@@ -1,5 +1,6 @@
 #include <cstring>
 #include <iostream>
+#include <fstream>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -280,6 +281,20 @@ void inventory(Actor *obj) {
     mutex.unlock();
 }
 
+void help(Actor* obj) {
+    std::string line;
+    std::ifstream fin("help");
+    mutex.lock();
+    while (std::getline(fin,line)) {
+        line += "\n";
+        if (write(obj->get_fd(),line.c_str(),line.size()) < 0) {
+            break;
+        }
+    }
+    mutex.unlock();
+    fin.close();
+}
+
 bool parse_line_with_tokens(std::string& line, Actor* obj) {
     /// If this not a single word command, then
     /// break it into tokens
@@ -380,6 +395,10 @@ bool parse_line(std::string& line, Actor* obj) {
         return true;
     }
     if (parse_line_with_tokens(line,obj)) {
+        return true;
+    }
+    if (line == "help") {
+        help(obj);
         return true;
     }
     return false;

@@ -49,6 +49,8 @@ class Actor: public Model {
     /// @brief Write a message to the console if fd is valid
     /// @param msg The message to write 
     void message(std::string msg);
+    
+    int get_fd() const { return fd; }
 
     protected:
 

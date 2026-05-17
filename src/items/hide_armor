@@ -1,0 +1,11 @@
+name: suit of thick hide
+proper_name: false
+description: A pile of nasty smelling hide has been discarded here.
+detail: The hide looks digusting but may offer some protection.
+keywords:
+  - suit
+  - hide
+  - thick
+wearable:
+  location: body
+  ac: 1

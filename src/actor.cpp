@@ -686,7 +686,7 @@ void Actor::look_event(const Event& event) {
         see.msg += name.capitalized_name()+" holds "+secondary_hand->name().regular_name()+".\n";
     }
     if (body != nullptr) {
-        see.msg += name.capitalized_name()+" wears "+secondary_hand->name().regular_name()+".\n";
+        see.msg += name.capitalized_name()+" wears "+body->name().regular_name()+".\n";
     }
     if (!items.empty()) {
         see.msg += name.capitalized_name()+" is carrying:\n";

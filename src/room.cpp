@@ -56,14 +56,13 @@ graph(graph) {
     YAML::Node yaml = YAML::LoadFile(file.c_str());
     int prox_group_id = yaml["node"].as<int>();
     description = yaml["description"].as<std::string>();
-    assert(prox_map.find(prox_group_id) == prox_map.end());
     if (yaml["zone"]) {
         zone = yaml["zone"].as<int>();
-        group = new ProximityGroup(prox_group_id,zone);
-    } else {
-        group = new ProximityGroup(prox_group_id);
     }
-    prox_map[prox_group_id] = group;
+    if (prox_map.find(prox_group_id) == prox_map.end()) {
+        prox_map[prox_group_id] = new ProximityGroup(prox_group_id,zone); 
+    }
+    group = prox_map[prox_group_id];
     /// Will be first member in the group so that look with
     /// no argument queries the room.
     /// See ProximityGroup::find_best_match()
@@ -270,9 +269,7 @@ void Room::transfer_item_event(const Event& event) {
 }
 
 void Room::destroyed_event(const Event& event) {
-    if (filter(event)) {
-        return;
-    }
+    assert(event.dst_id == group->group_number());
     if (event.item != nullptr) {
         items.push_back(event.item);
     }

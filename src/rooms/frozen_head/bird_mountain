@@ -1,0 +1,16 @@
+---
+node: 1
+description: |
+  A short but steep climb brings you to flat, broad field. There is
+  a spring seeping from the rocks that rise above you, and the trail
+  continues its climb.
+east: 
+  node: 0
+  description: A trail through the thick woods descends to the east.
+north:
+  node: 2
+  description: The trail continues climbing to the north.
+monsters:
+ - squirel
+items:
+ - cudgel

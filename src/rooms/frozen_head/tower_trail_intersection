@@ -1,0 +1,10 @@
+node: 3
+description: |
+  You descend into the gap between Bird Mountain and Bald Knob.
+  Bald Knob towers above you to the north. A wide road winds
+  to the east. The travel continues to the north.
+south:
+  node: 2
+  description: A trail climbs through the thick woods to the south.
+monsters:
+  - small_hog
