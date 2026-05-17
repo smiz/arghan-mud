@@ -4,6 +4,14 @@
 
 const std::string Item::items_directory = "items/";
 
+Item::Item():
+m_held_ac_bonus(0),
+m_worn_ac_bonus(0),
+m_wearable(WearableSlots::Unwearable),
+m_modifier(MonsterAttributes::NoAttr),
+key_words(std::make_shared<KeyWordList>()) {
+}
+
 Item::Item(std::string file):
 m_held_ac_bonus(0),
 m_worn_ac_bonus(0),

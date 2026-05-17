@@ -42,6 +42,7 @@ class Actor: public Model {
     int match_keywords(const KeyWordList& key_words) const;
     void report_inventory();
     void report_stats();
+    void report_skills();
 
     static initial_stats_t initial_stats();
 

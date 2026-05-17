@@ -23,6 +23,7 @@ class Item {
      * @brief Create an item from a YAML file. 
      */
     Item(std::string file);
+    Item();
 
     std::string description() const { return m_description; }
     std::string detail() const { return m_detail; }
@@ -74,7 +75,8 @@ class Item {
     void clear() {
         m_contents->clear();
     }
-    private:
+
+    protected:
 
     int m_held_ac_bonus;
     int m_worn_ac_bonus;

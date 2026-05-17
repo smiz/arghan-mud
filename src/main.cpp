@@ -265,6 +265,12 @@ void status(Actor* obj) {
     mutex.unlock();
 }
 
+void skills(Actor* obj) {
+    mutex.lock();
+    obj->report_skills();
+    mutex.unlock();
+}
+
 void inventory(Actor *obj) {
     // Lock the simulation to avoid a change while we list the good
     mutex.lock();
@@ -353,8 +359,24 @@ bool parse_line(std::string& line, Actor* obj) {
         inventory(obj);
         return true;
     }
+    if (line == "i") {
+        inventory(obj);
+        return true;
+    }
     if (line == "stats") {
         status(obj);
+        return true;
+    }
+    if (line == "stat") {
+        status(obj);
+        return true;
+    }
+    if (line == "skill") {
+        skills(obj);
+        return true;
+    }
+    if (line == "skills") {
+        skills(obj);
         return true;
     }
     if (parse_line_with_tokens(line,obj)) {

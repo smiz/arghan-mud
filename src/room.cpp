@@ -113,7 +113,7 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
     if (words_are_container) {
         if (item != nullptr) {
             if (item->container()) {
-                see.msg = "Inside the "+item->name().regular_name()+" you find ";
+                see.msg = "Inside "+item->name().regular_name()+" you find ";
                 auto contents = item->contents();
                 if (contents.empty()) {
                     see.msg += "nothing.";
@@ -137,22 +137,21 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
     if (item != nullptr) {
         see.msg = item->detail();
         see.type = Event::SEE1;
-    } else {
-        if (key_words.empty()) {
-            see.msg = description;
-            direction_t exit_dir;
-            for (int i = 0; i < int(EndOfDirectionEnum); i++) {
-                exit_dir.dir = Direction(i);
-                if (group->find_direction(exit_dir)) {
-                    see.msg += "\n"+exit_dir.description;
-                }
+    } else if (key_words.empty()) {
+        see.msg = description;
+        direction_t exit_dir;
+        for (int i = 0; i < int(EndOfDirectionEnum); i++) {
+            exit_dir.dir = Direction(i);
+            if (group->find_direction(exit_dir)) {
+                see.msg += "\n"+exit_dir.description;
             }
-            for (auto item: items) {
-                see.msg += "\n"+item->description();
-            }
-        } else {
-            see.msg = "Look at what?";
         }
+        for (auto item: items) {
+            see.msg += "\n"+item->description();
+        }
+    } else {
+        see.type = Event::SEE1;
+        see.msg = "Look at what?";
     }
     sched_event(see);
 }
@@ -267,5 +266,14 @@ void Room::transfer_item_event(const Event& event) {
             }
             sched_event(see);
         }
+    }
+}
+
+void Room::destroyed_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    if (event.item != nullptr) {
+        items.push_back(event.item);
     }
 }

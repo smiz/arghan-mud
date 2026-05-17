@@ -25,6 +25,7 @@ class Room: public Model {
     void look_event(const Event& event);
     void transfer_item_event(const Event& event);
     void reset_zone_event(const Event& event);
+    void destroyed_event(const Event& event);
 
     private:
  

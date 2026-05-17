@@ -54,10 +54,10 @@ struct Event {
         PENDING_ATTACK,
         /// @brief Look at something (or being looked at)
         LOOK,
-        /// @brief See a description of something after all SEE are processed
-        SEE1,
         /// @brief See a description of something
         SEE,
+        /// @brief See a description of something after all SEE are processed
+        SEE1,
         /// @brief A melee attack
         MELEE_ATTACK,
         /// @brief Result of an attack

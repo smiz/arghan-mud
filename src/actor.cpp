@@ -1,5 +1,6 @@
 #include "actor.h"
 #include "dice.h"
+#include "corpse.h"
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
@@ -51,6 +52,12 @@ pc(pc) {
                 std::cout << item.as<std::string>() << std::endl;
                 auto new_item = std::make_shared<Item>(item.as<std::string>());
                 items.push_back(new_item);
+            }
+        }
+        if (yaml["skills"]) {
+            auto skill_map = yaml["skills"].as<std::map<std::string,int>>();
+            for (auto const& [key, val] : skill_map) {
+                skills[key] = val;
             }
         }
         if (yaml["strength"]) {
@@ -125,7 +132,10 @@ void Actor::init(const initial_stats_t* const stats) {
 }
 
 static void build_inventory(std::shared_ptr<Item>& item, std::vector<std::string>& item_files) {
-    item_files.push_back(item->filename());
+    /// Don't include transient items (specifically, corpses)
+    if (!item->filename().empty()) {
+        item_files.push_back(item->filename());
+    }
     if (!item->container()) {
         return;
     }
@@ -166,9 +176,23 @@ void Actor::save() {
         build_inventory(body,item_files);
     }
     config["items"] = item_files;
+    config["skills"] = skills;
     std::ofstream fout(file.c_str());
     fout << config; 
     fout.close();
+}
+
+void Actor::report_skills() {
+    if (skills.empty()) {
+        message("You have no skills.");
+        return;
+    }
+    std::string line;
+    std::ostringstream sout(line);
+    for (auto skill: skills) {
+        sout << skill.first << " " << skill.second << "\n";
+    }
+    message(sout.str());
 }
 
 void Actor::report_stats() {
@@ -353,6 +377,26 @@ void Actor::schedule_destroyed() {
     Event event(Event::DESTROYED,id());
     event.pin = pin;
     event.dst_id = id();
+    sched_event(event); 
+    event.pin = group->pin;
+    event.dst_id = group->group_number();
+    event.item = std::make_shared<Corpse>(name);
+    while (!items.empty()) {
+        event.item->add_item(items.front());
+        items.pop_front();
+    }
+    if (primary_hand != nullptr) {
+        event.item->add_item(primary_hand);
+        primary_hand = nullptr;
+    }
+    if (secondary_hand != nullptr) {
+        event.item->add_item(secondary_hand);
+        secondary_hand = nullptr;
+    }
+    if (body != nullptr) {
+        event.item->add_item(body);
+        body = nullptr;
+    }
     sched_event(event); 
 }
 
@@ -605,17 +649,24 @@ void Actor::look_command_event(const Event& event) {
     Event look(event);
     look.type = Event::LOOK;
     look.src_id = id();
-    look.dst_id = group->find_best_match(*(event.key_words));
-    if (look.dst_id == group->first_member_id()) {
+    /// Look at everything in the room
+    if (event.key_words->empty() && !event.event_data.transfer.first_keyword_is_container) {
         look.dst_id = ANY_ID_BUT_SRC;
+    } else if (event.event_data.transfer.first_keyword_is_container) {
+        look.dst_id = group->first_member_id();
+    } else {
+        /// Look at or in something specific
+        look.dst_id = group->find_best_match(*(event.key_words));
     }
-    look.key_words = event.key_words;
     look.pin = group->pin;
     sched_event(look);
 }
 
 void Actor::look_event(const Event& event) {
     if (filter(event)) {
+        return;
+    }
+    if (event.event_data.transfer.first_keyword_is_container) {
         return;
     }
     Event see(Event::SEE1,id());
