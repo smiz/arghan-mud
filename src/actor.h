@@ -52,6 +52,9 @@ class Actor: public Model {
     
     int get_fd() const { return fd; }
 
+    /// Actors are counted toward zone occupancy
+    bool occupies_space() { return true; }
+
     protected:
 
     std::string detail;

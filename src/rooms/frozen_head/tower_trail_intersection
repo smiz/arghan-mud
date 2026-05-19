@@ -1,14 +1,15 @@
 node: 3
+zone: 0
 description: |
   You arrive at a gap between Bird Mountain and Bald Knob,
   which towers above you to the north. A wide road winds
   to the east. The trail continues to the north.
 south:
   node: 2
-  description: A trail climbs through the thick woods to the south.
+  description: A trail climbs through thick woods to the south.
 north:
   node: 4
-  description: A trail climbs through the thick woods to the north.
+  description: A trail climbs through thick woods to the north.
 east:
   node: 5 
   description: A wide, dirt road winds east.

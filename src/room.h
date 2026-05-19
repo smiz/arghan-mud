@@ -27,6 +27,8 @@ class Room: public Model {
     void reset_zone_event(const Event& event);
     void destroyed_event(const Event& event);
 
+    /// A room does not occupy itself!
+    bool occupies_space() { return false; }
     private:
  
     /// @brief File to reload the room

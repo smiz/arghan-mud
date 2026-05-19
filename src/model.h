@@ -170,6 +170,11 @@ class ProximityGroupMember {
      */
     int id() const { return m_id; }
     virtual Name get_name() const { return Name("",true); }
+    /**
+     * Should this member be counted as occupying the room for the purposes
+     * of calculating zone occupancy. An occupied zone can't be reset.
+     */
+    virtual bool occupies_space() = 0;
 
     /// @brief Send an event directly to the member
     const adevs::pin_t pin;
@@ -212,15 +217,21 @@ class ProximityGroup {
     /// @brief Add a member to the group when joining
     /// @param member The member to add
     void add_member(ProximityGroupMember* member) {
+        if (std::find(m_members.begin(),m_members.end(),member) != m_members.end()) {
+            return;
+        }
         m_members.push_back(member);
-        zone_occupancy[m_zone_number] = zone_occupancy[m_zone_number]+1;
+        if (member->occupies_space()) {
+            zone_occupancy[m_zone_number] = zone_occupancy[m_zone_number]+1;
+        }
         assert(zone_occupancy[m_zone_number] >= 0);
     }
     /// @brief Remove a member when leaving
     /// @param member The member to remove
     void remove_member(ProximityGroupMember* member) {
-        m_members.remove(member);
-        zone_occupancy[m_zone_number] = zone_occupancy[m_zone_number]-1;
+        if (m_members.remove(member) > 0 && member->occupies_space()) {
+            zone_occupancy[m_zone_number] = zone_occupancy[m_zone_number]-1;
+        }
         assert(zone_occupancy[m_zone_number] >= 0);
     }
     /// @brief Get the members of the group
@@ -268,8 +279,7 @@ class ProximityGroup {
      * @return true if all groups within the zone have no members
      */
     bool zone_is_empty() {
-        /// Only the owning room occupies it
-        return zone_occupancy[m_zone_number] == 1;
+        return zone_occupancy[m_zone_number] == 0;
     }
     /**
      *  @brief Find the id of the member that matches the most keywords

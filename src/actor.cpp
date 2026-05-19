@@ -544,7 +544,8 @@ void Actor::wander_event(const Event& event) {
         sched_event(move_event);
     }
     Event wander_event(event);
-    sched_event(wander_event,wanders);
+    // Add a little noise to prevent weird synchrony of motion
+    sched_event(wander_event,std::max(1,wanders-10+rand()%20));
 }
 
 void Actor::move_event(const Event& event) {

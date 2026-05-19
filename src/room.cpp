@@ -2,8 +2,7 @@
 #include "actor.h"
 #include <yaml-cpp/yaml.h>
 
-static const int reload_long_interval = 120000;
-static const int reload_short_interval = 60000;
+static const int reload_interval = 120000;
 
 #define NO_ZONE -1
 
@@ -84,22 +83,19 @@ graph(graph) {
     if (zone != NO_ZONE) {
         Event event(Event::RESET_ZONE,id());
         event.dst_id = id();
-        event.pin = pin;
-        sched_event(event,reload_long_interval);
+        event.pin = group->pin;
+        sched_event(event,reload_interval);
     }
 }
 
 void Room::reset_zone_event(const Event& event) {
     Event reset(Event::RESET_ZONE,id());
     reset.dst_id = id();
-    reset.pin = pin;
+    reset.pin = group->pin;
     if (group->zone_is_empty()) {
         reload();
-        sched_event(reset,reload_long_interval);
-    } else {
-        sched_event(reset,reload_short_interval);
     }
-
+    sched_event(reset,reload_interval);
 }
 
 void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_are_container) {
