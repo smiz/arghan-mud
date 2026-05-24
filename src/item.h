@@ -46,7 +46,7 @@ class Item {
     /// @brief Which attribute modifies the use of this item
     MonsterAttributes modifier() const { return m_modifier; }
     /// @brief Which skill modifies the use of this item
-    std::string skill() const { return m_skill; };
+    Skill skill() const { return m_skill; };
     /// @brief Where can this item be worn?
     WearableSlots wearable() const { return m_wearable; }
     /// @brief What is the ac bonus when the item is held?
@@ -82,7 +82,7 @@ class Item {
     int m_worn_ac_bonus;
     WearableSlots m_wearable;
     MonsterAttributes m_modifier;
-    std::string m_skill;
+    Skill m_skill;
     std::shared_ptr<KeyWordList> key_words;
     Name m_name;
     std::string m_description;

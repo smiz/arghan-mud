@@ -1,5 +1,6 @@
 #include "room.h"
 #include "actor.h"
+#include "trap.h"
 #include <yaml-cpp/yaml.h>
 
 static const int reload_interval = 120000;
@@ -77,6 +78,13 @@ graph(graph) {
                 .description = yaml[key]["description"].as<std::string>()
             };
             group->add_direction(dir);
+        }
+    }
+    /// Get traps in the room. 
+    if (yaml["traps"]) {
+        const YAML::Node& trap_list = yaml["traps"];
+        for (const auto& trap : trap_list) {
+            new Trap(graph,"traps/"+trap.as<std::string>(),group->group_number());
         }
     }
     reload();

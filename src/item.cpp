@@ -9,6 +9,7 @@ m_held_ac_bonus(0),
 m_worn_ac_bonus(0),
 m_wearable(WearableSlots::Unwearable),
 m_modifier(MonsterAttributes::NoAttr),
+m_skill(Skill::NoSkill),
 key_words(std::make_shared<KeyWordList>()) {
 }
 
@@ -34,24 +35,10 @@ m_filename(file) {
     }
     if (yaml["attribute"]) {
         std::string attr = yaml["attribute"].as<std::string>();
-        if (attr == "str") {
-            m_modifier = MonsterAttributes::Str;
-        } else if (attr == "int") {
-            m_modifier = MonsterAttributes::Int;
-        } else if (attr == "dex") {
-            m_modifier = MonsterAttributes::Dex;
-        } else if (attr == "con") {
-            m_modifier = MonsterAttributes::Con;
-        } else if (attr == "wis") {
-            m_modifier = MonsterAttributes::Wis;
-        } else if (attr == "chr") {
-            m_modifier = MonsterAttributes::Chr;
-        } else {
-            throw file+" has bad attribute entry";
-        }
+        m_modifier = to_monster_attribute(attr);
     }
     if (yaml["skill"]) {
-        m_skill = yaml["skill"].as<std::string>();
+        m_skill = to_skill(yaml["skill"].as<std::string>());
     }
     if (yaml["wearable"]) {
         std::string location = yaml["wearable"]["location"].as<std::string>();

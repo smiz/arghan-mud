@@ -11,3 +11,5 @@ south:
 north:
   node: 3
   description: The trail descends north through the forest.
+traps:
+  - frozen_head/thunder

@@ -32,6 +32,8 @@ struct Event {
         LEAVE_PROX_GROUP,
         /// @brief Transfer an item
         TRANSFER_ITEM,
+        /// @brief A trap has been triggered!
+        TRAP,
         /// @brief Command to drop an item
         DROP_COMMAND,
         /// @brief Command to pick up an item
@@ -106,8 +108,6 @@ struct Event {
             int atk_roll;
             /// @brief Was the target killed (result)
             bool killed;
-            /// @brief How wounded is the target (result)
-            double dmg_fraction;
         } melee;
         /// @brief Is the first keyword the name of a container
         struct {
@@ -115,6 +115,16 @@ struct Event {
             bool src_to_dst;
             bool first_keyword_is_container;
         } transfer;
+        struct {
+            /// @brief Damage inflicted by the trap
+            int dmg_roll;
+            /// @brief Attribute that affects saving throw
+            MonsterAttributes attribute;
+            /// @brief Skill that affects saving throw
+            Skill skill;
+            /// Save target
+            int save;
+        } trap;
     } event_data;
 };
 
@@ -429,6 +439,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void inspect_command_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void wander_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void trap_event(const Event& event){}
 
     /// @brief Our proximity group
     ProximityGroup* group;

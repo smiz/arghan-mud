@@ -120,6 +120,7 @@ class Actor: public Model {
     void pending_attack_event(const Event& event);
     void destroyed_event(const Event& event);
     void wander_event(const Event& event);
+    void trap_event(const Event& event);
 
     void schedule_destroyed();
     void schedule_attack(int target_id, bool warn = true);
@@ -145,7 +146,7 @@ class Actor: public Model {
     static int attribute_modifier(int attribute_score);
 
     /// Table containing all of the actor's skills
-    std::map<std::string,int> skills;
+    std::map<Skill,int> skills;
 
     /// List of entities that are hated by the actor and
     /// will be attacked on site
@@ -155,6 +156,8 @@ class Actor: public Model {
     int wanders;
 
     void wander();
+
+    std::pair<std::string,std::string> damage_adjective();
 
     private:
 

@@ -18,7 +18,6 @@ departed(false) {
 } 
 
 Model::~Model() {
-
 }
 
 bool Model::filter(const Event& event) {
@@ -35,11 +34,17 @@ bool Model::filter(const Event& event) {
 }
 
 void Model::leave_game() {
+    if (departed) {
+        return;
+    }
     departed = true;
+    pending.clear();
+    if (group != nullptr) {
+        graph.disconnect(group->pin,me);
+    }
     graph.disconnect(pin,me);
     graph.remove_atomic(me);
-    pending.clear();
-    me.reset();
+    me = nullptr;
 }
 
 std::shared_ptr<Item> Model::find_item(const KeyWordList& key_words) {
@@ -154,6 +159,9 @@ void Model::delta_ext(Time e, const Bag& input) {
                 break;
             case Event::WANDER:
                 wander_event(x.value);
+                break;
+            case Event::TRAP:
+                trap_event(x.value);
                 break;
             default:
                 break;

@@ -28,6 +28,16 @@ enum MonsterAttributes {
     NoAttr
 };
 
+MonsterAttributes to_monster_attribute(std::string name);
+
+enum Skill {
+    Melee,
+    NoSkill
+};
+
+Skill to_skill(std::string name);
+std::string from_skill(Skill skill);
+
 /// @brief Slots for equipment that worn
 enum WearableSlots {
     Body,

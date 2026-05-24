@@ -58,7 +58,7 @@ pc(pc) {
         if (yaml["skills"]) {
             auto skill_map = yaml["skills"].as<std::map<std::string,int>>();
             for (auto const& [key, val] : skill_map) {
-                skills[key] = val;
+                skills[to_skill(key)] = val;
             }
         }
         if (yaml["strength"]) {
@@ -186,7 +186,11 @@ void Actor::save() {
         build_inventory(body,item_files);
     }
     config["items"] = item_files;
-    config["skills"] = skills;
+    std::map<std::string,int> skill_table;
+    for (auto skill: skills) {
+        skill_table[from_skill(skill.first)] = skill.second;
+    }
+    config["skills"] = skill_table;
     std::ofstream fout(file.c_str());
     fout << config; 
     fout.close();
@@ -200,7 +204,7 @@ void Actor::report_skills() {
     std::string line;
     std::ostringstream sout(line);
     for (auto skill: skills) {
-        sout << skill.first << " " << skill.second << "\n";
+        sout << from_skill(skill.first) << " " << skill.second << "\n";
     }
     message(sout.str());
 }
@@ -310,11 +314,38 @@ void Actor::enter_mud_event(const Event& event) {
     }
 }
 
+std::pair<std::string,std::string> Actor::damage_adjective() {
+    std::pair<std::string,std::string> adj;
+    double fraction = double(damage) / double(hit_points);
+    if (damage >= hit_points) {
+        adj.first = "kills";
+        adj.second = "kill";
+    } else if (fraction > 0.9) {
+        adj.first = "critically injures";
+        adj.second = "critically injure";
+    } else if (fraction > 0.75) {
+        adj.first = "seriously injures";
+        adj.second = "seriously injure";
+    } else if (fraction > 0.5) {
+        adj.first = "badly wounds";
+        adj.second = "badly wound";
+    } else if (fraction > 0.25) {
+        adj.first = "lightly wounds";
+        adj.second = "lightly wound";
+    } else if (fraction > 0.1) {
+        adj.first = "barely wounds";
+        adj.second = "barely wound";
+    } else {
+        adj.first = "scratches";
+        adj.second = "scratch";
+    }
+    return adj;
+}
+
 void Actor::melee_attack_event(const Event& event) {
     if (filter(event)) {
         return;
     }
-    double fraction = double(damage) / double(hit_points);
     Event result(event);
     result.type = Event::MELEE_RESULT;
     result.src_id = id();
@@ -332,32 +363,11 @@ void Actor::melee_attack_event(const Event& event) {
             wpn_name = event.item->name().regular_name();
         }
         damage += event.event_data.melee.dmg_roll;
-        fraction = double(damage) / double(hit_points);
-        result.event_data.melee.dmg_fraction = fraction;
+        auto adj = damage_adjective();
         if (damage >= hit_points) {
-            adj1 = "kills";
-            adj2 = "kill";
             result.event_data.melee.killed = true;
-        } else if (fraction > 0.9) {
-            adj1 = "critically injures";
-            adj2 = "critically injure";
-        } else if (fraction > 0.75) {
-            adj1 = "seriously injures";
-            adj2 = "seriously injure";
-        } else if (fraction > 0.5) {
-            adj1 = "badly wounds";
-            adj2 = "badly wound";
-        } else if (fraction > 0.25) {
-            adj1 = "lightly wounds";
-            adj2 = "lightly wound";
-        } else if (fraction > 0.1) {
-            adj1 = "barely wounds";
-            adj2 = "barely wound";
-        } else {
-            adj1 = "scratches";
-            adj2 = "scratch";
         }
-        std::string msg1(attacker->get_name().capitalized_name()+" "+adj1+" ");
+        std::string msg1(attacker->get_name().capitalized_name()+" "+adj.first+" ");
         std::string msg2;
         if (wpn_name.empty()) {
             msg2 = "!";
@@ -365,7 +375,7 @@ void Actor::melee_attack_event(const Event& event) {
             msg2 = " with "+wpn_name+"!";
         }
         emit(msg1+name.regular_name()+msg2,ANY_ID_BUT_SRC,attacker->id());
-        emit("You "+adj2+" "+name.regular_name()+msg2,attacker->id());
+        emit("You "+adj.second+" "+name.regular_name()+msg2,attacker->id());
         message(msg1+"you"+msg2);
         if (!pc) {
             hates.insert(attacker->id());
@@ -846,6 +856,50 @@ void Actor::hold_command_event(const Event& event) {
     }
 }
 
+void Actor::trap_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    Dice die(1,20);
+    int save = die(), dmg = event.event_data.trap.dmg_roll;
+    switch(event.event_data.trap.attribute) {
+        case Str:
+            save += attribute_modifier(strength);
+            break;
+        case Dex:
+            save += attribute_modifier(dexterity);
+            break;
+        case Con:
+            save += attribute_modifier(constitution);
+            break;
+        case Int:
+            save += attribute_modifier(intelligence);
+            break;
+        case Wis:
+            save += attribute_modifier(wisdom);
+            break;
+        case Chr:
+            save += attribute_modifier(charisma);
+            break; 
+        default:
+            break;        
+    }
+    if (skills.find(event.event_data.trap.skill) != skills.end()) {
+        save += skills[event.event_data.trap.skill];
+    }
+    if (save >= event.event_data.trap.save) {
+        dmg /= 2;
+    }
+    damage += dmg;
+    message(event.msg);
+    auto trap_name = group->find_member(event.src_id)->get_name();
+    emit(trap_name.capitalized_name()+" "+damage_adjective().first+" "+name.regular_name()+"!");
+    message(trap_name.capitalized_name()+" "+damage_adjective().second+" you!");
+    if (damage >= hit_points) {
+        schedule_destroyed();
+    }
+} 
+
 void Actor::sched_save() {
     Event save;
     save.type = Event::SAVE_MODEL;
@@ -957,3 +1011,4 @@ int Actor::total_ac() {
     }
     return armor_class + mod;
 }
+
