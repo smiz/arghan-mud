@@ -128,7 +128,7 @@ void Actor::gain_xp(int xp) {
         level++;
         free_skill_slots++;
         xp -= xp_to_go;
-        xp_to_go = level*500;
+        xp_to_go = level*10;
         hit_points += std::max(1,hp_die()+attribute_modifier(constitution));
         message("You gained a level!");
     }
@@ -225,17 +225,18 @@ void Actor::save() {
 }
 
 void Actor::report_skills() {
-    if (skills.empty()) {
-        message("You have no skills.");
-        return;
-    }
     std::string line;
     std::ostringstream sout(line);
-    for (auto skill: skills) {
-        sout << from_skill(skill.first) << " " << skill.second << "\n";
+    if (skills.empty()) {
+        sout << "You have no skills.\n";
+    } else {
+        sout << "Your skills:" << std::endl;
+        for (auto skill: skills) {
+            sout << from_skill(skill.first) << " " << skill.second << "\n";
+        }
     }
     if (free_skill_slots > 0) {
-        sout << "You have " << free_skill_slots << " slots for training.";
+        sout << "You have " << free_skill_slots << " free skill slots." << std::endl;
     }
     message(sout.str());
 }
@@ -243,7 +244,7 @@ void Actor::report_skills() {
 void Actor::report_stats() {
     std::string line;
     std::ostringstream sout(line);
-    sout << "level " << level << " / " << xp_to_go << std::endl;
+    sout << "level " << level << " , " << xp_to_go << " xp to next level" << std::endl;
     sout << "str   " << strength << std::endl;;
     sout << "dex   " << dexterity << std::endl;;
     sout << "con   " << constitution << std::endl;;
@@ -504,6 +505,8 @@ void Actor::melee_result_event(const Event& event) {
     if (filter(event)) {
         return;
     }
+    // Get an XP for each point of damage that we do
+    gain_xp(event.event_data.melee.dmg_roll);
     if (event.event_data.melee.killed) {
         if (!pc) {
             hates.erase(event.src_id);
