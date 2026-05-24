@@ -32,6 +32,8 @@ MonsterAttributes to_monster_attribute(std::string name);
 
 enum Skill {
     Melee,
+    Perception,
+    Stealth,
     NoSkill
 };
 

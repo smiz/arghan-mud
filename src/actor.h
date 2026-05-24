@@ -54,7 +54,7 @@ class Actor: public Model {
 
     /// Actors are counted toward zone occupancy
     bool occupies_space() { return true; }
-
+    int hidden() const { return sneaking; }
     protected:
 
     std::string detail;
@@ -96,6 +96,7 @@ class Actor: public Model {
      * @param dst_id The target of the message
      */
     void emit(std::string msg, int dst_id = ANY_ID_BUT_SRC, int exclude = -1);
+    void emit_stealthy(std::string msg, int dst_id = ANY_ID_BUT_SRC, int exclude = -1);
 
     void stow_command_event(const Event& event);
     void wield_command_event(const Event& event);
@@ -122,6 +123,8 @@ class Actor: public Model {
     void wander_event(const Event& event);
     void trap_event(const Event& event);
     void practice_event(const Event& event);
+    void roll_periodic_attributes_event(const Event& event);
+    void sneak_command_event(const Event& event);
 
     void schedule_destroyed();
     void schedule_attack(int target_id, bool warn = true);
@@ -138,6 +141,7 @@ class Actor: public Model {
      */
     int melee_attack_delay(std::shared_ptr<Item>& item);
 
+    int use_skill(Skill skill);
     /** 
      * Calculate the ac of the actor. This is natural ac
      * plus equipment and other bonuses.
@@ -159,6 +163,8 @@ class Actor: public Model {
     void wander();
 
     std::pair<std::string,std::string> damage_adjective();
+
+    int sneaking, perceiving;
 
     private:
 

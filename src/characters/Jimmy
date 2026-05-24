@@ -12,8 +12,17 @@ intelligence: 12
 wisdom: 12
 charisma: 15
 armor_class: 10
-hit_points: 4
+hit_points: 13319
+level: 3815
+xp_to_go: 1818881
+free_slots: 3811
 items:
-  []
+  - knife
+  - knife
+  - knife
+  - cudgel
+  - knife
 skills:
-  melee: 1
+  melee: 5
+  perception: 0
+  stealth: 2

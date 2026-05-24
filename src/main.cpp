@@ -112,6 +112,17 @@ void move(Actor* obj, Direction dir) {
     cv.notify_one();
 }
 
+void sneak(Actor* obj, bool try_to_sneak) {
+    Event event(Event::SNEAK_COMMAND,obj->id());
+    event.dst_id = obj->id();
+    event.pin = obj->pin;
+    event.stealthy = try_to_sneak;
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
 void kill(Actor* obj, std::list<std::string>& tokens) {
     Event event(Event::KILL_COMMAND,obj->id());
     event.pin = obj->pin;
@@ -416,6 +427,14 @@ bool parse_line(std::string& line, Actor* obj) {
     }
     if (line == "help") {
         help(obj);
+        return true;
+    }
+    if (line == "sneak") {
+        sneak(obj,true);
+        return true;
+    }
+    if (line == "nosneak") {
+        sneak(obj,false);
         return true;
     }
     return false;

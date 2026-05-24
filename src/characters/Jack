@@ -5,5 +5,20 @@ detail: Jack is pretty good lookin'!
 keywords:
   - Jack
   - jack
+strength: 15
+dexterity: 10
+constitution: 13
+intelligence: 12
+wisdom: 9
+charisma: 12
+armor_class: 10
+hit_points: 7
+level: 1
+xp_to_go: 7
+free_slots: 0
 items:
-  []
+  - knife
+  - cudgel
+  - hide_armor
+skills:
+  melee: 1

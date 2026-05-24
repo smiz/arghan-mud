@@ -12,6 +12,11 @@ intelligence: 10
 wisdom: 10
 charisma: 10
 armor_class: 10
-hit_points: 2
+hit_points: 3
+level: 1
+xp_to_go: 461
+free_slots: 1
 items:
   []
+skills:
+  {}

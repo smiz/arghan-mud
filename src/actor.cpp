@@ -35,6 +35,8 @@ hit_points(2),
 damage(0),
 armor_class(10),
 wanders(0),
+sneaking(0),
+perceiving(0),
 level(0),
 xp_to_go(0),
 free_skill_slots(0),
@@ -110,6 +112,11 @@ pc(pc) {
         init(stats);
         save();
     }
+    perceiving = use_skill(Perception);
+    Event periodic(Event::ROLL_PERIODIC_ATTRIBUTES,id());
+    periodic.dst_id = id();
+    periodic.pin = pin;
+    sched_event(periodic);
 }
 
 int Actor::match_keywords(const KeyWordList& key_words) const {
@@ -292,16 +299,53 @@ void Actor::message(std::string msg) {
     }
 }
 
-void Actor::emit(std::string msg, int dst_id, int exclude) {
+void Actor::emit_stealthy(std::string msg, int dst_id, int exclude) {
     Event event(Event::SEE1,id());
     event.msg = msg;
     event.dst_id = dst_id;
     event.pin = group->pin;
+    event.stealthy = sneaking;
     if (exclude >= 0) {
         event.exclude = std::make_shared<std::set<int>>();
         event.exclude->insert(exclude);
     }
     sched_event(event);
+}
+
+void Actor::emit(std::string msg, int dst_id, int exclude) {
+    Event event(Event::SEE1,id());
+    event.msg = msg;
+    event.dst_id = dst_id;
+    event.pin = group->pin;
+    event.stealthy = 0;
+    if (exclude >= 0) {
+        event.exclude = std::make_shared<std::set<int>>();
+        event.exclude->insert(exclude);
+    }
+    sched_event(event);
+}
+
+void Actor::sneak_command_event(const Event& event) {
+    if (event.stealthy != 0) {
+        if (sneaking == 0) {
+            message("You disappear into the shadows.");
+            emit(name.capitalized_name()+" disappears into the shadows.");
+        } else {
+            message("You attempt to stay hidden.");
+            emit_stealthy(name.capitalized_name()+" attempts to stay hidden.");
+        }
+        sneaking = use_skill(Stealth);
+    } else {
+        sneaking = 0;
+        message("You emerge from hiding.");
+        emit(name.capitalized_name()+" emerges from hiding.");
+    }
+}
+
+void Actor::roll_periodic_attributes_event(const Event& event) {
+    Event again(event);
+    perceiving = use_skill(Perception);
+    sched_event(again,60000);
 }
 
 void Actor::change_prox_groups(int new_group) {
@@ -313,11 +357,13 @@ void Actor::change_prox_groups(int new_group) {
     leave.type = Event::LEAVE_PROX_GROUP;
     leave.event_data.prox_group = group->group_number();
     leave.pin = group->pin;
+    leave.stealthy = sneaking;
 
     sched_event(leave);
 
     enter.type = Event::JOIN_PROX_GROUP;
     enter.event_data.prox_group = new_group; 
+    enter.stealthy = sneaking;
     enter.pin = prox_map[new_group]->pin;
 
     sched_event(enter);
@@ -448,6 +494,8 @@ void Actor::melee_attack_event(const Event& event) {
         msg = "You miss " + name.regular_name()+"!";
         emit(msg,attacker->id());
     } 
+    // Stop sneaking in combat
+    sneaking = 0;
     sched_event(result);
     if (damage >= hit_points) {
         schedule_destroyed();
@@ -488,6 +536,7 @@ void Actor::destroyed_event(const Event& event) {
     group->remove_member(this);
     do_not_receive_from(group->pin);
     if (pc) {
+        sneaking = 0;
         group = prox_map[START_GROUP];
         receive_from(group->pin);
         group->add_member(this);
@@ -519,19 +568,24 @@ void Actor::melee_result_event(const Event& event) {
 void Actor::kill_command_event(const Event& event) {
     std::string msg1, msg2;
     int target_id = group->find_best_match(*(event.key_words.get()));
-    if (target_id == group->first_member_id()) {
+    if (target_id == group->first_member_id() || 
+        group->find_member(target_id)->hidden() > perceiving) {
         message("You don't see anything like that.");
         return;
     } else {
         schedule_attack(target_id,true);
-        message("You rush to the attack!");
+        if (sneaking > 0) {
+            message("You creep up on your prey...");
+        } else {
+            message("You rush to the attack!");
+        }
         msg1 = name.capitalized_name()+" attacks ";
         if (primary_hand != nullptr) {
             msg2 = " with "+primary_hand->name().regular_name();
         }
         msg2 += "!";
-        emit(msg1+group->find_member(target_id)->get_name().regular_name()+msg2,ANY_ID_BUT_SRC,target_id);
-        emit(msg1+"you"+msg2,target_id);
+        emit_stealthy(msg1+group->find_member(target_id)->get_name().regular_name()+msg2,ANY_ID_BUT_SRC,target_id);
+        emit_stealthy(msg1+"you"+msg2,target_id);
     }
 }
 
@@ -571,7 +625,7 @@ void Actor::leave_mud_event(const Event& event) {
     leave.pin = group->pin;
     leave.dst_id = id();
     sched_event(leave);
-    emit(name.capitalized_name()+" mutters something about the Real World and vanishes!");
+    emit_stealthy(name.capitalized_name()+" mutters something about the Real World and vanishes!");
     sched_event(leave);
 }
 
@@ -581,13 +635,13 @@ void Actor::join_prox_group_event(const Event& event) {
         group->add_member(this);
         receive_from(group->pin);
     } else {
-        if (hates.contains(event.src_id)) {
-            emit(description+
+        if (hates.contains(event.src_id) && (event.stealthy == 0 || event.stealthy < perceiving)) {
+            emit_stealthy(description+
                 " "+name.capitalized_name()+
                 " looks murderously at you.",event.src_id);
             schedule_attack(event.src_id,true);
         } else {
-            emit(description);
+            emit_stealthy(description);
         }
     }
 }
@@ -648,6 +702,7 @@ void Actor::move_event(const Event& event) {
     see.dst_id = ANY_ID_BUT_SRC;
     see.msg = name.capitalized_name()+" arrives from "+reverse_direction_name[move_dir.dir]+".";
     see.pin = prox_map[move_dir.id]->pin;
+    see.stealthy = sneaking;
     sched_event(see);
     if (event.event_data.dir != Direction::Flee) {
         see.msg = name.capitalized_name()+" goes "+direction_name[move_dir.dir]+".";
@@ -660,7 +715,9 @@ void Actor::move_event(const Event& event) {
 
 void Actor::see_event(const Event& event) {
     if (!filter(event)) {
-        message(event.msg);
+        if (event.stealthy == 0 || perceiving > event.stealthy) {
+            message(event.msg);
+        }
     }
 }
 
@@ -762,6 +819,10 @@ void Actor::look_command_event(const Event& event) {
     } else {
         /// Look at or in something specific
         look.dst_id = group->find_best_match(*(event.key_words));
+        if (group->find_member(look.dst_id)->hidden() > perceiving) {
+            message("You don't see anything like that.");
+            return;
+        }
     }
     look.pin = group->pin;
     sched_event(look);
@@ -799,6 +860,7 @@ void Actor::look_event(const Event& event) {
             see.msg += item->name().capitalized_name()+"\n";
         }
     }
+    see.stealthy = sneaking;
     see.pin = group->pin;
     sched_event(see);
 }
@@ -837,15 +899,15 @@ void Actor::stow_command_event(const Event& event) {
         items.push_back(best_slot);
         if (best_slot == primary_hand) {
             message("You stow "+primary_hand->name().regular_name()+".");
-            emit(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".");
+            emit_stealthy(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".");
             primary_hand = nullptr; 
         } else if (best_slot == secondary_hand) {
             message("You stow "+secondary_hand->name().regular_name()+".");
-            emit(name.capitalized_name()+" stows "+secondary_hand->name().regular_name()+".");
+            emit_stealthy(name.capitalized_name()+" stows "+secondary_hand->name().regular_name()+".");
             secondary_hand = nullptr;
         } else {
             message("You remove "+body->name().regular_name()+".");
-            emit(name.capitalized_name()+" removes "+body->name().regular_name()+".");
+            emit_stealthy(name.capitalized_name()+" removes "+body->name().regular_name()+".");
             body = nullptr;
         }
     }
@@ -868,7 +930,7 @@ void Actor::wear_command_event(const Event& event) {
         items.remove(pick);
         body = pick;
         message("You put on "+body->name().regular_name()+".");
-        emit(name.capitalized_name()+" puts on "+body->name().regular_name()+".");
+        emit_stealthy(name.capitalized_name()+" puts on "+body->name().regular_name()+".");
     }
 }
 
@@ -877,7 +939,7 @@ void Actor::wield_command_event(const Event& event) {
     if (pick == nullptr) {
         if (secondary_hand != nullptr && secondary_hand->match_keywords(*(event.key_words.get())) > 0) {
             message("You move "+secondary_hand->name().regular_name()+" to your primary hand.");
-            emit(name.capitalized_name()+" moves "+secondary_hand->name().regular_name()+" to the primary hand.");
+            emit_stealthy(name.capitalized_name()+" moves "+secondary_hand->name().regular_name()+" to the primary hand.");
             std::swap(secondary_hand,primary_hand);
         } else {
             message("You don't have that.");
@@ -885,13 +947,13 @@ void Actor::wield_command_event(const Event& event) {
     } else {
         if (primary_hand != nullptr) {
             message("You stow "+primary_hand->name().regular_name()+".");
-            emit(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".");
+            emit_stealthy(name.capitalized_name()+" stows "+primary_hand->name().regular_name()+".");
             items.push_back(primary_hand);
         }
         items.remove(pick);
         primary_hand = pick;
         message("You wield "+primary_hand->name().regular_name()+".");
-        emit(name.capitalized_name()+" wields "+primary_hand->name().regular_name()+".");
+        emit_stealthy(name.capitalized_name()+" wields "+primary_hand->name().regular_name()+".");
     }
 }
 
@@ -900,7 +962,7 @@ void Actor::hold_command_event(const Event& event) {
     if (pick == nullptr) {
         if (primary_hand != nullptr && primary_hand->match_keywords(*(event.key_words.get())) > 0) {
             message("You move "+primary_hand->name().regular_name()+" to your off hand.");
-            emit(name.capitalized_name()+" moves "+primary_hand->name().regular_name()+" to the off hand.");
+            emit_stealthy(name.capitalized_name()+" moves "+primary_hand->name().regular_name()+" to the off hand.");
             std::swap(secondary_hand,primary_hand);
         } else {
             message("You don't have that.");
@@ -908,13 +970,13 @@ void Actor::hold_command_event(const Event& event) {
     } else {
         if (secondary_hand != nullptr) {
             message("You stow "+secondary_hand->name().regular_name()+".");
-            emit(name.capitalized_name()+" stows "+secondary_hand->name().regular_name()+".");
+            emit_stealthy(name.capitalized_name()+" stows "+secondary_hand->name().regular_name()+".");
             items.push_back(secondary_hand);
         }
         items.remove(pick);
         secondary_hand = pick;
         message("You hold "+secondary_hand->name().regular_name()+".");
-        emit(name.capitalized_name()+" holds "+secondary_hand->name().regular_name()+".");
+        emit_stealthy(name.capitalized_name()+" holds "+secondary_hand->name().regular_name()+".");
     }
 }
 
@@ -1011,6 +1073,23 @@ int Actor::attribute_modifier(int attribute_score) {
         case 29: return 9;
     }
     return 10;
+}
+
+int Actor::use_skill(Skill skill) {
+    Dice die(1,20);
+    int result = die();
+    if (skill == Perception) {
+        if (skills.find(Perception) != skills.end()) {
+            result += skills[Perception];
+        }
+        result += attribute_modifier(wisdom);
+    } else if (skill == Stealth) {
+        if (skills.find(Stealth) != skills.end()) {
+            result += skills[Perception];
+        }
+        result += attribute_modifier(dexterity);
+    }
+    return std::max(0,result);
 }
 
 int Actor::use_item(std::shared_ptr<Item>& item) {

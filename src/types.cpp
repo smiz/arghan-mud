@@ -21,6 +21,10 @@ MonsterAttributes to_monster_attribute(std::string name) {
 Skill to_skill(std::string name) {
     if (name == "melee") {
         return Melee;
+    } else if (name == "perception") {
+        return Perception;
+    } else if (name == "stealth") {
+        return Stealth;
     }
     throw "bad skill name "+name;
     return NoSkill;
@@ -29,6 +33,10 @@ Skill to_skill(std::string name) {
 std::string from_skill(Skill skill) {
     if (skill == Melee) {
         return "melee";
+    } else if (skill == Perception) {
+        return "perception";
+    } else if (skill == Stealth) {
+        return "stealth";
     }
     return "";
 }

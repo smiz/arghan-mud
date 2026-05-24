@@ -166,6 +166,9 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::PRACTICE:
                 practice_event(x.value);
                 break;
+            case Event::SNEAK_COMMAND:
+                sneak_command_event(x.value);
+                break;
             default:
                 break;
         }

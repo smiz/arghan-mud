@@ -54,6 +54,8 @@ struct Event {
         LOOK_COMMAND,
         /// @brief kill command issued to an actor by a player
         KILL_COMMAND,
+        /// @brief sneak command issued by a player
+        SNEAK_COMMAND,
         /// @brief Warning issued prior to an attack
         PENDING_ATTACK,
         /// @brief Look at something (or being looked at)
@@ -70,6 +72,8 @@ struct Event {
         SAVE_MODEL,
         /// @brief Practice a skill
         PRACTICE,
+        /// @brief, Reroll periodic attributes, like perception
+        ROLL_PERIODIC_ATTRIBUTES,
         /// @brief The model was killed, disintegrated, etc
         /// This should stay at the end so that all other
         /// immediate events by the actor (e.g., emitting)
@@ -79,7 +83,7 @@ struct Event {
         RESET_ZONE
     };
 
-    Event(){}
+    Event():stealthy(0),perceptive(0){}
     Event(Type type, int src_id):type(type),src_id(src_id){}
     /// @brief The type of the event
     Type type;
@@ -97,6 +101,10 @@ struct Event {
     std::shared_ptr<Item> item;
     /// @brief Actor ids that should NOT receive this event
     std::shared_ptr<std::set<int>> exclude;
+    /// @brief Was the source sneaking and, if so, how well?
+    int stealthy;
+    /// @brief How perceptive is the source of the event
+    int perceptive;
     /// @brief Primitive, type specific data
     union {
         /// @brief Prox group to enter or leave
@@ -188,6 +196,7 @@ class ProximityGroupMember {
      */
     virtual bool occupies_space() = 0;
 
+    virtual int hidden() const { return 0; }
     /// @brief Send an event directly to the member
     const adevs::pin_t pin;
 
@@ -428,6 +437,8 @@ class Model: public Atomic, public ProximityGroupMember {
     /// @brief Default behavior does nothing
     virtual void kill_command_event(const Event& event){}
     /// @brief Default behavior does nothing
+    virtual void sneak_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
     virtual void melee_attack_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void melee_result_event(const Event& event){}
@@ -445,6 +456,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void trap_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void practice_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void roll_periodic_attributes_event(const Event& event){}
 
     /// @brief Our proximity group
     ProximityGroup* group;
