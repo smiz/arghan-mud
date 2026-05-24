@@ -35,6 +35,9 @@ hit_points(2),
 damage(0),
 armor_class(10),
 wanders(0),
+level(0),
+xp_to_go(0),
+free_skill_slots(0),
 fd(-1),
 exit_node_id(START_GROUP),
 pc(pc) {
@@ -94,6 +97,15 @@ pc(pc) {
                 sched_event(event,wanders);
             }
         }
+        if (yaml["xp_to_go"]) {
+            xp_to_go = yaml["xp_to_go"].as<int>();
+        }
+        if (yaml["level"]) {
+            level = yaml["level"].as<int>();
+        }
+        if (yaml["free_slots"]) {
+            free_skill_slots = yaml["free_slots"].as<int>();
+        }
     } else {
         init(stats);
         save();
@@ -110,10 +122,23 @@ int Actor::match_keywords(const KeyWordList& key_words) const {
     return score;
 }
 
+void Actor::gain_xp(int xp) {
+    Dice hp_die(1,6);
+    while (xp > xp_to_go) {
+        level++;
+        free_skill_slots++;
+        xp -= xp_to_go;
+        xp_to_go = level*500;
+        hit_points += std::max(1,hp_die()+attribute_modifier(constitution));
+        message("You gained a level!");
+    }
+    xp_to_go -= xp;
+}
+
 initial_stats_t Actor::initial_stats() {
     initial_stats_t stats;
-    Dice attr_die(3,6);
     Dice hp_die(1,6);
+    Dice attr_die(3,6);
     stats.str = attr_die();
     stats.dex = attr_die();
     stats.con = attr_die();
@@ -172,6 +197,9 @@ void Actor::save() {
     config["charisma"] = charisma;
     config["armor_class"] = armor_class;
     config["hit_points"] = hit_points;
+    config["level"] = level;
+    config["xp_to_go"] = xp_to_go;
+    config["free_slots"] = free_skill_slots;
     std::vector<std::string> item_files;
     for (auto item: items) {
         build_inventory(item,item_files);
@@ -206,20 +234,24 @@ void Actor::report_skills() {
     for (auto skill: skills) {
         sout << from_skill(skill.first) << " " << skill.second << "\n";
     }
+    if (free_skill_slots > 0) {
+        sout << "You have " << free_skill_slots << " slots for training.";
+    }
     message(sout.str());
 }
 
 void Actor::report_stats() {
     std::string line;
     std::ostringstream sout(line);
-    sout << "str " << strength << std::endl;;
-    sout << "dex " << dexterity << std::endl;;
-    sout << "con " << constitution << std::endl;;
-    sout << "int " << intelligence << std::endl;;
-    sout << "wis " << wisdom << std::endl;;
-    sout << "chr " << charisma << std::endl;;
-    sout << "hp  " << hit_points << " / " << damage << std::endl;;
-    sout << "ac  " << total_ac() << std::endl;;
+    sout << "level " << level << " / " << xp_to_go << std::endl;
+    sout << "str   " << strength << std::endl;;
+    sout << "dex   " << dexterity << std::endl;;
+    sout << "con   " << constitution << std::endl;;
+    sout << "int   " << intelligence << std::endl;;
+    sout << "wis   " << wisdom << std::endl;;
+    sout << "chr   " << charisma << std::endl;;
+    sout << "hp    " << hit_points << " / " << damage << std::endl;;
+    sout << "ac    " << total_ac() << std::endl;;
     message(sout.str());
 }
 
@@ -292,6 +324,32 @@ void Actor::change_prox_groups(int new_group) {
     enter.pin = pin;
 
     sched_event(enter);
+}
+
+void Actor::practice_event(const Event& event) {
+    for (auto skill: *(event.key_words)) {
+        Skill code = NoSkill;
+        try {
+            code = to_skill(skill);
+        } catch(...) {
+
+        }
+        if (code == NoSkill) {
+            std::string msg = skill+" is not an art known to humankind.";
+            message(msg);
+        } else if (free_skill_slots > 0) {
+            if (skills.find(code) == skills.end()) {
+                skills[code] = 0;
+            }
+            skills[code] = skills[code] + 1;
+            free_skill_slots--;
+            std::string msg = "You are better at " + skill+"!";
+            message(msg);
+        } else {
+            message("You need more experience!");
+            return;
+        }
+    }
 }
 
 void Actor::enter_mud_event(const Event& event) {
@@ -608,6 +666,7 @@ void Actor::transfer_item_event(const Event& event) {
         return;
     }
     assert(event.event_data.transfer.src_to_dst);
+    gain_xp(event.item->claim_xp());
     items.push_back(event.item);
     save();
 }

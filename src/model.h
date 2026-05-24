@@ -68,6 +68,8 @@ struct Event {
         MELEE_RESULT,
         /// @brief Save the model to disk
         SAVE_MODEL,
+        /// @brief Practice a skill
+        PRACTICE,
         /// @brief The model was killed, disintegrated, etc
         /// This should stay at the end so that all other
         /// immediate events by the actor (e.g., emitting)
@@ -441,6 +443,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void wander_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void trap_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void practice_event(const Event& event){}
 
     /// @brief Our proximity group
     ProximityGroup* group;

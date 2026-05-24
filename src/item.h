@@ -76,8 +76,15 @@ class Item {
         m_contents->clear();
     }
 
+    int claim_xp() {
+        int tmp = xp;
+        xp = 0;
+        return tmp;
+    }
+
     protected:
 
+    int xp;
     int m_held_ac_bonus;
     int m_worn_ac_bonus;
     WearableSlots m_wearable;

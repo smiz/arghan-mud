@@ -244,6 +244,20 @@ void stow(Actor* obj, std::list<std::string>& tokens) {
     cv.notify_one();
 }
 
+void practice(Actor* obj, std::list<std::string>& tokens) {
+   Event event(Event::PRACTICE,obj->id());
+   event.dst_id = obj->id();
+   event.pin = obj->pin;
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
 void dice(Actor* obj, std::list<std::string>& tokens) {
     if (tokens.empty()) {
         obj->message("Roll which dice?");
@@ -305,7 +319,10 @@ bool parse_line_with_tokens(std::string& line, Actor* obj) {
     while (sin >> token) {
         tokens.push_back(token);
     }
-    if (cmd == "look") {
+    if (cmd == "prac") {
+        practice(obj,tokens);
+        return true;
+    } else if (cmd == "look") {
         look(obj,tokens);
         return true;
     } else if (cmd == "get") {

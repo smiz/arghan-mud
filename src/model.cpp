@@ -163,6 +163,9 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::TRAP:
                 trap_event(x.value);
                 break;
+            case Event::PRACTICE:
+                practice_event(x.value);
+                break;
             default:
                 break;
         }

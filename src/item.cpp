@@ -5,6 +5,7 @@
 const std::string Item::items_directory = "items/";
 
 Item::Item():
+xp(0),
 m_held_ac_bonus(0),
 m_worn_ac_bonus(0),
 m_wearable(WearableSlots::Unwearable),
@@ -14,6 +15,7 @@ key_words(std::make_shared<KeyWordList>()) {
 }
 
 Item::Item(std::string file):
+xp(0),
 m_held_ac_bonus(0),
 m_worn_ac_bonus(0),
 m_wearable(WearableSlots::Unwearable),
@@ -27,6 +29,9 @@ m_filename(file) {
     const YAML::Node& keyword_list = yaml["keywords"];
     for (const auto& word : keyword_list) {
         key_words->push_back(word.as<std::string>());
+    }
+    if (yaml["xp"]) {
+        xp = yaml["xp"].as<int>();
     }
     if (yaml["weapon_data"]) {
         m_weapon_info.speed = yaml["weapon_data"]["speed"].as<int>();

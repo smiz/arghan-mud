@@ -121,10 +121,11 @@ class Actor: public Model {
     void destroyed_event(const Event& event);
     void wander_event(const Event& event);
     void trap_event(const Event& event);
+    void practice_event(const Event& event);
 
     void schedule_destroyed();
     void schedule_attack(int target_id, bool warn = true);
-
+    
     /**
      * Return a skill roll for using an item. Returns
      * -1 if the item cannot be used.
@@ -165,6 +166,16 @@ class Actor: public Model {
     void save();
     void init(const initial_stats_t* const stats);
     void sched_save();
+
+    void gain_xp(int xp);
+ 
+
+    // Character level
+    int level;
+    // XP for next level
+    int xp_to_go;
+    // Free skill slots
+    int free_skill_slots;
 
     int fd;
     /// @brief Node at which the actor left the mud
