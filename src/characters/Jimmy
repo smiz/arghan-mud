@@ -14,7 +14,7 @@ charisma: 15
 armor_class: 10
 hit_points: 13319
 level: 3815
-xp_to_go: 1818881
+xp_to_go: 1818858
 free_slots: 3811
 items:
   - knife
@@ -25,4 +25,4 @@ items:
 skills:
   melee: 5
   perception: 0
-  stealth: 2
+  stealth: 200

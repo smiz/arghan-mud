@@ -326,6 +326,11 @@ void Actor::emit(std::string msg, int dst_id, int exclude) {
 }
 
 void Actor::sneak_command_event(const Event& event) {
+    bool combat = in_combat();
+    if (combat) {
+        message("You are fighting for your life!");
+        return;
+    }
     if (event.stealthy != 0) {
         if (sneaking == 0) {
             message("You disappear into the shadows.");
@@ -497,6 +502,10 @@ void Actor::melee_attack_event(const Event& event) {
     // Stop sneaking in combat
     sneaking = 0;
     sched_event(result);
+    // If we are not in combat already (we were surprised for example)
+    if (!in_combat()) {
+        schedule_attack(event.src_id,false);
+    }
     if (damage >= hit_points) {
         schedule_destroyed();
     }
@@ -607,6 +616,7 @@ void Actor::schedule_attack(int target_id, bool warn) {
         Event event(Event::PENDING_ATTACK,id());
         event.dst_id = target_id;
         event.pin = group->pin;
+        event.stealthy = sneaking;
         sched_event(event);
     }
 }
@@ -615,7 +625,9 @@ void Actor::pending_attack_event(const Event& event) {
     if (filter(event)) {
         return;
     }
-    schedule_attack(event.src_id,false);
+    if (event.stealthy == 0 || perceiving >= event.stealthy) {
+        schedule_attack(event.src_id,false);
+    }
 }
 
 void Actor::leave_mud_event(const Event& event) {
