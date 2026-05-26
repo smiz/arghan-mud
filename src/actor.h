@@ -44,8 +44,12 @@ class Actor: public Model {
     void report_stats();
     void report_skills();
 
+    void save();
+
     static initial_stats_t initial_stats();
 
+    void set_password(std::string passwd) { password = passwd; }
+    const std::string& get_password() const { return password; }
     /// @brief Write a message to the console if fd is valid
     /// @param msg The message to write 
     void message(std::string msg);
@@ -169,7 +173,6 @@ class Actor: public Model {
     private:
 
     void change_prox_groups(int new_group);
-    void save();
     void init(const initial_stats_t* const stats);
     void sched_save();
 
@@ -188,6 +191,8 @@ class Actor: public Model {
     int exit_node_id;
     /// @brief Is that actor pc that should be saved?
     const bool pc;
+
+    std::string password;
 };
 
 #endif

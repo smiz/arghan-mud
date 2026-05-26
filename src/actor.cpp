@@ -108,6 +108,9 @@ pc(pc) {
         if (yaml["free_slots"]) {
             free_skill_slots = yaml["free_slots"].as<int>();
         }
+        if (yaml["password"]) {
+            password = yaml["password"].as<std::string>();
+        }
     } else {
         init(stats);
         save();
@@ -191,6 +194,9 @@ void Actor::save() {
         return;
     }
     YAML::Node config;
+    if (!password.empty()) {
+        config["password"] = password;
+    }
     config["name"] = name.get_name();
     config["proper_name"] = name.is_proper();
     config["description"] = description;

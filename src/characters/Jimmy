@@ -1,3 +1,4 @@
+password: jimmy
 name: Jimmy
 proper_name: true
 description: Jimmy is here.
@@ -12,10 +13,10 @@ intelligence: 12
 wisdom: 12
 charisma: 15
 armor_class: 10
-hit_points: 13319
-level: 3815
-xp_to_go: 1818858
-free_slots: 3811
+hit_points: 5
+level: 0
+xp_to_go: 0
+free_slots: 0
 items:
   - knife
   - knife

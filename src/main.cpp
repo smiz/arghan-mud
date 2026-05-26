@@ -49,7 +49,7 @@ void run_sim() {
     while (!quit_sim) {
         std::unique_lock lk(mutex);
         /// Wait for the next event or the next input from a human
-        Time tN = sim->nextEventTime() - tL, tTmp = tL;
+        Time tN = sim->nextEventTime() - tL;
         auto t_start = std::chrono::high_resolution_clock().now(); 
         std::chrono::milliseconds next(tN.real());
         cv.wait_for(lk,next);
@@ -60,11 +60,12 @@ void run_sim() {
         /// Advance the clock until the we eat of the real time that has passed
         auto elapsed = (std::chrono::duration_cast<std::chrono::milliseconds>(t_now - t_start)).count();
         while (sim->nextEventTime().real()-tL.real() < elapsed) {
-            tTmp = sim->execNextEvent();
+            sim->execNextEvent();
         }
         /// Set the clock to the current time
         sim->setNextTime(Time(tL.real()+elapsed,0));
-        tL = tTmp;
+        /// Process any new characters
+        tL = sim->execNextEvent();
         /// Enter the commands
         while (!commands.empty()) {
             adevs::PinValue<Event> input(commands.front().first,commands.front().second);
@@ -511,16 +512,24 @@ repeat_name:
             break;
         }
     }
+    mutex.unlock();
     if (obj == nullptr) {
-        mutex.unlock();
         initial_stats_t stats;
         std::string response;
-        std::string name = line;
+        std::string name = line, passwd;
         line = "Welcome " + name +"!\n";
         bytes = write(fd,line.c_str(),line.size());
         if (bytes < 0) {
             return;
         }
+        line = "Set a password: ";
+        if (write(fd,line.c_str(),line.size()) < 0) {
+            return;
+        }
+        if (read_line(fd,line) < 0) {
+            return;
+        }
+        passwd = line;
         reroll:
         stats = Actor::initial_stats();
         {
@@ -538,7 +547,7 @@ repeat_name:
                 return;
             }
             do {
-                line = "Keep these (yes or no)? ";
+                line = "Keep these (yes or no or quit)? ";
                 if (write(fd,line.c_str(),line.size()) < 0) {
                     return;
                 }
@@ -549,13 +558,28 @@ repeat_name:
             if (response == "no") {
                 goto reroll;
             }
-            mutex.lock();
         }
-        graph->set_provisional(false);
         std::string path = character_dir+name;
+        mutex.lock();
         obj = new Actor(*(graph.get()),path,false,name,true,&stats);
-        graph->set_provisional(true);
+        obj->set_password(passwd);
+        obj->save();
         characters[lower_case(line)] = obj;
+    } else {
+        password:
+        std::string msg = "Password? ";
+        if (write(fd,msg.c_str(),msg.size()) <= 0) {
+            close(fd);
+            return;
+        }
+        if (read_line(fd,msg) <= 0) {
+            close(fd);
+            return;
+        };
+        if (msg != obj->get_password()) {
+            goto password;
+        }
+        mutex.lock();
     }
     obj->set_msg_fd(fd);
     mutex.unlock();
