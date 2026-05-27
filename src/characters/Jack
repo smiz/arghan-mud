@@ -17,8 +17,6 @@ level: 1
 xp_to_go: 7
 free_slots: 0
 items:
-  - knife
-  - cudgel
-  - hide_armor
+  []
 skills:
   melee: 1

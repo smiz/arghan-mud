@@ -9,3 +9,6 @@ description: |
 west:
   node: 3
   description: The road winds westward around Bald Knob.
+east:
+  node: 6
+  description: The road goes east along a ridge.

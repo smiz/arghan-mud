@@ -1,0 +1,13 @@
+node: 6
+zone: 0
+description: |
+  The dirt road travels gently along the ridge and arrives
+  at an intersection. It continues unceremoniously to the
+  east. An obscured sign, worn beyond recognition with age,
+  nontheless hints at unspeakable delights to the north.
+east:
+  node: 7
+  description: The road goes east along a ridge.
+west:
+  node: 5
+  description: The road goes west along a ridge.

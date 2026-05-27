@@ -1,0 +1,13 @@
+node: 7
+zone: 0
+description: |
+  The path splits into three directions at this sunny intersection.
+  To the east, the road climbs steeply. A trail descends gradually
+  to the south. To the north, the trail passes a sign that is worn
+  and impossible to read, but hints at danger.
+west:
+  node: 6
+  description: The road goes west on even ground.
+north:
+  node: 8
+  description: A trail descends to the south.

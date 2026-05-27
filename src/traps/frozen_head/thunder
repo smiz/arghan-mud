@@ -1,8 +1,8 @@
 name: thunder bolt
 proper_name: false
 description: A thunderous flash of lightening strikes the mountain top!
-delay: 10
+delay: 2000
 attribute: wis
 skill: perception
-damage: 2d4
+damage: 2d3
 save: 15

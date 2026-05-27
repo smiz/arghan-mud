@@ -42,5 +42,6 @@ void Trap::join_prox_group_event(const Event& event) {
     trap.event_data.trap.save = save_number;
     trap.msg = description;
     trap.pin = group->pin;
+    pending = true;
     sched_event(trap,delay);
 }

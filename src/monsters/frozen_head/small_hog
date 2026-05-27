@@ -5,8 +5,7 @@ detail: The hog is intent on finding nuts and pays scant attention to you.
 keywords:
   - hog
   - small
-wanders: 600
+wanders: 5000
 hit_points: 4
 strength: 16
-items:
-  - hide_armor
+wear_body: hide_armor

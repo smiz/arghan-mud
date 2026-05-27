@@ -1,0 +1,9 @@
+name: panther
+proper_name: false
+description: A sleek and vicious cat looks at you hungrily.
+detail: The panther is looking for its next meal, and it might be you!
+keywords:
+  - panther
+  - cat
+hit_points: 6
+strength: 16

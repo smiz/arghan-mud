@@ -5,7 +5,7 @@ description: |
   The trees block what would otherwise be a magnificent view of the
   western valley.
 south:
-  node: 2
+  node: 3
   description: The trail goes south through the woods.
 monsters:
-  - small_hog
+  - frozen_head/small_hog

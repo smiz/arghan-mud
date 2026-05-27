@@ -9,4 +9,4 @@ west:
   node: 1
   description: To the west you see Bird Mountain, tree shrouded and mysterious.
 items:
-  - knife
+  - frozen_head/knife

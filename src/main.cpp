@@ -66,6 +66,8 @@ void run_sim() {
         sim->setNextTime(Time(tL.real()+elapsed,0));
         /// Process any new characters
         tL = sim->execNextEvent();
+        /// Move clock to the next instant
+        sim->setNextTime(tL+adevs_epsilon<Time>());
         /// Enter the commands
         while (!commands.empty()) {
             adevs::PinValue<Event> input(commands.front().first,commands.front().second);

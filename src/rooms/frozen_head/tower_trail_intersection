@@ -14,4 +14,4 @@ east:
   node: 5 
   description: A wide, dirt road winds east.
 monsters:
-  - small_hog
+  - frozen_head/small_hog

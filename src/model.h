@@ -23,7 +23,7 @@ struct Event {
      */
     enum Type {
         /// @brief Go to the start area
-        ENTER_MUD,
+        ENTER_MUD = 1,
         /// @brief Leave all proximity groups and schedule
         LEAVE_MUD,
         /// @brief Join a proximity group

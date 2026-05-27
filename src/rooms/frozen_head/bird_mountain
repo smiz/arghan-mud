@@ -13,6 +13,6 @@ north:
   node: 2
   description: A trail climbs north between the rocks.
 monsters:
- - squirel
+ - frozen_head/squirel
 items:
- - cudgel
+ - frozen_head/cudgel

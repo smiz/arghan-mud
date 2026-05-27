@@ -52,6 +52,9 @@ pc(pc) {
         for (const auto& word : keyword_list) {
             key_words.push_back(word.as<std::string>());
         }
+        if (yaml["wear_body"]) {
+            body = std::make_shared<Item>(yaml["wear_body"].as<std::string>());
+        }
         if (yaml["items"]) {
             const YAML::Node& item_list = yaml["items"];
             for (const auto& item : item_list) {
@@ -1035,8 +1038,8 @@ void Actor::trap_event(const Event& event) {
     damage += dmg;
     message(event.msg);
     auto trap_name = group->find_member(event.src_id)->get_name();
-    emit(trap_name.capitalized_name()+" "+damage_adjective().first+" "+name.regular_name()+"!");
-    message(trap_name.capitalized_name()+" "+damage_adjective().second+" you!");
+    emit(trap_name.capitalized_name()+" "+damage_adjective().second+" "+name.regular_name()+"!");
+    message(trap_name.capitalized_name()+" "+damage_adjective().first+" you!");
     if (damage >= hit_points) {
         schedule_destroyed();
     }

@@ -1,0 +1,11 @@
+node: 8
+zone: 0
+description: |
+  You have arrived at a natural rock house, no doubt used by
+  Cherokee hunting bands. Up a steep rise to the north is
+  Tub Springs, but you can't get there from here.
+south:
+  node: 7
+  description: The trails goes south.
+monsters:
+  - frozen_head/panther
