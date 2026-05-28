@@ -56,6 +56,10 @@ graph(graph) {
     YAML::Node yaml = YAML::LoadFile(file.c_str());
     int prox_group_id = yaml["node"].as<int>();
     description = yaml["description"].as<std::string>();
+    short_description = yaml["short_description"].as<std::string>();
+    if (short_description.back() != '\n') {
+        short_description.push_back('\n');
+    }
     if (yaml["zone"]) {
         zone = yaml["zone"].as<int>();
     }
@@ -106,7 +110,7 @@ void Room::reset_zone_event(const Event& event) {
     sched_event(reset,reload_interval);
 }
 
-void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_are_container) {
+void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_are_container, int16_t flags) {
     Event see;
     see.type = Event::SEE;
     see.dst_id = src_id;
@@ -141,7 +145,11 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
         see.msg = item->detail();
         see.type = Event::SEE1;
     } else if (key_words.empty()) {
-        see.msg = description;
+        if (flags == SEE_SHORT) {
+            see.msg = short_description;
+        } else {
+            see.msg = description;
+        }
         direction_t exit_dir;
         for (int i = 0; i < int(EndOfDirectionEnum); i++) {
             exit_dir.dir = Direction(i);
@@ -156,12 +164,14 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
         see.type = Event::SEE1;
         see.msg = "Look at what?";
     }
+    see.flags = flags;
     sched_event(see);
 }
 
 void Room::join_prox_group_event(const Event& event) {
     KeyWordList empty;
-    sched_see_event(event.src_id,empty,false);
+    sched_see_event(event.src_id,empty,false,SEE_LONG);
+    sched_see_event(event.src_id,empty,false,SEE_SHORT);
 }
 
 void Room::look_event(const Event& event) {

@@ -84,7 +84,7 @@ struct Event {
     };
 
     Event():stealthy(0),perceptive(0){}
-    Event(Type type, int src_id):type(type),src_id(src_id){}
+    Event(Type type, int src_id):type(type),src_id(src_id),flags(0xffff){}
     /// @brief The type of the event
     Type type;
     /// @brief Originator of the event
@@ -105,6 +105,8 @@ struct Event {
     int stealthy;
     /// @brief How perceptive is the source of the event
     int perceptive;
+    /// @brief General purpose flags
+    int16_t flags;
     /// @brief Primitive, type specific data
     union {
         /// @brief Prox group to enter or leave

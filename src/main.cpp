@@ -309,6 +309,12 @@ void inventory(Actor *obj) {
     mutex.unlock();
 }
 
+void toggle_short(Actor* obj) {
+    mutex.lock();
+    obj->toggle_short_descriptions();
+    mutex.unlock();
+}
+
 void help(Actor* obj) {
     std::string line;
     std::ifstream fin("help");
@@ -399,6 +405,10 @@ bool parse_line(std::string& line, Actor* obj) {
     }
     if (line == "d") {
         move(obj,Down);
+        return true;
+    }
+    if (line == "short") {
+        toggle_short(obj);
         return true;
     }
     if (line == "inventory") {

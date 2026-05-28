@@ -58,4 +58,11 @@ struct direction_t {
 
 using KeyWordList = std::list<std::string>;
 
+/// See short descriptions event flag
+#define SEE_SHORT 0x01
+/// See long descriptions event flag
+#define SEE_LONG 0x02
+/// See both kinds of descriptions
+#define SEE_BOTH 0x03
+
 #endif

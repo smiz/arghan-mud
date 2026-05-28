@@ -42,7 +42,8 @@ xp_to_go(0),
 free_skill_slots(0),
 fd(-1),
 exit_node_id(START_GROUP),
-pc(pc) {
+pc(pc),
+short_descriptions(false) {
     if (load) {
         YAML::Node yaml = YAML::LoadFile(file.c_str());
         this->name = Name(yaml["name"].as<std::string>(),yaml["proper_name"].as<bool>());
@@ -737,7 +738,11 @@ void Actor::move_event(const Event& event) {
 void Actor::see_event(const Event& event) {
     if (!filter(event)) {
         if (event.stealthy == 0 || perceiving > event.stealthy) {
-            message(event.msg);
+            if (short_descriptions && event.flags & SEE_SHORT) {
+                message(event.msg);
+            } else if (!short_descriptions && event.flags & SEE_LONG) {
+                message(event.msg);
+            }
         }
     }
 }

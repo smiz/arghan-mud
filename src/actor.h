@@ -44,6 +44,7 @@ class Actor: public Model {
     void report_stats();
     void report_skills();
 
+    void toggle_short_descriptions() { short_descriptions = !short_descriptions; }
     void save();
 
     static initial_stats_t initial_stats();
@@ -193,6 +194,8 @@ class Actor: public Model {
     const bool pc;
 
     std::string password;
+
+    bool short_descriptions;
 };
 
 #endif

@@ -1,6 +1,5 @@
 For comprehensive help, see our website. But this list
 of commands will you started.
-
 n                       Go north.
 s                       Go south.
 e                       Go east.
@@ -19,17 +18,17 @@ get <obj>               Pick something up.
 get from <obj1> <obj2>  Get <obj2> out of <obj1>.
 drop <obj>              Drop something.
 drop in <obj1> <obj2>   Put <obj2> into <obj1>.
-
 -- Note that look in, get from, and drop in
 -- don't work on objects in your inventory!
 -- You have to drop the container before
 -- mucking around inside of it.
-
 stow <obj>              Return <obj> to inventory. 
 wield <obj>             Use <obj> as a weapon.
 hold <obj>              Hold <obj> in your off hand.
 wear <obj>              Wear <obj> on your person.
-
 -- Dropping or stowing and object is the same as
 -- taking it off your body or ceasing to wield or
 -- hold it.
+sneak                   Start sneaking.
+nosneak                 Stop sneaking.
+short                   Toggle short descriptions.
