@@ -35,6 +35,7 @@ hit_points(2),
 damage(0),
 armor_class(10),
 wanders(0),
+aggressive(false),
 sneaking(0),
 perceiving(0),
 level(0),
@@ -52,6 +53,9 @@ short_descriptions(false) {
         const YAML::Node& keyword_list = yaml["keywords"];
         for (const auto& word : keyword_list) {
             key_words.push_back(word.as<std::string>());
+        }
+        if (yaml["aggressive"]) {
+            aggressive = yaml["aggressive"].as<bool>();
         }
         if (yaml["wear_body"]) {
             body = std::make_shared<Item>(yaml["wear_body"].as<std::string>());
@@ -657,9 +661,10 @@ void Actor::join_prox_group_event(const Event& event) {
         group->add_member(this);
         receive_from(group->pin);
     } else {
-        if (hates.contains(event.src_id) && (event.stealthy == 0 || event.stealthy < perceiving)) {
+        if (!in_combat() && (aggressive || hates.contains(event.src_id))
+            && (event.stealthy == 0 || event.stealthy < perceiving)) {
             emit_stealthy(description+
-                " "+name.capitalized_name()+
+                "\n"+name.capitalized_name()+
                 " looks murderously at you.",event.src_id);
             schedule_attack(event.src_id,true);
         } else {
@@ -704,6 +709,7 @@ void Actor::move_event(const Event& event) {
     move_dir.dir = event.event_data.dir;
     if (combat && move_dir.dir != Direction::Flee) {
         message("You can't escape that way!");
+        return;
     } else if (!combat && move_dir.dir == Direction::Flee) {
         message("You aren't in combat.");
         return;

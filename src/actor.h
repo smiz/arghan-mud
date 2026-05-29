@@ -164,6 +164,8 @@ class Actor: public Model {
     /// @brief This monster will wander throughout its zone
     /// Monster wanders if > 0.
     int wanders;
+    /// Monster is aggressive if true
+    bool aggressive;
 
     void wander();
 

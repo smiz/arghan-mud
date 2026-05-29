@@ -1,5 +1,5 @@
 node: 7
-zone: 0
+zone: 1
 short_description: Intersection at Old Mac South.
 description: |
   The path splits into three directions at this sunny intersection.
@@ -11,4 +11,4 @@ west:
   description: The road goes west on even ground.
 north:
   node: 8
-  description: A trail descends to the south.
+  description: A trail descends to the north.
