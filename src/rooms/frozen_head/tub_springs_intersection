@@ -1,0 +1,10 @@
+node: 9
+zone: 1
+short_description: The Tub Springs intersection.
+description: |
+  From this wide spot on the road there are trails in all directions.
+west:
+  node: 7
+  description: A trail descends sharply to the west.
+monsters:
+  - frozen_head/small_hog

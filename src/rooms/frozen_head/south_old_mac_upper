@@ -12,3 +12,6 @@ west:
 north:
   node: 8
   description: A trail descends to the north.
+east:
+  node: 9
+  description: The trail climbs sharply to the east.
