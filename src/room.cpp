@@ -1,6 +1,7 @@
 #include "room.h"
 #include "actor.h"
 #include "trap.h"
+#include "maze.h"
 #include <yaml-cpp/yaml.h>
 
 static const int reload_interval = 120000;
@@ -48,13 +49,13 @@ void Room::reload() {
     }
 }
 
-Room::Room(Graph& graph, std::string file):
+Room::Room(Graph& graph, std::string file, int node_id):
 Model(graph),
 file(file),
 graph(graph) {
     int zone = NO_ZONE;
     YAML::Node yaml = YAML::LoadFile(file.c_str());
-    int prox_group_id = yaml["node"].as<int>();
+    int prox_group_id = (node_id == -1) ? yaml["node"].as<int>() : node_id;
     description = yaml["description"].as<std::string>();
     short_description = yaml["short_description"].as<std::string>();
     if (short_description.back() != '\n') {
@@ -82,6 +83,10 @@ graph(graph) {
                 .description = yaml[key]["description"].as<std::string>()
             };
             group->add_direction(dir);
+            if (dir.id == MAZE_START_ROOM_NUMBER) {
+                std::cout << "Loading the Maze" << std::endl;
+                new Maze(graph,group->group_number());
+            }
         }
     }
     /// Get traps in the room. 

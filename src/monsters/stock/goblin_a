@@ -1,0 +1,10 @@
+name: goblin
+proper_name: false
+description: A green skinned goblin is here picking his nose.
+detail: This goblin must be poking its brain with the finger so far up!
+keywords:
+  - goblin
+  - nose
+  - picking
+aggressive: true
+hit_points: 2

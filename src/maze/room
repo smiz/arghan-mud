@@ -1,0 +1,9 @@
+---
+short_description: A cavernous chamber.
+description: |
+  You stand in a large chamber of rock. The cathedral like
+  vault is a natural wonder. It would be more amazing if not
+  for the smelly mess created by the goblins that reside here.
+monsters:
+  - stock/goblin_a
+  - stock/goblin_b

@@ -1,0 +1,11 @@
+name: goblin matron
+proper_name: false
+description: A plump goblin matron appears to be tidying the place up a bit.
+detail: The goblin matron wields a mop so filthy it can only be added to the mess.
+keywords:
+  - goblin
+  - female
+  - matron
+aggressive: true
+hit_points: 2
+wield: nasty_mop

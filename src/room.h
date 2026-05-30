@@ -16,7 +16,15 @@ class Room: public Model {
 
     public:
 
-    Room(Graph& graph, std::string file);
+    /**
+     * Create a room from the supplied description file.
+     * If node_id != -1 then the supplied room id overrides
+     * the description id. This feature is for making
+     * areas at random and isn't normally used.
+     */
+    Room(Graph& graph, std::string file, int node_id = -1);
+
+    ProximityGroup* get_group() { return group; }
 
     protected:
 
@@ -29,6 +37,7 @@ class Room: public Model {
 
     /// A room does not occupy itself!
     bool occupies_space() { return false; }
+
     private:
  
     /// @brief File to reload the room

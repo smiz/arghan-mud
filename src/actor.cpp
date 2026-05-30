@@ -60,6 +60,9 @@ short_descriptions(false) {
         if (yaml["wear_body"]) {
             body = std::make_shared<Item>(yaml["wear_body"].as<std::string>());
         }
+        if (yaml["wield"]) {
+            primary_hand = std::make_shared<Item>(yaml["wield"].as<std::string>());
+        }
         if (yaml["items"]) {
             const YAML::Node& item_list = yaml["items"];
             for (const auto& item : item_list) {
@@ -146,7 +149,7 @@ void Actor::gain_xp(int xp) {
         level++;
         free_skill_slots++;
         xp -= xp_to_go;
-        xp_to_go = level*10;
+        xp_to_go = level*100;
         hit_points += std::max(1,hp_die()+attribute_modifier(constitution));
         message("You gained a level!");
     }

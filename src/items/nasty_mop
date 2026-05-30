@@ -1,0 +1,13 @@
+name: mop
+proper_name: false
+description: A disgusting mop fouls the space it occupies. 
+detail: That mop is filthy. You wrinkle your nose at the smell.
+skill: melee
+attribute: str
+keywords:
+  - mop
+  - nasty
+weapon_data:
+  speed: 30
+  damage: 1d2
+  ac: 0
