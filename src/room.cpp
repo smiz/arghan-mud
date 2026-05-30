@@ -61,6 +61,9 @@ graph(graph) {
     if (short_description.back() != '\n') {
         short_description.push_back('\n');
     }
+    if (description.back() != '\n') {
+        description.push_back('\n');
+    }
     if (yaml["zone"]) {
         zone = yaml["zone"].as<int>();
     }

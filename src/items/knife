@@ -1,0 +1,13 @@
+name: knife
+proper_name: false
+description: A sturdy knife has been discarded here.
+detail: That knife looks dangerous. Be careful!
+skill: melee
+attribute: dex
+keywords:
+  - knife
+  - sturdy
+weapon_data:
+  speed: 1
+  damage: 1d3
+  ac: 0

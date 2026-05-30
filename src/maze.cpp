@@ -3,9 +3,11 @@
 std::map<int,std::map<int,std::map<int,Room*>>> Maze::maze;
 
 static std::string room_description() {
-    int pick = rand()%2;
+    int pick = rand()%4;
     switch(pick) {
         case 0: return "maze/room";
+        case 1: return "maze/room_a";
+        case 2: return "maze/room_b";
     }
     return "maze/tunnel";
 }

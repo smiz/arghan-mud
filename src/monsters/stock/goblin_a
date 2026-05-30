@@ -7,4 +7,5 @@ keywords:
   - nose
   - picking
 aggressive: true
+wanders: 60000
 hit_points: 2

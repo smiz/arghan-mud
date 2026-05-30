@@ -747,9 +747,9 @@ void Actor::move_event(const Event& event) {
 void Actor::see_event(const Event& event) {
     if (!filter(event)) {
         if (event.stealthy == 0 || perceiving > event.stealthy) {
-            if (short_descriptions && event.flags & SEE_SHORT) {
+            if (short_descriptions && (event.flags & SEE_SHORT)) {
                 message(event.msg);
-            } else if (!short_descriptions && event.flags & SEE_LONG) {
+            } else if (!short_descriptions && (event.flags & SEE_LONG)) {
                 message(event.msg);
             }
         }

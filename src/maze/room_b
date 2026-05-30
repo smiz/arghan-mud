@@ -3,3 +3,5 @@ short_description: A cavernous chamber.
 description: |
   You stand in a large chamber of rock. The cathedral like
   vault is a natural wonder.
+monsters:
+  - stock/goblin_b

@@ -83,7 +83,7 @@ struct Event {
         RESET_ZONE
     };
 
-    Event():stealthy(0),perceptive(0){}
+    Event():stealthy(0),perceptive(0),flags(0xffff){}
     Event(Type type, int src_id):type(type),src_id(src_id),flags(0xffff){}
     /// @brief The type of the event
     Type type;

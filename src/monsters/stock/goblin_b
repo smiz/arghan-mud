@@ -1,4 +1,4 @@
-name: goblin matron
+name: matron
 proper_name: false
 description: A plump goblin matron appears to be tidying the place up a bit.
 detail: The goblin matron wields a mop so filthy it can only be added to the mess.
@@ -8,4 +8,5 @@ keywords:
   - matron
 aggressive: true
 hit_points: 2
+wanders: 60000
 wield: nasty_mop
