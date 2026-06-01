@@ -172,9 +172,11 @@ class Actor: public Model {
     std::pair<std::string,std::string> damage_adjective();
 
     int sneaking, perceiving;
-
     /// @brief Set of names that I will assist if they are attacked
     std::set<std::string> assist;
+
+    void account_for_cost(const std::shared_ptr<Item>& item, bool selling);
+    int consolidate_coins();
 
     private:
 

@@ -84,7 +84,7 @@ struct Event {
     };
 
     Event():stealthy(0),perceptive(0),flags(0xffff){}
-    Event(Type type, int src_id):type(type),src_id(src_id),flags(0xffff){}
+    Event(Type type, int src_id):type(type),src_id(src_id),stealthy(0),perceptive(0),flags(0xffff){}
     /// @brief The type of the event
     Type type;
     /// @brief Originator of the event
@@ -126,6 +126,7 @@ struct Event {
             /// @brief Transfer the item from src_id to dst_id
             bool src_to_dst;
             bool first_keyword_is_container;
+            int coins_in_purse;
         } transfer;
         struct {
             /// @brief Damage inflicted by the trap
@@ -231,8 +232,8 @@ class ProximityGroup {
 
     /// @brief Create a proximity group with a room id
     /// @param group_number The node number assigned by the Room
-    ProximityGroup(int group_number = 0, int zone_number = NO_ZONE):
-    m_group_number(group_number),m_zone_number(zone_number){
+    ProximityGroup(int group_number = 0, int zone_number = NO_ZONE, bool shop = false):
+    m_group_number(group_number),m_zone_number(zone_number),m_shop(shop){
         if (zone_number != NO_ZONE) {
             zone_occupancy[zone_number] = 0;
         }
@@ -343,6 +344,9 @@ class ProximityGroup {
         return nullptr;
     }
 
+    bool is_shop() const { return m_shop; }
+    void set_shop(bool shop) { m_shop = shop; }
+
     private:
 
     /// @brief Node number of the group
@@ -353,6 +357,8 @@ class ProximityGroup {
     std::list<direction_t> exits;
     /// @brief Set of group members
     std::list<ProximityGroupMember*> m_members;
+    /// @brief Is this zone a shop?
+    bool m_shop;
 
     static std::map<int,int> zone_occupancy;
 };

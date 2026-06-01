@@ -4,5 +4,4 @@ description: A sack is here, left behind by some hapless hiker.
 detail: I bet it can hold a lot!
 keywords:
   - sack
-contents:
-  - knife
+cost: 1

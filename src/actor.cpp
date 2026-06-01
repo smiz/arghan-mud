@@ -1,6 +1,7 @@
 #include "actor.h"
 #include "dice.h"
 #include "corpse.h"
+#include "coins.h"
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
@@ -197,7 +198,7 @@ void Actor::init(const initial_stats_t* const stats) {
 }
 
 static void build_inventory(std::shared_ptr<Item>& item, std::vector<std::string>& item_files) {
-    /// Don't include transient items (specifically, corpses)
+    /// Don't include transient items (specifically, corpses and coins)
     if (!item->filename().empty()) {
         item_files.push_back(item->filename());
     }
@@ -775,8 +776,11 @@ void Actor::transfer_item_event(const Event& event) {
     }
     assert(event.event_data.transfer.src_to_dst);
     gain_xp(event.item->claim_xp());
+    // If we didn't have the money for it we won't receive it
+    account_for_cost(event.item,false);
     items.push_back(event.item);
     save();
+    consolidate_coins();
 }
 
 void Actor::get_command_event(const Event& event) {
@@ -791,7 +795,9 @@ void Actor::get_command_event(const Event& event) {
     get.type = Event::TRANSFER_ITEM;
     get.dst_id = group->first_member_id();
     get.pin = group->members().front()->pin;
+    get.event_data.transfer.coins_in_purse = consolidate_coins();
     get.src_id = id();
+    get.event_data.transfer.src_to_dst = false;
     sched_event(get);
 }
 
@@ -809,6 +815,7 @@ void Actor::drop_command_event(const Event& event) {
     drop.pin = group->members().front()->pin;
     drop.src_id = id();
     drop.item = find_item(*(event.key_words.get()));
+    drop.event_data.transfer.src_to_dst = true;
     // Not in our pack
     if (drop.item != nullptr) {
         items.remove(drop.item);
@@ -847,6 +854,8 @@ void Actor::drop_command_event(const Event& event) {
     if (drop.item != nullptr) {
         save();
         sched_event(drop);
+        // Drop it in a shop means you sold it
+        account_for_cost(drop.item,true);
     } else {
         message("You don't have that.");
     }
@@ -1201,3 +1210,56 @@ int Actor::total_ac() {
     return armor_class + mod;
 }
 
+void Actor::account_for_cost(const std::shared_ptr<Item>& item, bool selling) {
+    if (!group->is_shop()) {
+        return;
+    }
+    if (selling) {
+        int value = item->get_cost()/2;
+        if (item->get_cost() > 0 && value == 0 && attribute_modifier(charisma) > 0) {
+            value = 1;
+        }
+        if (items.empty()) {
+            items.push_back(std::make_shared<Coins>(value));
+        } else {
+            Coins* c = dynamic_cast<Coins*>(items.back().get());
+            if (c == nullptr) {
+                items.push_back(std::make_shared<Coins>(value));
+            } else {
+                c->increment(value);
+            }
+        }
+        consolidate_coins();
+    } else {
+        consolidate_coins();
+        assert(!items.empty() || item->get_cost() == 0);
+        if (items.empty()) {
+            return;
+        }
+        Coins* c = dynamic_cast<Coins*>(items.back().get());
+        if (c == nullptr) {
+            assert(item->get_cost() == 0);
+            return;
+        }
+        c->decrement(item->get_cost());
+    }
+}
+
+int Actor::consolidate_coins() {
+    auto coins = std::make_shared<Coins>(0);
+    auto iter = items.begin();
+    while (iter != items.end()) {
+        Coins* c = dynamic_cast<Coins*>((*iter).get());
+        if (c != nullptr) {
+            coins->increment(c->get_cost());
+            iter = items.erase(iter);
+        } else {
+            iter++;
+        }
+    }
+    if (coins->get_cost() > 0) {
+        items.push_back(coins);
+        return items.back()->get_cost();
+    }
+    return 0;
+}

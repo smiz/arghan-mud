@@ -1,0 +1,11 @@
+node: 27
+zone: 3
+short_description: Central Court
+description: |
+  A grassy field provides ample space for exercising the soldiers.
+east:
+  node: 26
+  description: To the east is the entry yard and southern gate tower.
+south:
+  node: 28
+  description: To the south you see a busy bazaar.

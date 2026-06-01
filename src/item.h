@@ -24,6 +24,7 @@ class Item {
      */
     Item(std::string file);
     Item();
+    virtual ~Item(){}
 
     std::string description() const { return m_description; }
     std::string detail() const { return m_detail; }
@@ -82,11 +83,14 @@ class Item {
         return tmp;
     }
 
+    int get_cost() const;
+
     protected:
 
     int xp;
     int m_held_ac_bonus;
     int m_worn_ac_bonus;
+    int m_cost;
     WearableSlots m_wearable;
     MonsterAttributes m_modifier;
     Skill m_skill;

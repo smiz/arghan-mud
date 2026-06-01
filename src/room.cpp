@@ -2,6 +2,7 @@
 #include "actor.h"
 #include "trap.h"
 #include "maze.h"
+#include "coins.h"
 #include <yaml-cpp/yaml.h>
 
 static const int reload_interval = 120000;
@@ -47,6 +48,10 @@ void Room::reload() {
             items.push_back(new_item);
         }
     }
+    if (yaml["coins"]) {
+        int number = yaml["coins"].as<int>();
+        items.push_back(std::make_shared<Coins>(number));
+    }
 }
 
 Room::Room(Graph& graph, std::string file, int node_id):
@@ -76,6 +81,10 @@ graph(graph) {
     /// See ProximityGroup::find_best_match()
     group->add_member(this);
     receive_from(group->pin);
+    /// Are we a shop?
+    if (yaml["shop"]) {
+        group->set_shop(yaml["shop"].as<bool>());
+    }
     /// Get our exits
     for (int i = 0; i < 6; i++) {
         std::string key = direction_key[i];
@@ -166,7 +175,14 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
             }
         }
         for (auto item: items) {
-            see.msg += item->description()+'\n';
+            std::string line;
+            std::ostringstream sout(line);
+            sout << item->description();
+            if (group->is_shop()) {
+                sout << " (" << item->get_cost() << " coins)";
+            }
+            sout << std::endl;
+            see.msg += sout.str();
         }
     } else {
         see.type = Event::SEE1;
@@ -234,18 +250,16 @@ void Room::transfer_item_event(const Event& event) {
             see.dst_id = ANY_ID_BUT_SRC;
             sched_event(see);
             see.msg = "You put " + event.item->name().regular_name()+" into "+container->name().regular_name()+".";
-            see.src_id = event.src_id;
             see.dst_id = event.src_id;
             sched_event(see);
         } else {
             items.push_back(event.item);
             see.msg = target->get_name().capitalized_name()+
-                " picks up " + event.item->name().regular_name()+".";
+                " drops " + event.item->name().regular_name()+".";
             see.src_id = event.src_id;
             see.dst_id = ANY_ID_BUT_SRC;
             sched_event(see);
             see.msg = "You drop " + event.item->name().regular_name()+".";
-            see.src_id = event.src_id;
             see.dst_id = event.src_id;
             sched_event(see);
         }
@@ -265,6 +279,14 @@ void Room::transfer_item_event(const Event& event) {
             see.msg = "That object isn't here.";
             sched_event(see);
         } else {
+            if (group->is_shop() && transfer.event_data.transfer.coins_in_purse < transfer.item->get_cost()) {
+                see.src_id = id();
+                see.dst_id = event.src_id;
+                see.pin = target->pin;
+                see.msg = "You can't afford that!";
+                sched_event(see);
+                return;
+            }
             if (container == nullptr) {
                 items.remove(transfer.item);
                 see.msg = target->get_name().capitalized_name()+

@@ -8,6 +8,7 @@ Item::Item():
 xp(0),
 m_held_ac_bonus(0),
 m_worn_ac_bonus(0),
+m_cost(0),
 m_wearable(WearableSlots::Unwearable),
 m_modifier(MonsterAttributes::NoAttr),
 m_skill(Skill::NoSkill),
@@ -18,6 +19,7 @@ Item::Item(std::string file):
 xp(0),
 m_held_ac_bonus(0),
 m_worn_ac_bonus(0),
+m_cost(0),
 m_wearable(WearableSlots::Unwearable),
 m_modifier(MonsterAttributes::NoAttr),
 key_words(std::make_shared<KeyWordList>()),
@@ -62,6 +64,9 @@ m_filename(file) {
             m_contents->push_back(new_item);
         }
     }
+    if (yaml["cost"]) {
+        m_cost = yaml["cost"].as<int>();
+    }
 }
 
 std::shared_ptr<Item> Item::remove_item(const KeyWordList& key_words) {
@@ -89,4 +94,14 @@ int Item::match_keywords(const KeyWordList& key_words) const {
         }
     }
     return score;
+}
+
+int Item::get_cost() const {
+    int sum = m_cost;
+    if (m_contents != nullptr) {
+        for (auto iter = m_contents->begin(); iter != m_contents->end(); iter++) {
+            sum += (*iter)->get_cost();
+        }
+    }
+    return sum;
 }

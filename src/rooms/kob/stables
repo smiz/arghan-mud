@@ -12,3 +12,5 @@ monsters:
 east:
   node: 3
   description: An archway to the east permits entrance to the yard.
+items:
+  - nasty_mop

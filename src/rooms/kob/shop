@@ -1,0 +1,10 @@
+node: 28
+short_description: The Bazaar
+description: |
+  A cavernous warehouse contains numerous vendors hawking their wares.
+  You can sell anything here, and buy whatever a vendor carries...if
+  you have the cash.
+north:
+  node: 27
+  description: To the north is the practice yard.
+shop: true

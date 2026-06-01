@@ -10,3 +10,4 @@ weapon_data:
   speed: 7
   damage: 1d8
   ac: 0
+cost: 3
