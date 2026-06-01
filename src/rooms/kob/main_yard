@@ -4,7 +4,7 @@ short_description: Central Court
 description: |
   A grassy field provides ample space for exercising the soldiers.
 east:
-  node: 26
+  node: 29
   description: To the east is the entry yard and southern gate tower.
 south:
   node: 28

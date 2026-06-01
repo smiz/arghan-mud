@@ -8,3 +8,15 @@ north:
   node: 27
   description: To the north is the practice yard.
 shop: true
+items:
+  - knife
+  - chainmail
+  - leather_armor
+  - platemail
+  - polearm
+  - shield
+  - spear
+  - knife
+  - hide_armor
+  - pitchfork
+  - sack

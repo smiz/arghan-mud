@@ -7,7 +7,7 @@ description: |
   the lands to the east. Poking above the forest is a series of hills,
   which are rumored to be fraught with danger.
 down:
-  node: 26
+  node: 29
   description: Stairs descend to the castle yard below.
 south:
   node: 24

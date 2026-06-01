@@ -13,5 +13,5 @@ west:
   node: 4
   description: Through an archway to the west you pens for horses and mules.
 south:
-  node: 26
+  node: 29
   description: The yard continues to the south.

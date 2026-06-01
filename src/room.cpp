@@ -72,10 +72,11 @@ graph(graph) {
     if (yaml["zone"]) {
         zone = yaml["zone"].as<int>();
     }
-    if (prox_map.find(prox_group_id) == prox_map.end()) {
-        prox_map[prox_group_id] = new ProximityGroup(prox_group_id,zone); 
+    if (prox_map.find(prox_group_id) != prox_map.end()) {
+        std::cout << "Duplicate node number " << prox_group_id << std::endl;
+        exit(0);
     }
-    group = prox_map[prox_group_id];
+    prox_map[prox_group_id] = group = new ProximityGroup(prox_group_id,zone); 
     /// Will be first member in the group so that look with
     /// no argument queries the room.
     /// See ProximityGroup::find_best_match()
@@ -206,6 +207,7 @@ void Room::look_event(const Event& event) {
 }
 
 void Room::transfer_item_event(const Event& event) {
+    bool missed_container = false;
     if (event.dst_id != id()) {
         return;
     }
@@ -230,14 +232,27 @@ void Room::transfer_item_event(const Event& event) {
         container_words.push_back(event.key_words->front());
         container = find_item(container_words);
         if (container == nullptr) {
+            missed_container = true;
             see.msg = "You don't see that.";
-            sched_event(see);
-            return;
-        }
-        if (!container->container()) {
-            see.msg = "That is can't hold anything!";
-            sched_event(see);
-            return;
+            if (event.event_data.transfer.src_to_dst) {
+                see.msg += " You drop it on the ground.";
+                sched_event(see);
+            } else {
+                sched_event(see);
+                return;
+            }
+        } else if (!container->container()) {
+            missed_container = true;
+            see.msg = container->name().capitalized_name() + " can't hold anything!";
+            if (event.event_data.transfer.src_to_dst) {
+                see.msg += " You drop it on the ground.";
+                sched_event(see);
+            } else {
+                sched_event(see);
+                return;
+            }
+            // We'll drop it on the ground
+            container = nullptr;
         }
     }
     /// Receive an item
@@ -259,9 +274,11 @@ void Room::transfer_item_event(const Event& event) {
             see.src_id = event.src_id;
             see.dst_id = ANY_ID_BUT_SRC;
             sched_event(see);
-            see.msg = "You drop " + event.item->name().regular_name()+".";
-            see.dst_id = event.src_id;
-            sched_event(see);
+            if (!missed_container) {
+                see.msg = "You drop " + event.item->name().regular_name()+".";
+                see.dst_id = event.src_id;
+                sched_event(see);
+            }
         }
     } else { // Give up an item if we have it
         transfer.src_id = id();
