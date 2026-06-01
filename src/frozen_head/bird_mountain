@@ -8,7 +8,7 @@ description: |
   from the rocks that rise above you. The trail climbs to the north
   and descends to the east.
 east: 
-  node: 0
+  node: 10
   description: A trail enters thick woods to the east.
 north:
   node: 2

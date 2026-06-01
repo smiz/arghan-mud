@@ -1,0 +1,17 @@
+node: 24
+zone: 3
+short_description: Southeastern Tower
+description: |
+  This tower is at the southeastern point of the walls. To the
+  east you can see the wild and uncivilized woods that many
+  claim harbor great terrors. Below you the road to the keep
+  winds through a deep gorge.
+north:
+  node: 25
+  description: You can walk north atop the wall to another tower.
+west:
+  node: 26
+  description: You can walk west atop the wall to another tower.
+monsters:
+  - kob/tower_guard
+  - kob/tower_guard

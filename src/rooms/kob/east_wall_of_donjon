@@ -1,0 +1,12 @@
+node: 21
+zone: 3
+short_description: Eastern Wall of the Donjon.
+description: |
+  You stand next to the wall on the eastern side of the keep's
+  great tower.
+west:
+  node: 22
+  description: A narrow walkway snakes west around the donjon.
+east:
+  node: 20
+  description: You can walk east atop the wall to a tower.

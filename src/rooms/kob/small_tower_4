@@ -1,0 +1,18 @@
+node: 26
+zone: 3
+short_description: Southwestern Tower
+description: |
+  This tower is at the southwestern point of the walls. From here
+  you peer down into the deep gorge that separates the keep from
+  the surrounding countryside. Gazing west, you see the cultivated
+  fields and smoky hamlets of a properous kingdom. So different
+  from the wild and dangerous woods east of the keep.
+north:
+  node: 23
+  description: You can walk north atop the wall to another tower.
+east:
+  node: 24
+  description: You can walk east atop the wall to another tower.
+monsters:
+  - kob/tower_guard
+  - kob/tower_guard

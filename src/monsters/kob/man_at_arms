@@ -1,0 +1,15 @@
+name: man-at-arms
+proper_name: false
+description: A man-at-arms stands at attention.
+detail: This soldier of the king looks a fearsome opponent.
+keywords:
+  - man
+  - man-at-arms
+  - soldier
+assist:
+  - man-at-arms
+hit_points: 5
+wield: polearm
+wear_body: platemail
+skills:
+  melee: 1

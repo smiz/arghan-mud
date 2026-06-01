@@ -63,6 +63,15 @@ short_descriptions(false) {
         if (yaml["wield"]) {
             primary_hand = std::make_shared<Item>(yaml["wield"].as<std::string>());
         }
+        if (yaml["hold"]) {
+            secondary_hand = std::make_shared<Item>(yaml["hold"].as<std::string>());
+        }
+        if (yaml["assist"]) {
+            const YAML::Node& assist_list = yaml["assist"];
+            for (const auto& pal : assist_list) {
+                assist.insert(pal.as<std::string>());
+            }
+        }
         if (yaml["items"]) {
             const YAML::Node& item_list = yaml["items"];
             for (const auto& item : item_list) {
@@ -470,6 +479,10 @@ std::pair<std::string,std::string> Actor::damage_adjective() {
 }
 
 void Actor::melee_attack_event(const Event& event) {
+    auto target = group->find_member(event.dst_id);
+    if (target != nullptr && assist.contains(target->get_name().get_name()) && !in_combat()) {
+        schedule_attack(event.src_id,false);
+    }
     if (filter(event)) {
         return;
     }
@@ -873,27 +886,27 @@ void Actor::look_event(const Event& event) {
     Event see(Event::SEE1,id());
     see.dst_id = event.src_id;
     if (event.dst_id == id()) {
-        see.msg = detail; 
+        see.msg = detail+'\n'; 
+        if (primary_hand != nullptr) {
+            see.msg += name.capitalized_name()+" wields "+primary_hand->name().regular_name()+".\n";
+        }
+        if (secondary_hand != nullptr) {
+            see.msg += name.capitalized_name()+" holds "+secondary_hand->name().regular_name()+".\n";
+        }
+        if (body != nullptr) {
+            see.msg += name.capitalized_name()+" wears "+body->name().regular_name()+".\n";
+        }
+        if (!items.empty()) {
+            see.msg += name.capitalized_name()+" is carrying:\n";
+            for (auto item: items) {
+                see.msg += item->name().capitalized_name()+"\n";
+            }
+        }
     } else {
         see.msg = description;
     }
     if (see.msg.back() != '\n') {
             see.msg += '\n';
-    }
-    if (primary_hand != nullptr) {
-        see.msg += name.capitalized_name()+" wields "+primary_hand->name().regular_name()+".\n";
-    }
-    if (secondary_hand != nullptr) {
-        see.msg += name.capitalized_name()+" holds "+secondary_hand->name().regular_name()+".\n";
-    }
-    if (body != nullptr) {
-        see.msg += name.capitalized_name()+" wears "+body->name().regular_name()+".\n";
-    }
-    if (!items.empty()) {
-        see.msg += name.capitalized_name()+" is carrying:\n";
-        for (auto item: items) {
-            see.msg += item->name().capitalized_name()+"\n";
-        }
     }
     see.stealthy = sneaking;
     see.pin = group->pin;

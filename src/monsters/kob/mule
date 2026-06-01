@@ -1,0 +1,8 @@
+name: mule
+proper_name: false
+description: A sturdy mule is here munching hay.
+detail: That mule looks onery!
+keywords:
+  - mule
+hit_points: 7
+str: 17

@@ -1,0 +1,17 @@
+node: 25
+zone: 3
+short_description: South Gate Tower
+description: |
+  Standing atop the tower you can see far and wide. The winding road of
+  the keep vanishes into the distance to the south. A thick forest covers
+  the lands to the east. Poking above the forest is a series of hills,
+  which are rumored to be fraught with danger.
+down:
+  node: 26
+  description: Stairs descend to the castle yard below.
+south:
+  node: 24
+  description: You can walk south atop the wall to another tower.
+monsters:
+  - kob/tower_guard
+  - kob/tower_guard

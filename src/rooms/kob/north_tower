@@ -1,0 +1,17 @@
+node: 2
+zone: 3
+short_description: North Gate Tower
+description: |
+  Standing atop the tower you can see far and wide. The winding road of
+  the keep vanishes into the distance to the south. A thick forest covers
+  the lands to the east. Poking above the forest is a series of hills,
+  which are rumored to be fraught with danger.
+down:
+  node: 3
+  description: Stairs descend to the castle yard below.
+north:
+  node: 19
+  description: You can walk north atop the wall to another tower.
+monsters:
+  - kob/tower_guard
+  - kob/tower_guard

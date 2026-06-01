@@ -1,0 +1,15 @@
+node: 20
+zone: 3
+short_description: Northeastern Tower
+description: |
+  This tower is at the northeastern point of the walls. Thick
+  forests cover the lands to the east and north.
+south:
+  node: 19
+  description: You can walk south atop the wall to another tower.
+west:
+  node: 21
+  description: To the west is the wall of the donjon, which rises above the parapets.
+monsters:
+  - kob/tower_guard
+  - kob/tower_guard

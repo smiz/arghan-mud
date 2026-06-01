@@ -1,0 +1,11 @@
+name: chainmail
+proper_name: false
+description: A suit of chain mail armor is here. 
+detail: This suit of chainmail will certainly offer some protection!
+keywords:
+  - chainmail
+  - chain
+  - armor
+wearable:
+  location: body
+  ac: 5

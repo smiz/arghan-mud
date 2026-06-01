@@ -1,0 +1,12 @@
+name: spear
+proper_name: false
+description: A spear is stuck in the ground.
+detail: An ancient weapon, tried and true.
+skill: melee
+attribute: str
+keywords:
+  - spear
+weapon_data:
+  speed: 7
+  damage: 1d8
+  ac: 0

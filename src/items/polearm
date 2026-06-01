@@ -1,0 +1,12 @@
+name: polearm
+proper_name: false
+description: Discarded here is a long pole with a hefy cleaver mounted to its top.
+detail: This polearm will make a fearsome weapon.
+skill: melee
+attribute: str
+keywords:
+  - polearm
+weapon_data:
+  speed: 10
+  damage: 2d4
+  ac: 0

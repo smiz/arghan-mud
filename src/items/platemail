@@ -1,0 +1,11 @@
+name: platemail
+proper_name: false
+description: A suit of plate mail armor is here. 
+detail: This suit of chainmail and metal plates will certainly offer some protection!
+keywords:
+  - platemail
+  - plate
+  - armor
+wearable:
+  location: body
+  ac: 7

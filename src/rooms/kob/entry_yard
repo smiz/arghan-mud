@@ -1,0 +1,17 @@
+node: 3
+zone: 3
+short_description: Entry Yard
+description: |
+  This narrow place is paved. The walls of the keep tower above.
+east:
+  node: 0
+  description: To the east you can pass out of the keep through its gate.
+up:
+  node: 2
+  description: An arched passage way contains stairs that climb up into the northern tower.
+west:
+  node: 4
+  description: Through an archway to the west you pens for horses and mules.
+south:
+  node: 26
+  description: The yard continues to the south.

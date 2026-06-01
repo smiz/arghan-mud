@@ -1,0 +1,17 @@
+node: 19
+zone: 3
+short_description: Small Tower
+description: |
+  Though shorter than the gate tower to the south, this small tower
+  provides a fantastic view. A thick forest covers the lands to the
+  east. Climbing above the treetops are several hills that many
+  claim are home to foul and evil denizens.
+south:
+  node: 2
+  description: You can walk south atop the wall to another tower.
+north:
+  node: 20
+  description: You can walk north atop the wall to another tower.
+monsters:
+  - kob/tower_guard
+  - kob/tower_guard

@@ -9,6 +9,6 @@ keywords:
   - round
   - sturdy
 weapon_data:
-  speed: 1
-  damage: 1d1
+  speed: 10
+  damage: 1d2
   ac: 1

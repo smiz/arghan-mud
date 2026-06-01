@@ -1,0 +1,8 @@
+node: 26
+zone: 3
+short_description: Southern Entry Yard
+description: |
+  This narrow place is paved. The walls of the keep tower above.
+up:
+  node: 25
+  description: An arched passage way contains stairs that climb up into the southern tower.

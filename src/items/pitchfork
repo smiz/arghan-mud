@@ -1,0 +1,13 @@
+name: pitchfork
+proper_name: false
+description: A pitchfork has been stuck idly into a pile of hay.
+detail: The tines sure look sharp!
+skill: melee
+attribute: str
+keywords:
+  - pitchfork
+  - fork
+weapon_data:
+  speed: 10
+  damage: 1d4
+  ac: 0

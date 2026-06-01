@@ -173,6 +173,9 @@ class Actor: public Model {
 
     int sneaking, perceiving;
 
+    /// @brief Set of names that I will assist if they are attacked
+    std::set<std::string> assist;
+
     private:
 
     void change_prox_groups(int new_group);

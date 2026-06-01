@@ -1,0 +1,14 @@
+node: 4
+zone: 4
+short_description: Main Gate
+description: |
+  This long building is about 15’ high, with a 3' parapet
+  atop its flat roof, so that it can be used in defense
+  of the gate. The gateside wall is pierced for archery.
+monsters:
+  - kob/lackey
+  - kob/lackey
+  - kob/mule
+east:
+  node: 3
+  description: An archway to the east permits entrance to the yard.
