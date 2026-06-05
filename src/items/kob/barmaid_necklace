@@ -1,0 +1,11 @@
+name: necklace
+proper_name: false
+description: A pretty necklace with a small pendant is has been discarded here.
+detail: Tihs is a pretty, silver neckace. There appears to be an inscription on the pendant.
+keywords:
+  - necklace
+  - silver
+cost: 10
+xp: 10
+wearable:
+  location: neck
