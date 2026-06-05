@@ -34,6 +34,7 @@ enum Skill {
     Melee,
     Perception,
     Stealth,
+    Swindle,
     NoSkill
 };
 
@@ -43,6 +44,7 @@ std::string from_skill(Skill skill);
 /// @brief Slots for equipment that worn
 enum WearableSlots {
     Body,
+    Neck,
     Unwearable
 };
 

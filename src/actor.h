@@ -93,7 +93,8 @@ class Actor: public Model {
     std::shared_ptr<Item> secondary_hand;
     /// Equipment slot for an object that is worn on the body
     std::shared_ptr<Item> body;
-
+    /// Equipment slot for something work around the neck
+    std::shared_ptr<Item> neck;
     /**
      * @brief Emit a message to the proximity group or an individual
      * 
@@ -133,7 +134,11 @@ class Actor: public Model {
     void hear_event(const Event& event);
     void schedule_destroyed();
     void schedule_attack(int target_id, bool warn = true);
-    
+    void swindle_command_event(const Event& event);
+    void swindle_event(const Event& event);
+    void start_swindle_event(const Event& event);
+    void swindle_result_event(const Event& event);
+
     /**
      * Return a skill roll for using an item. Returns
      * -1 if the item cannot be used.
@@ -146,7 +151,8 @@ class Actor: public Model {
      */
     int melee_attack_delay(std::shared_ptr<Item>& item);
 
-    int use_skill(Skill skill);
+    int use_skill(Skill skill, bool average = false);
+
     /** 
      * Calculate the ac of the actor. This is natural ac
      * plus equipment and other bonuses.

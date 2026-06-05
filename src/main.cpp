@@ -140,6 +140,30 @@ void kill(Actor* obj, std::list<std::string>& tokens) {
     cv.notify_one();
 }
 
+void swindle(Actor* obj, std::list<std::string>& tokens) {
+    Event event;
+    event.type = Event::SWINDLE_COMMAND;
+    event.src_id = event.dst_id = obj->id();
+    event.pin = obj->pin;
+    event.key_words = std::make_shared<KeyWordList>();
+    event.key_words2 = std::make_shared<KeyWordList>();
+    if (tokens.size() < 2) {
+        mutex.lock();
+        obj->message("You need to specify a mark and an item.");
+        mutex.unlock();
+        return;
+    }
+    event.key_words2->push_back(tokens.front());
+    tokens.pop_front();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
 void look(Actor* obj, std::list<std::string>& tokens) {
     Event event;
     event.type = Event::LOOK_COMMAND;
@@ -341,6 +365,9 @@ bool parse_line_with_tokens(std::string& line, Actor* obj) {
     }
     if (cmd == "prac") {
         practice(obj,tokens);
+        return true;
+    } else if (cmd == "swindle") {
+        swindle(obj,tokens);
         return true;
     } else if (cmd == "look") {
         look(obj,tokens);

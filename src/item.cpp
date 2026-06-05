@@ -51,10 +51,14 @@ m_filename(file) {
         std::string location = yaml["wearable"]["location"].as<std::string>();
         if (location == "body") {
             m_wearable = WearableSlots::Body;
+        } else if (location == "neck") {
+            m_wearable = WearableSlots::Neck;
         } else {
             throw file+" has bad wearable entry";
         }
-        m_worn_ac_bonus = yaml["wearable"]["ac"].as<int>();
+        if (yaml["wearable"]["ac"]) {
+            m_worn_ac_bonus = yaml["wearable"]["ac"].as<int>();
+        }
     }
     if (yaml["contents"]) {
         m_contents = std::make_shared<std::list<std::shared_ptr<Item>>>();

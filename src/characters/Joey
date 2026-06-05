@@ -17,6 +17,6 @@ level: 1
 xp_to_go: 461
 free_slots: 1
 items:
-  []
+  - club
 skills:
-  {}
+  stealth: 2000

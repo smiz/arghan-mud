@@ -1,11 +1,6 @@
 For comprehensive help, see our website. But this list
 of commands will you started.
-n                       Go north.
-s                       Go south.
-e                       Go east.
-w                       Go west.
-u                       Go up.
-d                       Go down.
+n, s, e, w, u, d        Go north, south, east, west, up, and down.
 flee                    Try to escape from combat.
 i                       Inventory.
 stat                    List your attributes.
@@ -29,6 +24,7 @@ wear <obj>              Wear <obj> on your person.
 -- Dropping or stowing and object is the same as
 -- taking it off your body or ceasing to wield or
 -- hold it.
-sneak                   Start sneaking.
-nosneak                 Stop sneaking.
+sneak, nosneak          Start and stop sneaking.
 short                   Toggle short descriptions.
+quit                    Exit the mud.
+swindle <mark> <item>   Try to swindle someone.

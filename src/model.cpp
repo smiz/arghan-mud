@@ -47,6 +47,17 @@ void Model::leave_game() {
     me = nullptr;
 }
 
+void Model::start_swindle_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    Event result(Event::SEE1,id());
+    result.dst_id = event.src_id;
+    result.msg = "You can't swindle that!";
+    result.pin = group->pin;
+    sched_event(result);
+}
+
 std::shared_ptr<Item> Model::find_item(const KeyWordList& key_words) {
     std::shared_ptr<Item> result = nullptr;
     int best_score = 0;
@@ -174,6 +185,18 @@ void Model::delta_ext(Time e, const Bag& input) {
                 break;
             case Event::ROLL_PERIODIC_ATTRIBUTES:
                 roll_periodic_attributes_event(x.value);
+                break;
+            case Event::SWINDLE:
+                swindle_event(x.value);
+                break;
+            case Event::SWINDLE_COMMAND:
+                swindle_command_event(x.value);
+                break;
+            case Event::SWINDLE_RESULT:
+                swindle_result_event(x.value);
+                break;
+            case Event::START_SWINDLE:
+                start_swindle_event(x.value);
                 break;
             default:
                 break;

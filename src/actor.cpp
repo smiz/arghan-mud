@@ -40,7 +40,7 @@ aggressive(false),
 sneaking(0),
 perceiving(0),
 level(0),
-xp_to_go(0),
+xp_to_go(INT_MAX),
 free_skill_slots(0),
 fd(-1),
 exit_node_id(START_GROUP),
@@ -60,6 +60,9 @@ short_descriptions(false) {
         }
         if (yaml["wear_body"]) {
             body = std::make_shared<Item>(yaml["wear_body"].as<std::string>());
+        }
+        if (yaml["wear_neck"]) {
+            neck = std::make_shared<Item>(yaml["wear_neck"].as<std::string>());
         }
         if (yaml["wield"]) {
             primary_hand = std::make_shared<Item>(yaml["wield"].as<std::string>());
@@ -142,7 +145,7 @@ short_descriptions(false) {
         init(stats);
         save();
     }
-    perceiving = use_skill(Perception);
+    perceiving = use_skill(Perception, true);
     Event periodic(Event::ROLL_PERIODIC_ATTRIBUTES,id());
     periodic.dst_id = id();
     periodic.pin = pin;
@@ -316,6 +319,9 @@ void Actor::report_inventory() {
     if (body != nullptr) {
         message("You are clothed in "+body->name().regular_name()+".");
     }
+    if (neck != nullptr) {
+        message("You wear "+neck->name().regular_name()+" around your neck.");
+    }
 }
 
 void Actor::message(std::string msg) {
@@ -380,6 +386,149 @@ void Actor::sneak_command_event(const Event& event) {
     }
 }
 
+void Actor::swindle_result_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    gain_xp(event.item->claim_xp());
+    items.push_back(event.item);
+    message("You con the mark and get "+event.item->name().regular_name()+"!");
+}
+
+void Actor::start_swindle_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    if (sneaking > event.perceptive) {
+        Model::start_swindle_event(event);
+        return;
+    }
+    Name swindler_name = group->find_member(event.src_id)->get_name();
+    emit(swindler_name.capitalized_name()+ " whispers something to " + name.regular_name()+".",
+        ANY_ID_BUT_SRC,event.src_id);
+    Event result(Event::SEE1,id());
+    result.dst_id = event.src_id;
+    result.pin = group->pin;
+    result.msg = "You attempt to swindle "+name.regular_name()+" ...";
+    sched_event(result);
+    Event swindle(event);
+    swindle.type = Event::SWINDLE;
+    swindle.dst_id = id();
+    swindle.pin = group->pin;
+    sched_event(swindle,1000);
+}
+
+void Actor::swindle_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    bool combat = in_combat();
+    if (combat) {
+        Event result(Event::SEE1,id());
+        result.dst_id = event.src_id;
+        result.msg = name.capitalized_name()+" is too busy to talk to you!";
+        result.pin = group->pin;
+        sched_event(result);
+        return;
+    }
+    int match = 0;
+    std::shared_ptr<Item> item = nullptr;
+    if (body != nullptr) {
+        int tmp = body->match_keywords(*(event.key_words.get()));
+        if (tmp > 0) {
+            match = tmp;
+            item = body;
+        }
+    }
+    if (neck != nullptr) {
+        int tmp = neck->match_keywords(*(event.key_words.get()));
+        if (tmp > match) {
+            match = tmp;
+            item = neck;
+        }
+    }
+    if (primary_hand != nullptr) {
+        int tmp = primary_hand->match_keywords(*(event.key_words.get()));
+        if (tmp > match) {
+            match = tmp;
+            item = primary_hand;
+        }
+    }
+    if (secondary_hand != nullptr) {
+        int tmp = secondary_hand->match_keywords(*(event.key_words.get()));
+        if (tmp > match) {
+            match = tmp;
+            item = secondary_hand;
+        }
+    }
+    auto alt_item = find_item(*(event.key_words.get()));
+    if (alt_item != nullptr) {
+        int tmp = alt_item->match_keywords(*(event.key_words.get()));
+        if (tmp > match) {
+            item = alt_item;
+        }
+    }
+    if (item == nullptr) {
+        Event result(Event::SEE1,id());
+        result.dst_id = event.src_id;
+        result.pin = group->find_member(event.src_id)->pin;
+        result.msg = "You don't see that.";
+        sched_event(result);
+        return;
+    }
+    auto swindler = group->find_member(event.src_id);
+    if (swindler == nullptr) {
+        return;
+    }
+    if (event.event_data.swindling > perceiving+item->get_cost()/5) {
+        Event result(Event::SWINDLE_RESULT,id());
+        result.dst_id = event.src_id;
+        result.pin = group->pin;
+        result.item = item;
+        message(swindler->get_name().capitalized_name()+" talks you out of "+item->name().regular_name()+".");
+        emit(name.capitalized_name()+" gives "+item->name().regular_name()+" to "+swindler->get_name().regular_name()+".",
+            ANY_ID_BUT_SRC,event.src_id);
+        if (item == neck) {
+            neck = nullptr;
+        } else if (item == body) {
+            body = nullptr;
+        } else if (item == primary_hand) {
+            primary_hand = nullptr;
+        } else if (item == secondary_hand) {
+            secondary_hand = nullptr;
+        } else {
+            items.remove(item);
+        }
+        sched_event(result);
+    } else {
+        message(swindler->get_name().capitalized_name()+" attempts to swindle you!");
+        if (!pc) {
+            schedule_attack(event.src_id,true);
+        }
+    }
+}
+
+void Actor::swindle_command_event(const Event& event) {
+    bool combat = in_combat();
+    if (combat) {
+        message("You are fighting for your life!");
+        return;
+    }
+    int target = group->find_best_match(*(event.key_words2.get()));
+    Event swindle(event);
+    swindle.type = Event::START_SWINDLE;
+    swindle.pin = group->pin;
+    swindle.dst_id = target;
+    swindle.perceptive = perceiving;
+    swindle.event_data.swindling = use_skill(Swindle);
+    if (sneaking > 0) {
+        sneaking = 0;
+        message("You emerge from hiding.");
+        emit(name.capitalized_name()+" emerges from hiding.");
+    }
+    sched_event(swindle);
+}
+
 void Actor::hear_event(const Event& event) {
     if (filter(event)) {
         return;
@@ -389,7 +538,6 @@ void Actor::hear_event(const Event& event) {
 
 void Actor::roll_periodic_attributes_event(const Event& event) {
     Event again(event);
-    perceiving = use_skill(Perception);
     sched_event(again,60000-1000+rand()%2000);
     if (!rumors.empty()) {
         Event rumor(Event::HEAR,id());
@@ -669,6 +817,8 @@ void Actor::schedule_attack(int target_id, bool warn) {
         event.pin = group->pin;
         event.stealthy = sneaking;
         sched_event(event);
+        Name victim_name = group->find_member(target_id)->get_name();
+        emit_stealthy(name.capitalized_name()+" moves to attack " +victim_name.regular_name()+"!",target_id);
     }
 }
 
@@ -678,7 +828,10 @@ void Actor::pending_attack_event(const Event& event) {
     }
     if (event.stealthy == 0 || perceiving >= event.stealthy) {
         schedule_attack(event.src_id,false);
+        auto attack_name = group->find_member(event.src_id)->get_name();
+        message(attack_name.capitalized_name()+" is attacking you!");
     }
+
 }
 
 void Actor::leave_mud_event(const Event& event) {
@@ -925,6 +1078,9 @@ void Actor::look_event(const Event& event) {
         if (body != nullptr) {
             see.msg += name.capitalized_name()+" wears "+body->name().regular_name()+".\n";
         }
+        if (neck != nullptr) {
+            see.msg += name.capitalized_name()+" wears "+neck->name().regular_name()+".\n";
+        }
         if (!items.empty()) {
             see.msg += name.capitalized_name()+" is carrying:\n";
             for (auto item: items) {
@@ -1001,13 +1157,16 @@ void Actor::wear_command_event(const Event& event) {
     } else if (pick->wearable() == WearableSlots::Unwearable) {
         message("You can't wear that.");
     } else {
-        if (body != nullptr) {
+        if (pick->wearable() == WearableSlots::Body && body != nullptr) {
             items.push_back(body);
+            body = pick;
+        } else if (pick->wearable() == WearableSlots::Neck && neck != nullptr) {
+            items.push_back(neck);
+            neck = pick;
         }
         items.remove(pick);
-        body = pick;
-        message("You put on "+body->name().regular_name()+".");
-        emit_stealthy(name.capitalized_name()+" puts on "+body->name().regular_name()+".");
+        message("You put on "+pick->name().regular_name()+".");
+        emit_stealthy(name.capitalized_name()+" puts on "+pick->name().regular_name()+".");
     }
 }
 
@@ -1152,9 +1311,9 @@ int Actor::attribute_modifier(int attribute_score) {
     return 10;
 }
 
-int Actor::use_skill(Skill skill) {
+int Actor::use_skill(Skill skill, bool average) {
     Dice die(1,20);
-    int result = die();
+    int result = (average) ? 10 : die();
     if (skill == Perception) {
         if (skills.find(Perception) != skills.end()) {
             result += skills[Perception];
@@ -1162,9 +1321,14 @@ int Actor::use_skill(Skill skill) {
         result += attribute_modifier(wisdom);
     } else if (skill == Stealth) {
         if (skills.find(Stealth) != skills.end()) {
-            result += skills[Perception];
+            result += skills[Stealth];
         }
         result += attribute_modifier(dexterity);
+    } else if (skill == Swindle) {
+        if (skills.find(Swindle) != skills.end()) {
+            result += skills[Swindle];
+        }
+        result += attribute_modifier(charisma);
     }
     return std::max(0,result);
 }
@@ -1226,6 +1390,9 @@ int Actor::total_ac() {
     }
     if (body != nullptr) {
         mod += body->ac_bonus_when_worn();
+    }
+    if (neck != nullptr) {
+        mod += neck->ac_bonus_when_worn();
     }
     return armor_class + mod;
 }

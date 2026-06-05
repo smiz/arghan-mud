@@ -56,6 +56,14 @@ struct Event {
         KILL_COMMAND,
         /// @brief sneak command issued by a player
         SNEAK_COMMAND,
+        /// @brief swindle command
+        SWINDLE_COMMAND,
+        /// @brief Start a swindle
+        START_SWINDLE,
+        /// @brief Do the swindle
+        SWINDLE,
+        /// @brief result of a swindle
+        SWINDLE_RESULT, 
         /// @brief Warning issued prior to an attack
         PENDING_ATTACK,
         /// @brief Look at something (or being looked at)
@@ -99,6 +107,7 @@ struct Event {
     adevs::pin_t pin;
     /// @brief Any key words associated with a command
     std::shared_ptr<KeyWordList> key_words;
+    std::shared_ptr<KeyWordList> key_words2;
     /// @brief Item for a transfer or weapon in an attack
     std::shared_ptr<Item> item;
     /// @brief Actor ids that should NOT receive this event
@@ -111,6 +120,7 @@ struct Event {
     int16_t flags;
     /// @brief Primitive, type specific data
     union {
+        int swindling;
         /// @brief Prox group to enter or leave
         int prox_group;
         /// @brief Direction of motion for a MOVE event
@@ -470,7 +480,10 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void roll_periodic_attributes_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void hear_event(const Event& event){}
-
+    virtual void swindle_command_event(const Event& event){}
+    virtual void swindle_result_event(const Event& event){}
+    virtual void swindle_event(const Event& event){}
+    virtual void start_swindle_event(const Event& event);
     /// @brief Our proximity group
     ProximityGroup* group;
     /// @brief Items that belong to the model

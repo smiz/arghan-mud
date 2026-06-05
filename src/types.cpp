@@ -25,6 +25,8 @@ Skill to_skill(std::string name) {
         return Perception;
     } else if (name == "stealth") {
         return Stealth;
+    } else if (name == "swindle") {
+        return Swindle;
     }
     throw "bad skill name "+name;
     return NoSkill;
@@ -37,6 +39,8 @@ std::string from_skill(Skill skill) {
         return "perception";
     } else if (skill == Stealth) {
         return "stealth";
+    } else if (skill == Swindle) {
+        return "swindle";
     }
     return "";
 }
