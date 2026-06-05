@@ -130,7 +130,7 @@ class Actor: public Model {
     void practice_event(const Event& event);
     void roll_periodic_attributes_event(const Event& event);
     void sneak_command_event(const Event& event);
-
+    void hear_event(const Event& event);
     void schedule_destroyed();
     void schedule_attack(int target_id, bool warn = true);
     
@@ -177,6 +177,8 @@ class Actor: public Model {
 
     void account_for_cost(const std::shared_ptr<Item>& item, bool selling);
     int consolidate_coins();
+
+    std::vector<std::string> rumors;
 
     private:
 

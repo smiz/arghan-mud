@@ -1,0 +1,22 @@
+name: barkeep
+proper_name: false
+description: The tavern keeper was surely a handsome man in his youth.
+detail: |
+  The tavern keeper is portly and kind. But you see the
+  unmistakable traits of an adventurous youth. He keeps
+  a club handy for dealing with unruly customers.
+keywords:
+  - barkeep
+  - keeper
+  - keep
+hit_points: 8
+str: 16
+wield: club
+rumors:
+  - Someday my daugther will marry.
+  - I hear that some visitors to the Keep never leave!
+  - They say the Baroness keeps a dangerous garden.
+  - I don't trust the stableboy ...
+assist:
+  - barmaid
+  - gossip

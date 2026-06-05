@@ -1,0 +1,15 @@
+node: 30
+short_description: The Tavern
+description: |
+  This tavern is the favorite of visitors and inhabitants
+  of the Keep alike. The food is excellent, the drinks
+  generous and good. The place is always active and buzzing
+  with the news of the day.
+east:
+  node: 27
+  description: To the east is the practice yard.
+monsters:
+  - kob/gossip
+  - kob/gossip
+  - kob/barmaid
+  - kob/barkeep

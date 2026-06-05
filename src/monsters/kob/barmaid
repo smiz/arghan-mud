@@ -1,0 +1,18 @@
+name: barmaid
+proper_name: false
+description: The tavern keeper's daughter serves drinks and food.
+detail: This buxom, raven haired beauty is the barkeep's daughter. Her name is Angela, if you must know.
+keywords:
+  - barmaid
+  - daughter
+  - beauty
+hit_points: 6
+charisma: 18
+rumors:
+  - The merchant upstairs may be old, but he is rich!
+  - I hear awful things about the Baroness Alegna.
+  - They say the Baroness keeps a secret garden.
+  - The Baron is decrepit and senile. I don't know what she sees in him.
+  - The stableboy is nice, but ...
+assist:
+  - barkeep

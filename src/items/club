@@ -1,0 +1,13 @@
+name: club
+proper_name: false
+description: A sturdy stick has been discarded here.
+detail: A heavy club ideal for bashing baddies.
+skill: melee
+attribute: str
+keywords:
+  - club
+weapon_data:
+  speed: 6
+  damage: 1d4
+  ac: 0
+cost: 0

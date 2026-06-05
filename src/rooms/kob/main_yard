@@ -9,3 +9,6 @@ east:
 south:
   node: 28
   description: To the south you see a busy bazaar.
+west:
+  node: 30
+  description: West of the yard is a tavern.

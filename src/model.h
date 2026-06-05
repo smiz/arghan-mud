@@ -64,6 +64,8 @@ struct Event {
         SEE,
         /// @brief See a description of something after all SEE are processed
         SEE1,
+        /// @brief Hear something
+        HEAR,
         /// @brief A melee attack
         MELEE_ATTACK,
         /// @brief Result of an attack
@@ -466,6 +468,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void practice_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void roll_periodic_attributes_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void hear_event(const Event& event){}
 
     /// @brief Our proximity group
     ProximityGroup* group;

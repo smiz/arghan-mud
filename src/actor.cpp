@@ -132,6 +132,12 @@ short_descriptions(false) {
         if (yaml["password"]) {
             password = yaml["password"].as<std::string>();
         }
+        if (yaml["rumors"]) {
+            const YAML::Node& rumor_list = yaml["rumors"];
+            for (const auto& rumor : rumor_list) {
+                rumors.push_back(rumor.as<std::string>());
+            }
+        }
     } else {
         init(stats);
         save();
@@ -140,7 +146,7 @@ short_descriptions(false) {
     Event periodic(Event::ROLL_PERIODIC_ATTRIBUTES,id());
     periodic.dst_id = id();
     periodic.pin = pin;
-    sched_event(periodic);
+    sched_event(periodic,1+rand()%60000);
 }
 
 int Actor::match_keywords(const KeyWordList& key_words) const {
@@ -374,10 +380,24 @@ void Actor::sneak_command_event(const Event& event) {
     }
 }
 
+void Actor::hear_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    message(event.msg);
+}
+
 void Actor::roll_periodic_attributes_event(const Event& event) {
     Event again(event);
     perceiving = use_skill(Perception);
-    sched_event(again,60000);
+    sched_event(again,60000-1000+rand()%2000);
+    if (!rumors.empty()) {
+        Event rumor(Event::HEAR,id());
+        rumor.dst_id = ANY_ID_BUT_SRC;
+        rumor.pin = group->pin;
+        rumor.msg = name.capitalized_name()+" says \"" + rumors[rand()%rumors.size()] + "\"";
+        sched_event(rumor);
+    }
 }
 
 void Actor::change_prox_groups(int new_group) {

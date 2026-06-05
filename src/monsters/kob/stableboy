@@ -1,0 +1,21 @@
+name: Jim
+proper_name: true
+description: Jim the Stableboy oversees care of the horses.
+detail: |
+  Jim is unkempt and dressed in flannels despite the warm weather.
+  His appointed task is to care for the horses and the lackey is
+  in his charge. 
+keywords:
+  - jim
+  - Jim
+  - stableboy
+  - boy
+dex: 13
+str: 13
+con: 16
+hit_points: 8
+wield: pitchfork
+assist:
+  - mule
+  - lackey
+

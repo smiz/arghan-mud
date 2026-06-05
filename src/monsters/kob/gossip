@@ -1,0 +1,33 @@
+name: gossip
+proper_name: false
+description: A local is here, deep in his pints. 
+detail: It appears that gossip and rumor are his stock in trade.
+keywords:
+  - gossip
+  - local
+hit_points: 2
+rumors:
+  - A merchant, imprisoned in the caves, will reward his rescuers.
+  - A powerful magic-user will destroy all cave invaders.
+  - Tribes of different creatures live in different caves.
+  - An ogre sometimes helps the cave dwellers.
+  - A magic wand was lost in the cave area.
+  - All of the cave entrances are trapped.
+  - If you get lost, beware the eater of men!
+  - Altars are very dangerous.
+  - A fair maiden is imprisoned within the caves.
+  - “Bree-yark” is goblin-language for “we surrender”!
+  - Beware of treachery from within the party.
+  - The big dog-men live very high in the caves.
+  - There are hordes of tiny dog-men in the lower caves.
+  - Piles of magic armor are hoarded in the southern caves.
+  - The bugbears in the caves are afraid of dwarves!
+  - Lizard-men live in the marshes.
+  - An elf once disappeared across the marshes.
+  - Beware the mad hermit of the north lands.
+  - Nobody has ever returned from an expedition to the caves.
+  - There is more than one tribe of orcs within the caves.
+assist:
+  - barmaid
+  - gossip
+  - barkeep

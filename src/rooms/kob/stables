@@ -7,7 +7,7 @@ description: |
   of the gate. The gateside wall is pierced for archery.
 monsters:
   - kob/lackey
-  - kob/lackey
+  - kob/stableboy
   - kob/mule
 east:
   node: 3
