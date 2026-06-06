@@ -9,5 +9,8 @@ east:
 south:
   node: 27
   description: The yard continues south.
+west:
+  node: 38
+  description: The west is a chapel.
 monsters:
   - kob/pluto

@@ -1,0 +1,14 @@
+name: poorbox
+proper_name: false
+description: A sturdy box with a slit on the top is used to collect donations.
+detail: |
+  The poorbox is secured with a sturdy lock.
+keywords:
+  - box
+  - poorbox
+cost: 10
+xp: 10
+heavy: true
+lock: 200
+contents:
+  [] 

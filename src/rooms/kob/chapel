@@ -1,0 +1,14 @@
+node: 38
+zone: 3
+short_description: Chapel
+description: |
+  This is the spiritual center of the Keep. This building
+  has a peaked roof two stories tall; the interior is
+  one large room. The altar is located at the western end
+  of the room. In the ceiling is a colored glass window
+  that admits a brilliant, uplifting light.
+east:
+  node: 37
+  description: A courtyard is to the east.
+items:
+  - kob/poor_box

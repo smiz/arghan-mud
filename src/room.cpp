@@ -306,6 +306,17 @@ void Room::transfer_item_event(const Event& event) {
             }
             // We'll drop it on the ground
             container = nullptr;
+        } else if (container->is_locked()) {
+            missed_container = true;
+            see.msg = container->name().capitalized_name() + " is locked.";
+            if (event.event_data.transfer.src_to_dst) {
+                see.msg += " You drop it on the ground.";
+                sched_event(see);
+            } else {
+                sched_event(see);
+                return;
+            }
+            container = nullptr;
         }
     }
     /// Receive an item

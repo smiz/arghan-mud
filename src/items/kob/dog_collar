@@ -1,7 +1,9 @@
 name: collar
 proper_name: false
 description: A dog's collar has been forgotten here.
-detail: The collar is sturdy and inlaid wth bits of copper.
+detail: |
+  The collar is sturdy and inlaid wth bits of copper. The
+  dog tag dangling from the collar is in the shape of a key.
 keywords:
   - collar
 cost: 6
@@ -9,3 +11,4 @@ xp: 10
 wearable:
   location: neck
   ac: 1
+key: 200
