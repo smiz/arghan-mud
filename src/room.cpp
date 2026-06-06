@@ -9,6 +9,8 @@ static const int reload_interval = 120000;
 
 #define NO_ZONE -1
 
+int Room::max_room_number = 0;
+
 /// Must be in order of Direction enumeration in model.h!
 static const std::string direction_key[6] = {
     "north", "south", "east", "west", "up", "down"
@@ -54,13 +56,20 @@ void Room::reload() {
     }
 }
 
+int Room::next_free_room_number() {
+    printf("HERE! %d\n",max_room_number);
+    return ++max_room_number;
+}
+
 Room::Room(Graph& graph, std::string file, int node_id):
 Model(graph),
 file(file),
 graph(graph) {
     int zone = NO_ZONE;
     YAML::Node yaml = YAML::LoadFile(file.c_str());
+    printf("%d %d\n",node_id,max_room_number);
     int prox_group_id = (node_id == -1) ? yaml["node"].as<int>() : node_id;
+    max_room_number = std::max(prox_group_id,max_room_number);
     description = yaml["description"].as<std::string>();
     short_description = yaml["short_description"].as<std::string>();
     if (short_description.back() != '\n') {

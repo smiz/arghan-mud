@@ -1,0 +1,12 @@
+---
+short_description: The Forms.
+description: |
+  This small chamber is unusual for its perfect Form.
+  The walls, floor, and ceiling are entirely without
+  joints or markings. You are certain that the space
+  forms the perfect Cube, possibly the Form of the
+  Cube itself! Boy would Plato be excited!
+down:
+  node: 31
+  description: Through the perfect Circle in the floor you see a beckoning light. 
+

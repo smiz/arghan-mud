@@ -38,6 +38,8 @@ class Room: public Model {
     /// A room does not occupy itself!
     bool occupies_space() { return false; }
 
+    static int next_free_room_number();
+
     private:
  
     /// @brief File to reload the room
@@ -46,6 +48,8 @@ class Room: public Model {
     Graph& graph;
     /// @brief Is this the initial load?
     bool initial_load;
+
+    static int max_room_number;
 
     std::string short_description;
 

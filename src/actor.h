@@ -35,7 +35,8 @@ class Actor: public Model {
         bool load,
         std::string name = "",
         bool pc = false,
-        const initial_stats_t* const initial_status = nullptr);
+        const initial_stats_t* const initial_status = nullptr,
+        int regen_room_number = 0);
 
     Name get_name() const { return name; }
     void set_msg_fd(int fd) { this->fd = fd; }
@@ -205,6 +206,8 @@ class Actor: public Model {
     int fd;
     /// @brief Node at which the actor left the mud
     int exit_node_id;
+    /// @brief Node at which we always regenerate after death
+    const int regen_node_number;
     /// @brief Is that actor pc that should be saved?
     const bool pc;
 

@@ -21,7 +21,8 @@ Actor::Actor(
     bool load,
     std::string name,
     bool pc,
-    const initial_stats_t* const stats):
+    const initial_stats_t* const stats,
+    int regen_room_number):
 Model(graph),
 description(name+ " is here."),
 name(name,true),
@@ -43,7 +44,8 @@ level(0),
 xp_to_go(INT_MAX),
 free_skill_slots(0),
 fd(-1),
-exit_node_id(START_GROUP),
+exit_node_id(regen_room_number),
+regen_node_number(regen_room_number),
 pc(pc),
 short_descriptions(false) {
     if (load) {
@@ -745,13 +747,13 @@ void Actor::destroyed_event(const Event& event) {
     do_not_receive_from(group->pin);
     if (pc) {
         sneaking = 0;
-        group = prox_map[START_GROUP];
+        group = prox_map[regen_node_number];
         receive_from(group->pin);
         group->add_member(this);
         emit(name.capitalized_name()+" suddenly appears!");
         message("Ashes to ashes...dust to dust...and then remade.");
         message("Try looking around.");
-        exit_node_id = START_GROUP;
+        exit_node_id = regen_node_number;
         damage = 0;
     } else {
         Model::leave_game();

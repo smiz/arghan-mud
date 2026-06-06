@@ -14,6 +14,7 @@
 #include "model.h"
 #include "room.h"
 #include "actor.h"
+#include "limbo.h"
 
 /**
  * @brief List of all characters in the game
@@ -600,7 +601,8 @@ repeat_name:
         }
         std::string path = character_dir+name;
         mutex.lock();
-        obj = new Actor(*(graph.get()),path,false,name,true,&stats);
+        Limbo* limbo = new Limbo(*(graph.get()));
+        obj = new Actor(*(graph.get()),path,false,name,true,&stats,limbo->get_group()->group_number());
         obj->set_password(passwd);
         obj->save();
         characters[lower_case(line)] = obj;
@@ -668,7 +670,8 @@ void create_sim() {
         if (std::filesystem::is_regular_file(entry)) {
             std::cout << "Loading character " << entry.path() << std::endl;
             // Room adds itself to the graph
-            Actor* obj = new Actor(*(graph.get()),entry.path(),true,"",true);
+            Limbo* limbo = new Limbo(*(graph.get()));
+            Actor* obj = new Actor(*(graph.get()),entry.path(),true,"",true,nullptr,limbo->get_group()->group_number());
             characters[obj->get_name().lower_case()] = obj;
         }
     }

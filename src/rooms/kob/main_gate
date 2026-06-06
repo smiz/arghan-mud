@@ -19,3 +19,6 @@ monsters:
 west:
   node: 3
   description: West of the main gate you see a small yard.
+south:
+  node: 31
+  description: The path turns southward, where it descends from the high mount of the Keep.
