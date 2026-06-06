@@ -57,7 +57,6 @@ void Room::reload() {
 }
 
 int Room::next_free_room_number() {
-    printf("HERE! %d\n",max_room_number);
     return ++max_room_number;
 }
 
@@ -67,7 +66,6 @@ file(file),
 graph(graph) {
     int zone = NO_ZONE;
     YAML::Node yaml = YAML::LoadFile(file.c_str());
-    printf("%d %d\n",node_id,max_room_number);
     int prox_group_id = (node_id == -1) ? yaml["node"].as<int>() : node_id;
     max_room_number = std::max(prox_group_id,max_room_number);
     description = yaml["description"].as<std::string>();
