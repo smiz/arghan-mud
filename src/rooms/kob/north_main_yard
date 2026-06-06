@@ -1,0 +1,13 @@
+node: 37
+zone: 3
+short_description: North Central Court
+description: |
+  A grassy field provides ample space for exercising the soldiers.
+east:
+  node: 4
+  description: Some stables are to the east.
+south:
+  node: 27
+  description: The yard continues south.
+monsters:
+  - kob/pluto

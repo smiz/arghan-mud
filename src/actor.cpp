@@ -749,6 +749,10 @@ void Actor::schedule_destroyed() {
         event.item->add_item(body);
         body = nullptr;
     }
+    if (neck != nullptr) {
+        event.item->add_item(neck);
+        neck = nullptr;
+    }
     sched_event(event); 
 }
 

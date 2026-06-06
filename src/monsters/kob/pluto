@@ -1,0 +1,15 @@
+name: Pluto
+proper_name: true
+description: Pluto the dog is here, looking for some scraps.
+detail: |
+  Pluto is a large and goofy looking dog. Pluto is washed and well fed.
+  His owners must take good care of him. I wonder who they might be?
+keywords:
+  - pluto
+  - dog
+hit_points: 4
+str: 13
+wis: 3
+perception: 4
+wanders: 5000
+wear_neck: kob/dog_collar

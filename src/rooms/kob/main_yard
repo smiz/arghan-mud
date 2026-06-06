@@ -1,6 +1,6 @@
 node: 27
 zone: 3
-short_description: Central Court
+short_description: Southern Central Court
 description: |
   A grassy field provides ample space for exercising the soldiers.
 east:
@@ -12,5 +12,8 @@ south:
 west:
   node: 30
   description: West of the yard is a tavern.
+north:
+  node: 37
+  description: The yard continues north.
 monsters:
   - kob/fido

@@ -1,0 +1,11 @@
+name: collar
+proper_name: false
+description: A dog's collar has been forgotten here.
+detail: The collar is sturdy and inlaid wth bits of copper.
+keywords:
+  - collar
+cost: 6
+xp: 10
+wearable:
+  location: neck
+  ac: 1

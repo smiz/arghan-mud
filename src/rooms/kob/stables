@@ -1,10 +1,10 @@
 node: 4
 zone: 4
-short_description: Main Gate
+short_description: Stables
 description: |
-  This long building is about 15’ high, with a 3' parapet
-  atop its flat roof, so that it can be used in defense
-  of the gate. The gateside wall is pierced for archery.
+  The stables smell of horses, horse manure, and unwashed stable hands. Yuck.
+  The flies are thick about the muck and manure that has collected on the
+  floor.
 monsters:
   - kob/lackey
   - kob/stableboy
@@ -12,5 +12,8 @@ monsters:
 east:
   node: 3
   description: An archway to the east permits entrance to the yard.
+west:
+  node: 37
+  description: To the west is a broad courtyard.
 items:
   - nasty_mop
