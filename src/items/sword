@@ -1,0 +1,13 @@
+name: sword
+proper_name: false
+description: A sharp sword has been left here.
+detail: This sword is a fearsome weapon.
+skill: melee
+attribute: str
+keywords:
+  - sword
+weapon_data:
+  speed: 5
+  damage: 2d4
+  ac: 0
+cost: 10

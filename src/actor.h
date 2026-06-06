@@ -186,6 +186,8 @@ class Actor: public Model {
     void account_for_cost(const std::shared_ptr<Item>& item, bool selling);
     int consolidate_coins();
 
+    bool act_if_hostile(const Event& event);
+
     std::vector<std::string> rumors;
 
     private:

@@ -9,4 +9,6 @@ south:
   description: South is the hall.
 items:
   - kob/merchant_chest
-  - kob/merchant_key
+monsters:
+  - kob/merchant
+  - kob/merchant_guard

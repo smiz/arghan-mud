@@ -74,14 +74,14 @@ struct Event {
         LOOK,
         /// @brief See a description of something
         SEE,
-        /// @brief See a description of something after all SEE are processed
-        SEE1,
-        /// @brief Hear something
-        HEAR,
         /// @brief A melee attack
         MELEE_ATTACK,
         /// @brief Result of an attack
         MELEE_RESULT,
+        /// @brief See a description of something after all SEE are processed
+        SEE1,
+        /// @brief Hear something
+        HEAR,
         /// @brief Save the model to disk
         SAVE_MODEL,
         /// @brief Practice a skill
@@ -124,6 +124,9 @@ struct Event {
     int16_t flags;
     /// @brief Primitive, type specific data
     union {
+        /// @brief Who is the subject of a SEE event?
+        int subject_id;
+        /// @brief What is the swindling skill roll?
         int swindling;
         /// @brief Prox group to enter or leave
         int prox_group;

@@ -137,7 +137,7 @@ void Room::reset_zone_event(const Event& event) {
 
 void Room::lock_unlock_event(const Event& event) {
     Event result(Event::SEE1,id());
-    result.dst_id = event.src_id;
+    result.event_data.subject_id = result.dst_id = event.src_id;
     result.pin = group->pin;
     auto item = find_item(*(event.key_words.get()));
     if (item == nullptr) {
@@ -179,6 +179,7 @@ void Room::lock_unlock_event(const Event& event) {
 void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_are_container, int16_t flags) {
     Event see;
     see.type = Event::SEE;
+    see.event_data.subject_id = -1;
     see.dst_id = src_id;
     see.src_id = id();
     see.pin = group->pin;
@@ -276,7 +277,7 @@ void Room::transfer_item_event(const Event& event) {
     std::shared_ptr<Item> container;
     Event transfer(event);
     Event see(Event::SEE1,id());
-    see.dst_id = event.src_id;
+    see.event_data.subject_id = see.dst_id = event.src_id;
     see.pin = group->pin;
     /// Look for a container to transfer from or to
     if (event.event_data.transfer.first_keyword_is_container) {

@@ -344,6 +344,7 @@ void Actor::message(std::string msg) {
 
 void Actor::emit_stealthy(std::string msg, int dst_id, int exclude) {
     Event event(Event::SEE1,id());
+    event.event_data.subject_id = id();
     event.msg = msg;
     event.dst_id = dst_id;
     event.pin = group->pin;
@@ -357,6 +358,7 @@ void Actor::emit_stealthy(std::string msg, int dst_id, int exclude) {
 
 void Actor::emit(std::string msg, int dst_id, int exclude) {
     Event event(Event::SEE1,id());
+    event.event_data.subject_id = id();
     event.msg = msg;
     event.dst_id = dst_id;
     event.pin = group->pin;
@@ -411,6 +413,7 @@ void Actor::start_swindle_event(const Event& event) {
     emit(swindler_name.capitalized_name()+ " whispers something to " + name.regular_name()+".",
         ANY_ID_BUT_SRC,event.src_id);
     Event result(Event::SEE1,id());
+    result.event_data.subject_id = id();
     result.dst_id = event.src_id;
     result.pin = group->pin;
     result.msg = "You attempt to swindle "+name.regular_name()+" ...";
@@ -429,6 +432,7 @@ void Actor::swindle_event(const Event& event) {
     bool combat = in_combat();
     if (combat) {
         Event result(Event::SEE1,id());
+        result.event_data.subject_id = id();
         result.dst_id = event.src_id;
         result.msg = name.capitalized_name()+" is too busy to talk to you!";
         result.pin = group->pin;
@@ -474,6 +478,7 @@ void Actor::swindle_event(const Event& event) {
     }
     if (item == nullptr) {
         Event result(Event::SEE1,id());
+        result.event_data.subject_id = id();
         result.dst_id = event.src_id;
         result.pin = group->find_member(event.src_id)->pin;
         result.msg = "You don't see that.";
@@ -550,6 +555,9 @@ void Actor::roll_periodic_attributes_event(const Event& event) {
         rumor.msg = name.capitalized_name()+" says \"" + rumors[rand()%rumors.size()] + "\"";
         sched_event(rumor);
     }
+    if (damage > 0) {
+        damage--;
+    }
 }
 
 void Actor::change_prox_groups(int new_group) {
@@ -614,6 +622,7 @@ void Actor::enter_mud_event(const Event& event) {
     enter.pin = pin;
     sched_event(enter);
     enter.type = Event::SEE1;
+    enter.event_data.subject_id = id();
     enter.pin = prox_map[exit_node_id]->pin;
     enter.dst_id = ANY_ID_BUT_SRC;
     enter.msg = name.capitalized_name()+" returns from the Real World!";
@@ -807,6 +816,9 @@ void Actor::schedule_attack(int target_id, bool warn) {
     // Cancel any swindling attempts
     cancel_event(Event::SWINDLE);
     cancel_event(Event::START_SWINDLE);
+    if (in_combat()) {
+        return;
+    }
     // Start the attack
     Event attack(Event::MELEE_ATTACK,id());
     attack.dst_id = target_id;
@@ -828,7 +840,7 @@ void Actor::schedule_attack(int target_id, bool warn) {
         event.stealthy = sneaking;
         sched_event(event);
         Name victim_name = group->find_member(target_id)->get_name();
-        emit_stealthy(name.capitalized_name()+" moves to attack " +victim_name.regular_name()+"!",target_id);
+        emit_stealthy(name.capitalized_name()+" moves to attack " +victim_name.regular_name()+"!",ANY_ID_BUT_SRC,target_id);
     }
 }
 
@@ -836,7 +848,7 @@ void Actor::pending_attack_event(const Event& event) {
     if (filter(event)) {
         return;
     }
-    if (event.stealthy == 0 || use_skill(Perception,true) > event.stealthy) {
+    if (!in_combat() && (event.stealthy == 0 || use_skill(Perception,true) > event.stealthy)) {
         schedule_attack(event.src_id,false);
         auto attack_name = group->find_member(event.src_id)->get_name();
         message(attack_name.capitalized_name()+" is attacking you!");
@@ -855,18 +867,25 @@ void Actor::leave_mud_event(const Event& event) {
     sched_event(leave);
 }
 
+bool Actor::act_if_hostile(const Event& event) {
+    if (!in_combat() && (aggressive || hates.contains(event.event_data.subject_id))
+        && (event.stealthy == 0 || event.stealthy < use_skill(Perception,true))) {
+            schedule_attack(event.event_data.subject_id,true);
+            return true;
+    }
+    return false;
+}
+
 void Actor::join_prox_group_event(const Event& event) {
     if (event.dst_id == id()) {
         group = prox_map[event.event_data.prox_group];
         group->add_member(this);
         receive_from(group->pin);
     } else {
-        if (!in_combat() && (aggressive || hates.contains(event.src_id))
-            && (event.stealthy == 0 || event.stealthy < use_skill(Perception,true))) {
+        if (act_if_hostile(event)) {
             emit_stealthy(description+
                 "\n"+name.capitalized_name()+
                 " looks murderously at you.",event.src_id);
-            schedule_attack(event.src_id,true);
         } else {
             emit_stealthy(description);
         }
@@ -927,6 +946,7 @@ void Actor::move_event(const Event& event) {
     }
     change_prox_groups(move_dir.id);
     Event see(Event::SEE,id());
+    see.event_data.subject_id = id();
     see.dst_id = ANY_ID_BUT_SRC;
     see.msg = name.capitalized_name()+" arrives from "+reverse_direction_name[move_dir.dir]+".";
     see.pin = prox_map[move_dir.id]->pin;
@@ -949,6 +969,7 @@ void Actor::see_event(const Event& event) {
             } else if (!short_descriptions && (event.flags & SEE_LONG)) {
                 message(event.msg);
             }
+            act_if_hostile(event);
         }
     }
 }
@@ -1076,6 +1097,7 @@ void Actor::look_event(const Event& event) {
         return;
     }
     Event see(Event::SEE1,id());
+    see.event_data.subject_id = id();
     see.dst_id = event.src_id;
     if (event.dst_id == id()) {
         see.msg = detail+'\n'; 
@@ -1167,11 +1189,15 @@ void Actor::wear_command_event(const Event& event) {
     } else if (pick->wearable() == WearableSlots::Unwearable) {
         message("You can't wear that.");
     } else {
-        if (pick->wearable() == WearableSlots::Body && body != nullptr) {
-            items.push_back(body);
+        if (pick->wearable() == WearableSlots::Body) {
+            if (body != nullptr) {
+                items.push_back(body);
+            }
             body = pick;
-        } else if (pick->wearable() == WearableSlots::Neck && neck != nullptr) {
-            items.push_back(neck);
+        } else if (pick->wearable() == WearableSlots::Neck) {
+            if (neck != nullptr) {
+                items.push_back(neck);
+            }
             neck = pick;
         }
         items.remove(pick);

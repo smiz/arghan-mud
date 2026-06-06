@@ -1,0 +1,13 @@
+name: guard
+proper_name: false
+description: A hired guard watches carefully over his charge.
+detail: This hired mercenary protects the merchant and his wares.
+keywords:
+  - guard
+hit_points: 8
+wield: sword
+wear_body: chainmail
+skills:
+  melee: 3
+assist:
+  - merchant

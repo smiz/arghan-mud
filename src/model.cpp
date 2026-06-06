@@ -100,6 +100,9 @@ void Model::delta_ext(Time e, const Bag& input) {
     }
     // Process new events
     for (auto x: input) {
+        if (x.value.exclude != nullptr && x.value.exclude->contains(id())) {
+            continue;
+        }
         switch(x.value.type) {
             case Event::JOIN_PROX_GROUP:
                 join_prox_group_event(x.value);

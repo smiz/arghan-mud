@@ -12,4 +12,5 @@ xp: 10
 heavy: true
 lock: 100
 contents:
-  []
+  - kob/merchant_gem
+  - kob/merchant_gem
