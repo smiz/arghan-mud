@@ -1,0 +1,11 @@
+name: Fido
+proper_name: true
+description: Fido the dog is here, looking for some scraps.
+detail: |
+  Fido is a small dog that has a foul smell and pieces of rotted meat hanging
+  around his teeth.
+keywords:
+  - fido
+  - dog
+hit_points: 2
+wanders: 5000

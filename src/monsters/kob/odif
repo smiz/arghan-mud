@@ -1,0 +1,12 @@
+name: Odif
+proper_name: true
+description: Odif the dog is here, looking for some scraps.
+detail: |
+  Odif is a large dog that has a foul smell and pieces of rotted meat hanging
+  around his teeth.
+keywords:
+  - odif
+  - dog
+hit_points: 4
+str: 13
+wanders: 5000

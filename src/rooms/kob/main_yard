@@ -12,3 +12,5 @@ south:
 west:
   node: 30
   description: West of the yard is a tavern.
+monsters:
+  - kob/fido

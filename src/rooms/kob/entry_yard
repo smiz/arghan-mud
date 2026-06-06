@@ -15,3 +15,5 @@ west:
 south:
   node: 29
   description: The yard continues to the south.
+monsters:
+  - kob/odif
