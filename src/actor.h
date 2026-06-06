@@ -139,6 +139,7 @@ class Actor: public Model {
     void swindle_event(const Event& event);
     void start_swindle_event(const Event& event);
     void swindle_result_event(const Event& event);
+    void lock_unlock_command_event(const Event& event);
 
     /**
      * Return a skill roll for using an item. Returns
@@ -178,7 +179,7 @@ class Actor: public Model {
 
     std::pair<std::string,std::string> damage_adjective();
 
-    int sneaking, perceiving;
+    int sneaking;
     /// @brief Set of names that I will assist if they are attacked
     std::set<std::string> assist;
 

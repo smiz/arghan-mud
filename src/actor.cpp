@@ -39,7 +39,6 @@ armor_class(10),
 wanders(0),
 aggressive(false),
 sneaking(0),
-perceiving(0),
 level(0),
 xp_to_go(INT_MAX),
 free_skill_slots(0),
@@ -147,7 +146,6 @@ short_descriptions(false) {
         init(stats);
         save();
     }
-    perceiving = use_skill(Perception, true);
     Event periodic(Event::ROLL_PERIODIC_ATTRIBUTES,id());
     periodic.dst_id = id();
     periodic.pin = pin;
@@ -173,6 +171,9 @@ void Actor::gain_xp(int xp) {
         xp_to_go = level*100;
         hit_points += std::max(1,hp_die()+attribute_modifier(constitution));
         message("You gained a level!");
+        for (auto& skill: skills) {
+            skill.second++;
+        }
     }
     xp_to_go -= xp;
 }
@@ -202,6 +203,7 @@ void Actor::init(const initial_stats_t* const stats) {
         charisma = stats->chr;
         hit_points = stats->hp;
     }
+    xp_to_go = 10;
     description = name.capitalized_name()+" is here.";
     detail = name.capitalized_name()+" is pretty good lookin'!";
     key_words.push_back(name.get_name());
@@ -482,7 +484,7 @@ void Actor::swindle_event(const Event& event) {
     if (swindler == nullptr) {
         return;
     }
-    if (event.event_data.swindling > perceiving+item->get_cost()/5) {
+    if (event.event_data.swindling > use_skill(Perception,true)+item->get_cost()/5) {
         Event result(Event::SWINDLE_RESULT,id());
         result.dst_id = event.src_id;
         result.pin = group->pin;
@@ -521,7 +523,7 @@ void Actor::swindle_command_event(const Event& event) {
     swindle.type = Event::START_SWINDLE;
     swindle.pin = group->pin;
     swindle.dst_id = target;
-    swindle.perceptive = perceiving;
+    swindle.perceptive = use_skill(Perception,true);
     swindle.event_data.swindling = use_skill(Swindle);
     if (sneaking > 0) {
         sneaking = 0;
@@ -673,7 +675,8 @@ void Actor::melee_attack_event(const Event& event) {
         if (event.item != nullptr) {
             wpn_name = event.item->name().regular_name();
         }
-        damage += event.event_data.melee.dmg_roll;
+        damage += std::min(event.event_data.melee.dmg_roll,hit_points-damage);
+        result.event_data.melee.dmg_roll = damage;
         auto adj = damage_adjective();
         if (damage >= hit_points) {
             result.event_data.melee.killed = true;
@@ -703,12 +706,13 @@ void Actor::melee_attack_event(const Event& event) {
     // Stop sneaking in combat
     sneaking = 0;
     sched_event(result);
+    if (damage >= hit_points) {
+        schedule_destroyed();
+        return;
+    }
     // If we are not in combat already (we were surprised for example)
     if (!in_combat()) {
         schedule_attack(event.src_id,false);
-    }
-    if (damage >= hit_points) {
-        schedule_destroyed();
     }
 }
 
@@ -779,7 +783,7 @@ void Actor::kill_command_event(const Event& event) {
     std::string msg1, msg2;
     int target_id = group->find_best_match(*(event.key_words.get()));
     if (target_id == group->first_member_id() || 
-        group->find_member(target_id)->hidden() > perceiving) {
+        group->find_member(target_id)->hidden() > use_skill(Perception,true)) {
         message("You don't see anything like that.");
         return;
     } else {
@@ -800,6 +804,10 @@ void Actor::kill_command_event(const Event& event) {
 }
 
 void Actor::schedule_attack(int target_id, bool warn) {
+    // Cancel any swindling attempts
+    cancel_event(Event::SWINDLE);
+    cancel_event(Event::START_SWINDLE);
+    // Start the attack
     Event attack(Event::MELEE_ATTACK,id());
     attack.dst_id = target_id;
     attack.pin = group->pin;
@@ -828,7 +836,7 @@ void Actor::pending_attack_event(const Event& event) {
     if (filter(event)) {
         return;
     }
-    if (event.stealthy == 0 || perceiving >= event.stealthy) {
+    if (event.stealthy == 0 || use_skill(Perception,true) > event.stealthy) {
         schedule_attack(event.src_id,false);
         auto attack_name = group->find_member(event.src_id)->get_name();
         message(attack_name.capitalized_name()+" is attacking you!");
@@ -854,7 +862,7 @@ void Actor::join_prox_group_event(const Event& event) {
         receive_from(group->pin);
     } else {
         if (!in_combat() && (aggressive || hates.contains(event.src_id))
-            && (event.stealthy == 0 || event.stealthy < perceiving)) {
+            && (event.stealthy == 0 || event.stealthy < use_skill(Perception,true))) {
             emit_stealthy(description+
                 "\n"+name.capitalized_name()+
                 " looks murderously at you.",event.src_id);
@@ -935,7 +943,7 @@ void Actor::move_event(const Event& event) {
 
 void Actor::see_event(const Event& event) {
     if (!filter(event)) {
-        if (event.stealthy == 0 || perceiving > event.stealthy) {
+        if (event.stealthy == 0 || use_skill(Perception,true) > event.stealthy) {
             if (short_descriptions && (event.flags & SEE_SHORT)) {
                 message(event.msg);
             } else if (!short_descriptions && (event.flags & SEE_LONG)) {
@@ -1051,7 +1059,7 @@ void Actor::look_command_event(const Event& event) {
     } else {
         /// Look at or in something specific
         look.dst_id = group->find_best_match(*(event.key_words));
-        if (group->find_member(look.dst_id)->hidden() > perceiving) {
+        if (group->find_member(look.dst_id)->hidden() > use_skill(Perception,true)) {
             message("You don't see anything like that.");
             return;
         }
@@ -1262,6 +1270,28 @@ void Actor::trap_event(const Event& event) {
     }
 } 
 
+void Actor::lock_unlock_command_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    auto key = primary_hand;
+    if (primary_hand == nullptr || primary_hand->get_key_code() == 0) {
+        key = secondary_hand;
+        if (secondary_hand == nullptr || secondary_hand->get_key_code() == 0) {
+            message("You aren't holding a key.");
+            return;
+        }
+    }
+    Event result(event);
+    result.type = Event::LOCK_UNLOCK;
+    result.src_id = id();
+    result.dst_id = group->group_number();
+    result.pin = group->pin;
+    result.item = key;
+    result.stealthy = sneaking;
+    sched_event(result);
+}
+
 void Actor::sched_save() {
     Event save;
     save.type = Event::SAVE_MODEL;
@@ -1368,17 +1398,15 @@ int Actor::use_item(std::shared_ptr<Item>& item) {
 }
 
 int Actor::melee_attack_delay(std::shared_ptr<Item>& item) {
-    int delay = 500; // Half second is basic combat round
+    int delay = 750; // length of basic combat round
     if (item != nullptr) {
         // Weapon speed delay
-        delay += item->weapon_info().speed*5;
+        delay += item->weapon_info().speed*10;
     }
     // Dexterity bonus/penalty
-    delay -= attribute_modifier(dexterity)*5;
+    delay -= attribute_modifier(dexterity)*10;
     // Random factor
     delay += -10+rand()%20;
-    // Fastet is 1/10 of a second
-    delay = std::max(delay,100);
     return delay;
 }
 

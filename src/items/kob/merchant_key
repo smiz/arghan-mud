@@ -1,0 +1,12 @@
+name: key
+proper_name: false
+description: You see a heavy, gold key.
+detail: |
+  This key might be as valuable as what it guards!
+keywords:
+  - key
+  - gold
+  - golden
+cost: 100
+xp: 100
+key: 100

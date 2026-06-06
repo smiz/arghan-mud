@@ -1,0 +1,15 @@
+name: chest
+proper_name: false
+description: An iron bound chest sits on the floor.
+detail: |
+  The chest is secured by an sturdy lock. It looks much to heavy to carry.
+  How did they get it up here?
+keywords:
+  - chest
+  - iron
+cost: 100
+xp: 10
+heavy: true
+lock: 100
+contents:
+  []

@@ -135,6 +135,47 @@ void Room::reset_zone_event(const Event& event) {
     sched_event(reset,reload_interval);
 }
 
+void Room::lock_unlock_event(const Event& event) {
+    Event result(Event::SEE1,id());
+    result.dst_id = event.src_id;
+    result.pin = group->pin;
+    auto item = find_item(*(event.key_words.get()));
+    if (item == nullptr) {
+        result.msg = "You don't see that.";
+        sched_event(result);
+        return;
+    }
+    if (!item->is_locked() && !event.event_data.lock) {
+        result.msg = "It isn't locked.";
+        sched_event(result);
+        return;
+    }
+    if (item->is_locked() && event.event_data.lock) {
+        result.msg = "It is already locked.";
+        sched_event(result);
+        return;
+    }
+    if (item->get_lock_code() == event.item->get_key_code()) {
+        item->toggle_lock();
+    } else {
+        result.msg = "The key doesn't fit.";
+        sched_event(result);
+        return;
+    }
+    if (item->is_locked()) {
+        result.msg = "You lock "+item->name().regular_name()+".";
+        sched_event(result);
+        result.msg = group->find_member(event.src_id)->get_name().capitalized_name()+ " locks " + item->name().regular_name()+".";
+    } else {
+        result.msg = "You unlock "+item->name().regular_name()+".";
+        sched_event(result);
+        result.msg = group->find_member(event.src_id)->get_name().capitalized_name()+ " unlocks " + item->name().regular_name()+".";
+    }
+    result.dst_id = ANY_ID_BUT_SRC;
+    result.stealthy = event.stealthy;
+    sched_event(result);
+}
+
 void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_are_container, int16_t flags) {
     Event see;
     see.type = Event::SEE;
@@ -145,15 +186,19 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
     if (words_are_container) {
         if (item != nullptr) {
             if (item->container()) {
-                see.msg = "Inside "+item->name().regular_name()+" you find ";
-                auto contents = item->contents();
-                if (contents.empty()) {
-                    see.msg += "nothing.";
-                } else {
-                    see.msg += "\n";
-                    for (auto item: contents) {
-                        see.msg += item->name().capitalized_name()+"\n";
+                if (!item->is_locked()) {
+                    see.msg = "Inside "+item->name().regular_name()+" you find ";
+                    auto contents = item->contents();
+                    if (contents.empty()) {
+                        see.msg += "nothing.";
+                    } else {
+                        see.msg += "\n";
+                        for (auto item: contents) {
+                            see.msg += item->name().capitalized_name()+"\n";
+                        }
                     }
+                } else {
+                    see.msg = item->name().capitalized_name()+" is locked!";
                 }
             } else {
                 see.msg = "There is nothing inside of that!";
@@ -302,12 +347,24 @@ void Room::transfer_item_event(const Event& event) {
             see.pin = target->pin;
             see.msg = "That object isn't here.";
             sched_event(see);
+        } else if (transfer.item->is_heavy()) {
+            see.pin = target->pin;
+            see.msg = "That object is too heavy to lift.";
+            // Put it back in the container if that is where it came from
+            if (container != nullptr) {
+                container->add_item(transfer.item);
+            }
+            sched_event(see);
         } else {
             if (group->is_shop() && transfer.event_data.transfer.coins_in_purse < transfer.item->get_cost()) {
                 see.src_id = id();
                 see.dst_id = event.src_id;
                 see.pin = target->pin;
                 see.msg = "You can't afford that!";
+                // Put it back in the container if that is where it came from
+                if (container != nullptr) {
+                    container->add_item(transfer.item);
+                }
                 sched_event(see);
                 return;
             }

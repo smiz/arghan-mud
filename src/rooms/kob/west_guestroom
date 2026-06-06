@@ -1,0 +1,9 @@
+node: 36
+short_description: West Guestroom
+description: |
+  The western guestroom is dank and dark, butting
+  up against the wall of the keep. I hope the
+  innkeeper offers a discounted rate on this room.
+east:
+  node: 32
+  description: East is the hall.

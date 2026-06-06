@@ -1,0 +1,19 @@
+node: 32
+short_description: Upstairs Hall of the Tavern
+description: |
+  A sturdy flight of stairs ends at a hallway.
+north:
+  node: 33
+  description: To the north is a guestroom.
+south:
+  node: 34
+  description: To the south is a guestroom.
+east:
+  node: 35
+  description: To the east is a guestroom.
+west:
+  node: 36
+  description: To the west is a guestroom.
+down:
+  node: 30
+  description: Stairs go down to the tavern room.

@@ -1,0 +1,8 @@
+node: 35
+short_description: East Guestroom
+description: |
+  This cozy looking room has a small balcony. You can
+  see the practice yard below to the east.
+west:
+  node: 32
+  description: West is the hall.

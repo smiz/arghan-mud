@@ -198,6 +198,12 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::START_SWINDLE:
                 start_swindle_event(x.value);
                 break;
+            case Event::LOCK_UNLOCK_COMMAND:
+                lock_unlock_command_event(x.value);
+                break;
+            case Event::LOCK_UNLOCK:
+                lock_unlock_event(x.value);
+                break;
             default:
                 break;
         }
@@ -226,12 +232,23 @@ void Model::output_func(Bag& output) {
     }
 }
 
+void Model::cancel_event(Event::Type type) {
+    auto iter = pending.begin();
+    while (iter != pending.end()) {
+        if ((*iter).second.type == type) {
+            iter = pending.erase(iter);
+        } else {
+            iter++;
+        }
+    }
+}
+
 void Model::sched_event(Event& event, int time_to_event) {
     assert(time_to_event > 0);
     Time timestamp(time_to_event,event.type);
     std::pair<Time,Event> sched_event(timestamp,event);
     auto iter = pending.begin();
-    while (iter != pending.end() && (*iter).first < timestamp) {
+    while (iter != pending.end() && (*iter).first <= timestamp) {
         iter++;
     }
     pending.insert(iter,sched_event);

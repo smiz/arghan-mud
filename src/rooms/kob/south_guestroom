@@ -1,0 +1,9 @@
+node: 34
+short_description: South Guestroom
+description: |
+  The south guestroom has a balcony that overlooks
+  a busy bazaar. The smells wafting up from below
+  are delicious, but it is a bit noisy.
+north:
+  node: 32
+  description: North is the hall.

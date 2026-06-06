@@ -9,6 +9,10 @@ xp(0),
 m_held_ac_bonus(0),
 m_worn_ac_bonus(0),
 m_cost(0),
+m_lock(0),
+m_key(0),
+locked(false),
+heavy(false),
 m_wearable(WearableSlots::Unwearable),
 m_modifier(MonsterAttributes::NoAttr),
 m_skill(Skill::NoSkill),
@@ -20,6 +24,10 @@ xp(0),
 m_held_ac_bonus(0),
 m_worn_ac_bonus(0),
 m_cost(0),
+m_lock(0),
+m_key(0),
+locked(false),
+heavy(false),
 m_wearable(WearableSlots::Unwearable),
 m_modifier(MonsterAttributes::NoAttr),
 key_words(std::make_shared<KeyWordList>()),
@@ -68,8 +76,20 @@ m_filename(file) {
             m_contents->push_back(new_item);
         }
     }
+    if (m_contents != nullptr) {
+        if (yaml["lock"]) {
+            m_lock = yaml["lock"].as<int>();
+            locked = true;
+        }
+    }
+    if (yaml["key"]) {
+        m_key = yaml["key"].as<int>();
+    }
     if (yaml["cost"]) {
         m_cost = yaml["cost"].as<int>();
+    }
+    if (yaml["heavy"]) {
+        heavy = yaml["heavy"].as<bool>();
     }
 }
 

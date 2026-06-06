@@ -84,6 +84,11 @@ class Item {
     }
 
     int get_cost() const;
+    bool is_locked() const { return locked; }
+    int get_key_code() const { return m_key; }
+    int get_lock_code() const { return m_lock; }
+    bool is_heavy() const { return heavy; }
+    void toggle_lock() { locked = !locked; }
 
     protected:
 
@@ -91,6 +96,9 @@ class Item {
     int m_held_ac_bonus;
     int m_worn_ac_bonus;
     int m_cost;
+    int m_lock, m_key;
+    bool locked;
+    bool heavy;
     WearableSlots m_wearable;
     MonsterAttributes m_modifier;
     Skill m_skill;

@@ -64,6 +64,10 @@ struct Event {
         SWINDLE,
         /// @brief result of a swindle
         SWINDLE_RESULT, 
+        /// @brief Lock or unlock command
+        LOCK_UNLOCK_COMMAND,
+        /// @brief Lock or unlock something
+        LOCK_UNLOCK,
         /// @brief Warning issued prior to an attack
         PENDING_ATTACK,
         /// @brief Look at something (or being looked at)
@@ -123,6 +127,8 @@ struct Event {
         int swindling;
         /// @brief Prox group to enter or leave
         int prox_group;
+        /// @brief Lock or unlock an object?
+        bool lock;
         /// @brief Direction of motion for a MOVE event
         Direction dir;
         struct { 
@@ -165,8 +171,6 @@ using Simulator = adevs::Simulator<Event,Time>;
 #define ANY_ID -1
 // Const for matching any id but the src_id
 #define ANY_ID_BUT_SRC -2
-// First active proximity group
-#define START_GROUP 0
 // Not part of a zone
 #define NO_ZONE -1
 
@@ -416,6 +420,15 @@ class Model: public Atomic, public ProximityGroupMember {
     void sched_event(Event& event, int time_to_event = 1);
 
     /**
+     * @brief Cancel a scheduled event
+     * 
+     * Cancels all scheduled events of the given type.
+     * 
+     * @param type The type of event to cancel
+     */
+    void cancel_event(Event::Type type);
+
+    /**
      * Handler for all Event types. You scheduled it for yourself
      * if the Event source is you. Otherwise, it was sent by
      * somebody else. The handler is triggered when the Event is
@@ -484,6 +497,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void swindle_result_event(const Event& event){}
     virtual void swindle_event(const Event& event){}
     virtual void start_swindle_event(const Event& event);
+    virtual void lock_unlock_command_event(const Event& event){}
+    virtual void lock_unlock_event(const Event& event){}
     /// @brief Our proximity group
     ProximityGroup* group;
     /// @brief Items that belong to the model

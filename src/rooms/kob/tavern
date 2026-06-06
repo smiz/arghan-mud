@@ -8,6 +8,9 @@ description: |
 east:
   node: 27
   description: To the east is the practice yard.
+up:
+  node: 32
+  description: Stairs climb to the guestrooms.
 monsters:
   - kob/gossip
   - kob/gossip

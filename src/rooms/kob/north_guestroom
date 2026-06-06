@@ -1,0 +1,12 @@
+node: 33
+short_description: North Guestroom
+description: |
+  The north guestroom has a window that overlooks
+  the roof of a shorter building. The room is quiet
+  and comfortable. 
+south:
+  node: 32
+  description: South is the hall.
+items:
+  - kob/merchant_chest
+  - kob/merchant_key
