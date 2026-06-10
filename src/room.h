@@ -35,6 +35,7 @@ class Room: public Model {
     void reset_zone_event(const Event& event);
     void destroyed_event(const Event& event);
     void lock_unlock_event(const Event& event);
+    void read_event(const Event& event);
 
     /// A room does not occupy itself!
     bool occupies_space() { return false; }

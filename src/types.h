@@ -35,6 +35,7 @@ enum Skill {
     Perception,
     Stealth,
     Swindle,
+    Literacy,
     NoSkill
 };
 

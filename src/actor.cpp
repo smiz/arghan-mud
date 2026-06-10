@@ -2,6 +2,7 @@
 #include "dice.h"
 #include "corpse.h"
 #include "coins.h"
+#include "utils.h"
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
@@ -425,6 +426,50 @@ void Actor::start_swindle_event(const Event& event) {
     sched_event(swindle,1000);
 }
 
+std::shared_ptr<Item> Actor::find_any_item(const KeyWordList& key_words) {
+    int match = 0;
+    auto item = Model::find_item(key_words);
+    if (item != nullptr) {
+        match = item->match_keywords(key_words);
+    }
+    if (body != nullptr) {
+        int tmp = body->match_keywords(key_words);
+        if (tmp > 0) {
+            match = tmp;
+            item = body;
+        }
+    }
+    if (neck != nullptr) {
+        int tmp = neck->match_keywords(key_words);
+        if (tmp > match) {
+            match = tmp;
+            item = neck;
+        }
+    }
+    if (primary_hand != nullptr) {
+        int tmp = primary_hand->match_keywords(key_words);
+        if (tmp > match) {
+            match = tmp;
+            item = primary_hand;
+        }
+    }
+    if (secondary_hand != nullptr) {
+        int tmp = secondary_hand->match_keywords(key_words);
+        if (tmp > match) {
+            match = tmp;
+            item = secondary_hand;
+        }
+    }
+    auto alt_item = find_item(key_words);
+    if (alt_item != nullptr) {
+        int tmp = alt_item->match_keywords(key_words);
+        if (tmp > match) {
+            item = alt_item;
+        }
+    }
+    return item;
+}
+
 void Actor::swindle_event(const Event& event) {
     if (filter(event)) {
         return;
@@ -439,43 +484,8 @@ void Actor::swindle_event(const Event& event) {
         sched_event(result);
         return;
     }
-    int match = 0;
-    std::shared_ptr<Item> item = nullptr;
-    if (body != nullptr) {
-        int tmp = body->match_keywords(*(event.key_words.get()));
-        if (tmp > 0) {
-            match = tmp;
-            item = body;
-        }
-    }
-    if (neck != nullptr) {
-        int tmp = neck->match_keywords(*(event.key_words.get()));
-        if (tmp > match) {
-            match = tmp;
-            item = neck;
-        }
-    }
-    if (primary_hand != nullptr) {
-        int tmp = primary_hand->match_keywords(*(event.key_words.get()));
-        if (tmp > match) {
-            match = tmp;
-            item = primary_hand;
-        }
-    }
-    if (secondary_hand != nullptr) {
-        int tmp = secondary_hand->match_keywords(*(event.key_words.get()));
-        if (tmp > match) {
-            match = tmp;
-            item = secondary_hand;
-        }
-    }
-    auto alt_item = find_item(*(event.key_words.get()));
-    if (alt_item != nullptr) {
-        int tmp = alt_item->match_keywords(*(event.key_words.get()));
-        if (tmp > match) {
-            item = alt_item;
-        }
-    }
+    std::shared_ptr<Item> item = find_any_item(*(event.key_words.get()));
+
     if (item == nullptr) {
         Event result(Event::SEE1,id());
         result.event_data.subject_id = id();
@@ -1022,44 +1032,22 @@ void Actor::drop_command_event(const Event& event) {
     drop.dst_id = group->first_member_id();
     drop.pin = group->members().front()->pin;
     drop.src_id = id();
-    drop.item = find_item(*(event.key_words.get()));
+    drop.item = find_any_item(*(event.key_words.get()));
     drop.event_data.transfer.src_to_dst = true;
-    // Not in our pack
+    // We have something
     if (drop.item != nullptr) {
-        items.remove(drop.item);
-    } else {
-        int best_score = 0, score = 0;
-        // Is it equipped?
-        if (primary_hand != nullptr) {
-            score = primary_hand->match_keywords(*(event.key_words.get()));
-            if (score > best_score) {
-                best_score = score;
-                drop.item = primary_hand;
-            }
-        }
-        if (secondary_hand != nullptr) {
-            score = secondary_hand->match_keywords(*(event.key_words.get()));
-            if (score > best_score) {
-                best_score = score;
-                drop.item = secondary_hand;
-            }
-        }
-        if (body != nullptr) {
-            score = body->match_keywords(*(event.key_words.get()));
-            if (score > best_score) {
-                best_score = score;
-                drop.item = body;
-            }
-        }
-        if (drop.item == primary_hand) {
+        // On our person
+        if (std::find(items.begin(),items.end(),drop.item) != items.end()) {
+            items.remove(drop.item);
+        } else if (drop.item == primary_hand) {
             primary_hand = nullptr;
         } else if (drop.item == secondary_hand) {
             secondary_hand = nullptr;
+        } else if (drop.item == neck) {
+            neck = nullptr;
         } else if (drop.item == body) {
             body = nullptr;
         }
-    }
-    if (drop.item != nullptr) {
         save();
         sched_event(drop);
         // Drop it in a shop means you sold it
@@ -1179,6 +1167,27 @@ void Actor::stow_command_event(const Event& event) {
             emit_stealthy(name.capitalized_name()+" removes "+body->name().regular_name()+".");
             body = nullptr;
         }
+    }
+}
+
+void Actor::read_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    int literacy = use_skill(Literacy);
+    auto item = find_any_item(*(event.key_words.get()));
+    if (item == nullptr) {
+        Event read_room(event);
+        read_room.src_id = id();
+        read_room.dst_id = group->group_number();
+        read_room.pin = group->pin;
+        read_room.event_data.literacy = literacy;
+        sched_event(read_room);
+        return;
+    } else if (item->get_message().length() == 0) {
+        message("There is no message to read!");
+    } else {
+        message(transcribe(item->get_message(),literacy,item->get_message_complexity()));
     }
 }
 
@@ -1391,6 +1400,11 @@ int Actor::use_skill(Skill skill, bool average) {
             result += skills[Swindle];
         }
         result += attribute_modifier(charisma);
+    } else if (skill == Literacy) {
+        if (skills.find(Literacy) != skills.end()) {
+            result += skills[Literacy];
+        }
+        result += attribute_modifier(intelligence);
     }
     return std::max(0,result);
 }

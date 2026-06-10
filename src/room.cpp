@@ -3,6 +3,7 @@
 #include "trap.h"
 #include "maze.h"
 #include "coins.h"
+#include "utils.h"
 #include <yaml-cpp/yaml.h>
 
 static const int reload_interval = 120000;
@@ -123,6 +124,23 @@ graph(graph) {
         event.pin = group->pin;
         sched_event(event,reload_interval);
     }
+}
+
+void Room::read_event(const Event& event) {
+    Event result(Event::SEE1,id());
+    result.dst_id = event.src_id;
+    result.pin = group->pin;
+    auto item = find_item(*(event.key_words.get()));
+    if (item == nullptr) {
+        result.msg = "You don't see that.";
+    } else if (!item->is_heavy()) {
+        result.msg = "You'll have to pick it up first.";
+    } else if (item->get_message().length() == 0) {
+        result.msg = "Nothing is written there.";
+    } else {
+        result.msg = transcribe(item->get_message(),event.event_data.literacy,item->get_message_complexity());
+    }
+    sched_event(result);
 }
 
 void Room::reset_zone_event(const Event& event) {

@@ -89,6 +89,8 @@ class Item {
     int get_lock_code() const { return m_lock; }
     bool is_heavy() const { return heavy; }
     void toggle_lock() { locked = !locked; }
+    const std::string& get_message() const { return m_message; }
+    int get_message_complexity() const { return m_message_complexity; }
 
     protected:
 
@@ -99,6 +101,8 @@ class Item {
     int m_lock, m_key;
     bool locked;
     bool heavy;
+    std::string m_message;
+    int m_message_complexity;
     WearableSlots m_wearable;
     MonsterAttributes m_modifier;
     Skill m_skill;

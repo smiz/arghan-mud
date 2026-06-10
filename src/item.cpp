@@ -13,6 +13,7 @@ m_lock(0),
 m_key(0),
 locked(false),
 heavy(false),
+m_message_complexity(0),
 m_wearable(WearableSlots::Unwearable),
 m_modifier(MonsterAttributes::NoAttr),
 m_skill(Skill::NoSkill),
@@ -28,6 +29,7 @@ m_lock(0),
 m_key(0),
 locked(false),
 heavy(false),
+m_message_complexity(0),
 m_wearable(WearableSlots::Unwearable),
 m_modifier(MonsterAttributes::NoAttr),
 key_words(std::make_shared<KeyWordList>()),
@@ -42,6 +44,12 @@ m_filename(file) {
     }
     if (yaml["xp"]) {
         xp = yaml["xp"].as<int>();
+    }
+    if (yaml["message"]) {
+        m_message = yaml["message"].as<std::string>();
+        if (yaml["message_complexity"]) {
+            m_message_complexity = yaml["message_complexity"].as<int>();
+        }
     }
     if (yaml["weapon_data"]) {
         m_weapon_info.speed = yaml["weapon_data"]["speed"].as<int>();

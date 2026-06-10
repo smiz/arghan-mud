@@ -18,9 +18,11 @@ level: 4
 xp_to_go: 318
 free_slots: 1
 items:
-  []
+  - limbo_note
+  - limbo_note
 skills:
+  literacy: 1
   melee: 8
-  perception: 0
+  perception: 10
   stealth: 200
-  swindle: 0
+  swindle: 10

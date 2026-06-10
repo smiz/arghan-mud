@@ -1,0 +1,10 @@
+name: letter
+proper_name: false
+description: Someone left a letter on the floor. 
+detail: Should you be reading somebody elses letters?
+message: Good luck!
+message_complexity: 0
+cost: 0
+keywords:
+  - letter
+  - note

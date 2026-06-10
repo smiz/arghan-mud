@@ -7,8 +7,8 @@ TARGET = server
 LIBS = -ladevs -lyaml-cpp -L$(HOME)/Code/adevs
 
 # Source files
-HEADERS = model.h room.h actor.h name.h item.h types.h dice.h corpse.h trap.h maze.h coins.h limbo.h
-SRCS = model.cpp room.cpp main.cpp actor.cpp name.cpp item.cpp dice.cpp corpse.cpp trap.cpp types.cpp maze.cpp coins.cpp limbo.cpp
+HEADERS = model.h room.h actor.h name.h item.h types.h dice.h corpse.h trap.h maze.h coins.h limbo.h utils.h
+SRCS = model.cpp room.cpp main.cpp actor.cpp name.cpp item.cpp dice.cpp corpse.cpp trap.cpp types.cpp maze.cpp coins.cpp limbo.cpp utils.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)

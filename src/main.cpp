@@ -327,6 +327,20 @@ void lock_obj(Actor* obj, std::list<std::string>& tokens) {
     cv.notify_one();
 }
 
+void read_obj(Actor* obj, std::list<std::string>& tokens) {
+    Event event(Event::READ,obj->id());
+    event.dst_id = obj->id();
+    event.pin = obj->pin;
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
 void dice(Actor* obj, std::list<std::string>& tokens) {
     if (tokens.empty()) {
         obj->message("Roll which dice?");
@@ -432,6 +446,9 @@ bool parse_line_with_tokens(std::string& line, Actor* obj) {
         return true;
     } else if (cmd == "wear") {
         wear(obj,tokens);
+        return true;
+    } else if (cmd == "read") {
+        read_obj(obj,tokens);
         return true;
     }
     return false;

@@ -104,6 +104,9 @@ void Model::delta_ext(Time e, const Bag& input) {
             continue;
         }
         switch(x.value.type) {
+            case Event::READ:
+                read_event(x.value);
+                break;
             case Event::JOIN_PROX_GROUP:
                 join_prox_group_event(x.value);
                 break;

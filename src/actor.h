@@ -140,6 +140,7 @@ class Actor: public Model {
     void start_swindle_event(const Event& event);
     void swindle_result_event(const Event& event);
     void lock_unlock_command_event(const Event& event);
+    void read_event(const Event& event);
 
     /**
      * Return a skill roll for using an item. Returns
@@ -154,6 +155,11 @@ class Actor: public Model {
     int melee_attack_delay(std::shared_ptr<Item>& item);
 
     int use_skill(Skill skill, bool average = false);
+
+    /**
+     * Find any item, included equipped items.
+     */
+    std::shared_ptr<Item> find_any_item(const KeyWordList& key_words);
 
     /** 
      * Calculate the ac of the actor. This is natural ac

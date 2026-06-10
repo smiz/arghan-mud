@@ -86,6 +86,8 @@ struct Event {
         SAVE_MODEL,
         /// @brief Practice a skill
         PRACTICE,
+        /// @brief Read something
+        READ,
         /// @brief, Reroll periodic attributes, like perception
         ROLL_PERIODIC_ATTRIBUTES,
         /// @brief The model was killed, disintegrated, etc
@@ -128,6 +130,8 @@ struct Event {
         int subject_id;
         /// @brief What is the swindling skill roll?
         int swindling;
+        /// @brief What is the literacy skill roll?
+        int literacy;
         /// @brief Prox group to enter or leave
         int prox_group;
         /// @brief Lock or unlock an object?
@@ -502,6 +506,7 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void start_swindle_event(const Event& event);
     virtual void lock_unlock_command_event(const Event& event){}
     virtual void lock_unlock_event(const Event& event){}
+    virtual void read_event(const Event& event){}
     /// @brief Our proximity group
     ProximityGroup* group;
     /// @brief Items that belong to the model

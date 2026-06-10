@@ -9,4 +9,6 @@ description: |
 down:
   node: 31
   description: Through the perfect Circle in the floor you see a beckoning light. 
+items:
+  - limbo_note
 
