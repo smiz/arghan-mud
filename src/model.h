@@ -11,12 +11,24 @@
 #include "name.h"
 
 /**
- * All model states evolve by events.
+ * @brief Data structure used to change model states.
+ * 
+ * All model states evolve by events. This data structure
+ * encodes all of the information needed to calculate
+ * a change of state in response to an event.
+ * 
+ * The use of fields in the event are idiomatic to
+ * the type of event. You should study the event
+ * handler provided by the Actor, Room, or other
+ * Model subclass to understand what is going on.
+ * 
  * @see Model
  */
 struct Event {
 
     /**
+     * @brief List of all types of events in the mud
+     * 
      * Event types have priority just as they are listed.
      * At a tick, lower priority events go first and then
      * higher priorities in order.
@@ -30,7 +42,7 @@ struct Event {
         JOIN_PROX_GROUP,
         /// @brief Leave a proximity group
         LEAVE_PROX_GROUP,
-        /// @brief Transfer an item
+        /// @brief Transfer an item to/from a Room
         TRANSFER_ITEM,
         /// @brief A trap has been triggered!
         TRAP,
@@ -40,33 +52,33 @@ struct Event {
         GET_COMMAND,
         /// @brief Move in a given direction
         MOVE,
-        /// @brief Wandering monsters
+        /// @brief Wandering monsters wander
         WANDER,
         /// @brief Command to wield a weapon
         WIELD_COMMAND,
-        /// @brief Command to stow an equiped item
+        /// @brief Command to stow an equipped item
         STOW_COMMAND,
         /// @brief Hold an item in your secondary hand
         HOLD_COMMAND,
         /// @brief Put an item on
         WEAR_COMMAND,
-        /// @brief Look command issued to an actor by a player
+        /// @brief Look command issued by a player
         LOOK_COMMAND,
-        /// @brief kill command issued to an actor by a player
+        /// @brief Kill command issued by a player
         KILL_COMMAND,
-        /// @brief sneak command issued by a player
+        /// @brief Sneak command issued by a player
         SNEAK_COMMAND,
-        /// @brief swindle command
+        /// @brief Swindle command
         SWINDLE_COMMAND,
-        /// @brief Start a swindle
+        /// @brief Start of a swindle
         START_SWINDLE,
         /// @brief Do the swindle
         SWINDLE,
-        /// @brief result of a swindle
+        /// @brief Result of a swindle
         SWINDLE_RESULT, 
         /// @brief Lock or unlock command
         LOCK_UNLOCK_COMMAND,
-        /// @brief Lock or unlock something
+        /// @brief Do the lock or unlock of something
         LOCK_UNLOCK,
         /// @brief Warning issued prior to an attack
         PENDING_ATTACK,
@@ -88,24 +100,36 @@ struct Event {
         PRACTICE,
         /// @brief Read something
         READ,
-        /// @brief, Reroll periodic attributes, like perception
+        /// @brief Used for periodic actions, like healing
         ROLL_PERIODIC_ATTRIBUTES,
-        /// @brief The model was killed, disintegrated, etc
-        /// This should stay at the end so that all other
-        /// immediate events by the actor (e.g., emitting)
-        /// get processed before the actor leaves.
+        /// @brief The model was killed, disintegrated, etc.
         DESTROYED,
         /// Really the last thing to happen
         RESET_ZONE
     };
 
+    /**
+     * @brief Create an uninitialized event
+     * 
+     * The stealthy, perceptive, and flags fields are initialized.
+     * The flags are 0xffff. Others are zero.
+     */
     Event():stealthy(0),perceptive(0),flags(0xffff){}
+    /**
+     * @brief Create an event.
+     *
+     * Initializes as the default constructor and sets the src_id and
+     * type variables.
+     *  
+     * @param type of the event
+     * @param src_id Source id of the event.
+     */
     Event(Type type, int src_id):type(type),src_id(src_id),stealthy(0),perceptive(0),flags(0xffff){}
     /// @brief The type of the event
     Type type;
     /// @brief Originator of the event
     int src_id;
-    /// @brief Destination for the event (can be ANY_ID or ANY_ID_BUT_SRC)
+    /// @brief Destination for the event (can also be ANY_ID or ANY_ID_BUT_SRC)
     int dst_id;
     /// @brief Message, if any, associated with the event
     std::string msg;
@@ -113,6 +137,7 @@ struct Event {
     adevs::pin_t pin;
     /// @brief Any key words associated with a command
     std::shared_ptr<KeyWordList> key_words;
+    /// @brief Second list of key words associated with a command
     std::shared_ptr<KeyWordList> key_words2;
     /// @brief Item for a transfer or weapon in an attack
     std::shared_ptr<Item> item;
@@ -126,7 +151,7 @@ struct Event {
     int16_t flags;
     /// @brief Primitive, type specific data
     union {
-        /// @brief Who is the subject of a SEE event?
+        /// @brief Who is the subject of a SEE or SEE1 event?
         int subject_id;
         /// @brief What is the swindling skill roll?
         int swindling;
@@ -138,21 +163,25 @@ struct Event {
         bool lock;
         /// @brief Direction of motion for a MOVE event
         Direction dir;
+        /// @brief Data for MELEE events
         struct { 
-            /// @brief Damage roll (attach) or received (result)
+            /// @brief Damage roll caused (ATTACK) or received (RESULT)
             int dmg_roll;
             /// @brief Attack roll
             int atk_roll;
-            /// @brief Was the target killed (result)
+            /// @brief Was the target killed (RESULT)
             bool killed;
         } melee;
-        /// @brief Is the first keyword the name of a container
+        /// @brief Data for TRANSFER events
         struct {
             /// @brief Transfer the item from src_id to dst_id
             bool src_to_dst;
+            /// @brief Is the first keyword in the list a container name?
             bool first_keyword_is_container;
+            /// @brief How many coins are possessed by the actor attempting the transfer
             int coins_in_purse;
         } transfer;
+        /// @brief Data for TRAP events
         struct {
             /// @brief Damage inflicted by the trap
             int dmg_roll;
@@ -172,19 +201,22 @@ using Atomic = adevs::Atomic<Event,Time>;
 using Graph = adevs::Graph<Event,Time>;
 using Simulator = adevs::Simulator<Event,Time>;
 
-// Constant for illegal id. No object will have this id.
+/// Constant for illegal id. No object will have this id.
 #define NO_ID 0
-// Const for matching any id
+/// Const for matching any id
 #define ANY_ID -1
-// Const for matching any id but the src_id
+/// Const for matching any id but the src_id
 #define ANY_ID_BUT_SRC -2
-// Not part of a zone
+/// Not part of a zone
 #define NO_ZONE -1
 
 /**
- * Interface that is added to a proximity group when
- * a model joins that group. Proximity groups are used
- * to broadcast events within a Room.
+ * @brief A member of a ProximityGroup
+ * 
+ * Interface that is added to a ProximityGroup when
+ * a model joins that group. A ProximityGroup is used
+ * to exchange events within a Room.
+ * 
  * @see Room
  * @see Actor
  * @see Model
@@ -202,6 +234,7 @@ class ProximityGroupMember {
      * 
      * Return the number of words appearing in the keyword
      * set for this group member.
+     * 
      * @param words The set of keywords to search for
      * @return Number of matches
      */
@@ -209,21 +242,34 @@ class ProximityGroupMember {
     /**
      * @brief Get the unique id of the group member. 
      * 
-     * This is unique ID used to identify a proximity group
-     * when entering or leaving the group.
+     * This is a unique id used to identify a proximity group
+     * member in the mud. It is globally unique.
      * 
-     * @param return The unique id of the group member 
+     * @return The globally unique id of the group member 
      */
     int id() const { return m_id; }
+    /**
+     * @brief Get the Name of the group member
+     */
     virtual Name get_name() const { return Name("",true); }
     /**
+     * @brief Does the member inhibit resets of a zone?
+     * 
      * Should this member be counted as occupying the room for the purposes
      * of calculating zone occupancy. An occupied zone can't be reset.
      */
     virtual bool occupies_space() = 0;
 
+    /**
+     * @brief How well is the member hidden?
+     * 
+     * This is used to confirm information about sneaking or otherwise
+     * hard see see members.
+     * 
+     * @return The difficulty of detecting the member.
+     */
     virtual int hidden() const { return 0; }
-    /// @brief Send an event directly to the member
+    /// @brief Pin for sending an event directly to the member
     const adevs::pin_t pin;
 
     private:
@@ -235,6 +281,8 @@ class ProximityGroupMember {
 };
 
 /**
+ * @brief Groups together ProximityGroupMembers to model a physical space.
+ * 
  * A proximity group is used to communicate via broadcast
  * within its members. Each Room is mapped to a proximity
  * group, and so the network of groups is the map of the game.
@@ -243,7 +291,7 @@ class ProximityGroup {
 
     public:
     /**
-     * @brief Send and receive events on this pin
+     * @brief Send and receive events to the group using this pin
      * 
      * Connect this pin to a model when it joins the
      * group and disconnect it when it leaves the group.
@@ -253,8 +301,20 @@ class ProximityGroup {
      */
     const adevs::pin_t pin;
 
-    /// @brief Create a proximity group with a room id
-    /// @param group_number The node number assigned by the Room
+    /**
+     * @brief Create a proximity group with a room id
+     * 
+     * Each room has a group number and zone number. Group numbers
+     * must be globally unique and are assigned when the room is
+     * created. The zone number is used to control wandering Actor
+     * objects. All groups with the same zone number reset at
+     * the same time. if NO_ZONE is used, the group will never
+     * reset.
+     * 
+     * @param group_number The node number assigned by the Room.
+     * @param zone_number Zone to which the group belongs. Can be NO_ZONE.
+     * @param shop Is this a shop? If so, picking up and dropping items involves Coin.
+     */
     ProximityGroup(int group_number = 0, int zone_number = NO_ZONE, bool shop = false):
     m_group_number(group_number),m_zone_number(zone_number),m_shop(shop){
         if (zone_number != NO_ZONE) {
@@ -264,10 +324,13 @@ class ProximityGroup {
     /// @brief Add a member to the group when joining
     /// @param member The member to add
     void add_member(ProximityGroupMember* member) {
+        /// Avoid duplicates! Maybe we should use a set instead of checking
+        /// for membership.
         if (std::find(m_members.begin(),m_members.end(),member) != m_members.end()) {
             return;
         }
         m_members.push_back(member);
+        /// Does this occupant inhibit resets?
         if (member->occupies_space()) {
             zone_occupancy[m_zone_number] = zone_occupancy[m_zone_number]+1;
         }
@@ -276,6 +339,7 @@ class ProximityGroup {
     /// @brief Remove a member when leaving
     /// @param member The member to remove
     void remove_member(ProximityGroupMember* member) {
+        /// Does this occupant inhibit resets?
         if (m_members.remove(member) > 0 && member->occupies_space()) {
             zone_occupancy[m_zone_number] = zone_occupancy[m_zone_number]-1;
         }
@@ -289,6 +353,8 @@ class ProximityGroup {
     /// @brief Get the room number (node id) of the group.
     /// @return The node number of the group.
     int group_number() const { return m_group_number; }
+    /// @brief Get the zone number for the group.
+    /// @return The zone to which the group belongs.
     int zone_number() const { return m_zone_number; }
     /// @brief Add a direction to exit the group
     /// @param dir Description of the exit direction
@@ -296,8 +362,14 @@ class ProximityGroup {
         exits.push_back(dir);
     }
     /**
+     * @brief get information about an exit
+     * 
      * Fills the supplied direction with information about
      * dir.dir and returns true. If not found, returns false;
+     * 
+     * @param dir Reads dir.dir. If in the exist list, the
+     * other fields are set to match the stored exist.
+     * @return True if the direction exists, false otherwise.
      */
     bool find_direction(direction_t& dir) const {
         for (auto exit_dir: exits) {
@@ -309,6 +381,15 @@ class ProximityGroup {
         return false;
     }
 
+    /**
+     * @brief Select an exit at random.
+     * 
+     * Returns a Direction of travel. Used for fleeing
+     * from combat and for wandering Actor objects.
+     * 
+     * @return A valid direction or Direction::EndOfDirectionEnum
+     * if no valid exit exists.
+     */
     Direction random_exit() const {
         if (exits.empty()) {
             return Direction::EndOfDirectionEnum;
@@ -323,7 +404,9 @@ class ProximityGroup {
 
     /**
      * @brief Is the zone that this group is part of empty
-     * @return true if all groups within the zone have no members
+     * @return true if all groups within the zone have no occupants
+     * 
+     * @see ProximityGroupMember
      */
     bool zone_is_empty() {
         return zone_occupancy[m_zone_number] == 0;
@@ -353,11 +436,20 @@ class ProximityGroup {
         }
         return best_id;
     }
-    /// Get id of the first member of the proximity group
+    /// @brief Get id of the first member of the proximity group
     int first_member_id() {
         return m_members.front()->id();
     }
 
+    /**
+     * @brief Find a member with the given id.
+     * 
+     * Look for a member having the supplied id. Returns
+     * the member if it is found.
+     * 
+     * @param id the member id to look for
+     * @return the member or nullptr if not found.
+     */
     ProximityGroupMember* find_member(int id) {
         for (auto member: m_members) {
             if (id == member->id()) {
@@ -367,7 +459,16 @@ class ProximityGroup {
         return nullptr;
     }
 
+    /// @brief Is this group a shop?
     bool is_shop() const { return m_shop; }
+    /**
+     * @brief Set the shop flag.
+     * 
+     * This is set when the group is loaded.
+     * 
+     * @see Room
+     * @param shop true if this room is a shop, false if not
+     */ 
     void set_shop(bool shop) { m_shop = shop; }
 
     private:
@@ -383,6 +484,7 @@ class ProximityGroup {
     /// @brief Is this zone a shop?
     bool m_shop;
 
+    /// @brief Globally visible map of zone occupancy counts
     static std::map<int,int> zone_occupancy;
 };
 
@@ -390,34 +492,60 @@ class ProximityGroup {
  * @brief Base class for all active objects in the mud
  * 
  * Always call the event handler of your parent before
- * taking your own actions!
+ * taking your own actions! Or at least be certain your
+ * parent doesn't do anything.
+ * 
+ * @see Actor
+ * @see Room
+ * @see Trap
  */
 class Model: public Atomic, public ProximityGroupMember {
 
     public:
 
+    /**
+     * @brief Create an uninitialized model
+     * 
+     * Create a model and add it to the adevs::Graph.
+     * 
+     * @param graph This is the adevs::Graph that contains all Model
+     * objects and objects derived from Model.
+     */
     Model(Graph& graph);
+    /// @brief Destructor
     virtual ~Model();
 
-    /** Inherited from adevs. Leave these alone! */
+    /// @brief Inherited from adevs
     void delta_int();
+    /// @brief Inherited from adevs
     void delta_ext(Time e, const Bag& input);
+    /// @brief Inherited from adevs
     void delta_conf(const Bag& input);
+    /// @brief Inherited from adevs
     Time ta();
+    /// @brief Inherited from adevs
     void output_func(Bag& output);
 
     protected:
 
     /**
      * @brief Filter on src and dst ids.
-     * @return true if it should be discarded
+     *
+     * In practice, the filter is only useful for
+     * Actor and Trap objects. It isn't used by Room
+     * objects. Really, this is a bug and not a 
+     * feature. Someone should fix the filter().
+     * 
+     * @see Actor
+     * @see Trap
+     * @return true if the should be discarded
      */
     bool filter(const Event& event);
     /**
      * @brief Put an event into this model's schedule
      * 
      * This event will be sent to the proximity group AND
-     * be received as input from the proximity group. Use
+     * be received as input from the proximity group. You
      * can use the event originator to distinguish these
      * cases. The time to event must be greater than zero.
      * 
@@ -429,7 +557,7 @@ class Model: public Atomic, public ProximityGroupMember {
     /**
      * @brief Cancel a scheduled event
      * 
-     * Cancels all scheduled events of the given type.
+     * Cancels all of the Model scheduled events of the given type.
      * 
      * @param type The type of event to cancel
      */
@@ -500,23 +628,37 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void roll_periodic_attributes_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void hear_event(const Event& event){}
+    /// @brief Default behavior does nothing
     virtual void swindle_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
     virtual void swindle_result_event(const Event& event){}
+    /// @brief Default behavior does nothing
     virtual void swindle_event(const Event& event){}
+    /// @brief Default behavior does nothing
     virtual void start_swindle_event(const Event& event);
+    /// @brief Default behavior does nothing
     virtual void lock_unlock_command_event(const Event& event){}
+    /// @brief Default behavior does nothing
     virtual void lock_unlock_event(const Event& event){}
+    /// @brief Default behavior does nothing
     virtual void read_event(const Event& event){}
     /// @brief Our proximity group
     ProximityGroup* group;
-    /// @brief Items that belong to the model
+    /**
+     * @brief Items that belong to the model
+     * 
+     * For a Room, these are the contents of the space.
+     * For an Actor, this is just the inventory not being
+     * held, worn, or carried in a container.
+     */
     std::list<std::shared_ptr<Item>> items;
 
     /**
      * @brief Find an item by key word
      * 
      * Finds the best match to the key words supplies.
-     * Returns nullptr if there is no match.
+     * Returns nullptr if there is no match. Looks in
+     * the list of items for this Model.
      * 
      * @param key_words The keys to match
      * @return The best match or nullptr if no match
@@ -548,7 +690,16 @@ class Model: public Atomic, public ProximityGroupMember {
      */
     void do_not_receive_from(adevs::pin_t pin);
 
-    /// @brief Map of room numbers to proximity groups
+    /**
+     * @brief Map of room numbers to proximity groups
+     * 
+     * This stores the MUD map! This lets you find
+     * ProximityGroup objects by number. Then the group
+     * tells you which groups are reachable from it
+     * and in what direction.
+     * 
+     * @see ProximityGroup
+     */
     static std::map<int,ProximityGroup*> prox_map;
 
     /**

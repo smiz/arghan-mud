@@ -4,6 +4,16 @@
 #include "name.h"
 #include "item.h"
 
+/**
+ * @brief Structure for storing character attributes
+ * 
+ * Structure for storing character attributes at character
+ * creation. This is used when a player logs into the game
+ * and creates a new characters.
+ * 
+ * @see client()
+ * @see Actor::initial_stats()
+ */
 struct initial_stats_t {
     int str, dex, con, intel, wis, chr, hp;
 };
