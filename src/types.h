@@ -1,5 +1,6 @@
 #ifndef _types_h_
 #define _types_h_
+#include "dice.h"
 #include <string>
 #include <list>
 #include <memory>
@@ -36,6 +37,7 @@ enum Skill {
     Stealth,
     Swindle,
     Literacy,
+    Climbing,
     NoSkill
 };
 
@@ -57,6 +59,22 @@ struct direction_t {
     Direction dir;
     /// @brief What does the exit look like
     std::string description;
+    /// @brief Do you need a skill to traverse it?
+    Skill skill;
+    /// @brief What is the difficulty if it needs a skill?
+    int difficulty;
+    /// @brief Damage on failure of skill
+    std::shared_ptr<Dice> dmg;
+    /// @brief Do we go where we want if we fail
+    bool go_on_fail;
+    /// @brief Message on failure
+    std::string fail_msg1;
+    std::string fail_msg2;
+    /// @brief Message on success
+    std::string success_msg1;
+    std::string success_msg2;
+
+    direction_t():skill(NoSkill){}
 };
 
 using KeyWordList = std::list<std::string>;

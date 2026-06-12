@@ -1,0 +1,17 @@
+node: 39
+zone: 3
+short_description: The Cistern
+description: |
+  You are swimming in the cistern. Up above you can see
+  light where a well admits residents to draw water.
+up:
+  node: 27
+  description: A rope supports a bucket. You might be able to climb up.
+  difficulty: 15
+  skill: climbing
+  go_on_fail: false
+  success2: climb up the well.
+  success1: climbs up the well.
+  fail2: fall down the well.
+  fail1: falls down the well.
+  damage: 1d2

@@ -2,7 +2,21 @@ node: 27
 zone: 3
 short_description: Southern Central Court
 description: |
-  A grassy field provides ample space for exercising the soldiers.
+  A grassy field provides ample space for exercise. A
+  well near the center of the field is used to by the
+  occupants of the keep to draw water for drinking and
+  cooking.
+down:
+  node: 39
+  description: You might be able to climb down the well.
+  difficulty: 10
+  skill: climbing
+  go_on_fail: true
+  success2: climb down the well.
+  success1: climbs down the well.
+  fail2: fall down the well.
+  fail1: falls down the well.
+  damage: 1d2
 east:
   node: 29
   description: To the east is the entry yard and southern gate tower.

@@ -499,7 +499,7 @@ void Actor::swindle_event(const Event& event) {
     if (swindler == nullptr) {
         return;
     }
-    if (event.event_data.swindling > use_skill(Perception,true)+item->get_cost()/5) {
+    if (check_skill(Perception,event.event_data.swindling+item->get_cost()/5,true)) {
         Event result(Event::SWINDLE_RESULT,id());
         result.dst_id = event.src_id;
         result.pin = group->pin;
@@ -806,9 +806,9 @@ void Actor::kill_command_event(const Event& event) {
     std::string msg1, msg2;
     int target_id = group->find_best_match(*(event.key_words.get()));
     if (target_id == group->first_member_id() || 
-        group->find_member(target_id)->hidden() > use_skill(Perception,true)) {
-        message("You don't see anything like that.");
-        return;
+            !check_skill(Perception,group->find_member(target_id)->hidden(),true)) {
+            message("You don't see anything like that.");
+            return;
     } else {
         schedule_attack(target_id,true);
         if (sneaking > 0) {
@@ -862,7 +862,7 @@ void Actor::pending_attack_event(const Event& event) {
     if (filter(event)) {
         return;
     }
-    if (!in_combat() && (event.stealthy == 0 || use_skill(Perception,true) > event.stealthy)) {
+    if (!in_combat() && (event.stealthy == 0 || check_skill(Perception,event.stealthy,true))) {
         schedule_attack(event.src_id,false);
         auto attack_name = group->find_member(event.src_id)->get_name();
         message(attack_name.capitalized_name()+" is attacking you!");
@@ -883,7 +883,7 @@ void Actor::leave_mud_event(const Event& event) {
 
 bool Actor::act_if_hostile(const Event& event) {
     if (!in_combat() && (aggressive || hates.contains(event.event_data.subject_id))
-        && (event.stealthy == 0 || event.stealthy < use_skill(Perception,true))) {
+        && (event.stealthy == 0 || check_skill(Perception,event.stealthy,true))) {
             schedule_attack(event.event_data.subject_id,true);
             return true;
     }
@@ -895,6 +895,9 @@ void Actor::join_prox_group_event(const Event& event) {
         group = prox_map[event.event_data.prox_group];
         group->add_member(this);
         receive_from(group->pin);
+        if (damage >= hit_points) {
+            schedule_destroyed();
+        }
     } else {
         if (act_if_hostile(event)) {
             emit_stealthy(description+
@@ -919,8 +922,10 @@ void Actor::wander_event(const Event& event) {
         return;
     }
     direction_t dir;
-    dir.dir = group->random_exit();
-    group->find_direction(dir);
+    do {
+        dir.dir = group->random_exit();
+        group->find_direction(dir);
+    } while (dir.skill != NoSkill);
     if (prox_map[dir.id]->zone_number() == group->zone_number()) {
         Event move_event(Event::MOVE,id());
         move_event.dst_id = id();
@@ -947,19 +952,43 @@ void Actor::move_event(const Event& event) {
         message("You aren't in combat.");
         return;
     } else if (combat && move_dir.dir == Direction::Flee) {
-        if (Dice(1,20)()+attribute_modifier(dexterity) < 10) {
+        int tries = 0;
+        do {
+            move_dir.dir = group->random_exit();
+            group->find_direction(move_dir);
+            tries++;
+        } while (move_dir.skill != NoSkill && tries < 10);
+        if (move_dir.skill != NoSkill || Dice(1,20)()+attribute_modifier(dexterity) < 10) {
             message("You couldn't escape!");
             return;
-        } else {
-            move_dir.dir = group->random_exit();
         }
     }
     if (!group->find_direction(move_dir)) {
         message("You can't go in that direction.");
         return;
     }
+    if (move_dir.skill != NoSkill) {
+        emit_stealthy(name.capitalized_name()+" attempts to go "+direction_name[move_dir.dir]);
+        if (!check_skill(move_dir.skill,move_dir.difficulty)) {
+            emit_stealthy(name.capitalized_name()+" "+move_dir.fail_msg1);
+            message("You "+move_dir.fail_msg2);
+            if (move_dir.dmg != nullptr) {
+                damage += (*(move_dir.dmg.get()))();
+                message("That "+damage_adjective().first+" you!");
+            }
+            if (!move_dir.go_on_fail) {
+                if (damage >= hit_points) {
+                    schedule_destroyed();
+                }
+                return;
+            }
+        } else {
+            emit_stealthy(name.capitalized_name()+" "+move_dir.success_msg1);
+            message("You "+move_dir.success_msg2);
+        }
+    }
     change_prox_groups(move_dir.id);
-    Event see(Event::SEE,id());
+    Event see(Event::SEE1,id());
     see.event_data.subject_id = id();
     see.dst_id = ANY_ID_BUT_SRC;
     see.msg = name.capitalized_name()+" arrives from "+reverse_direction_name[move_dir.dir]+".";
@@ -977,7 +1006,7 @@ void Actor::move_event(const Event& event) {
 
 void Actor::see_event(const Event& event) {
     if (!filter(event)) {
-        if (event.stealthy == 0 || use_skill(Perception,true) > event.stealthy) {
+        if (event.stealthy == 0 || check_skill(Perception,event.stealthy,true)) {
             if (short_descriptions && (event.flags & SEE_SHORT)) {
                 message(event.msg);
             } else if (!short_descriptions && (event.flags & SEE_LONG)) {
@@ -1072,7 +1101,7 @@ void Actor::look_command_event(const Event& event) {
     } else {
         /// Look at or in something specific
         look.dst_id = group->find_best_match(*(event.key_words));
-        if (group->find_member(look.dst_id)->hidden() > use_skill(Perception,true)) {
+        if (!check_skill(Perception,group->find_member(look.dst_id)->hidden(),true)) {
             message("You don't see anything like that.");
             return;
         }
@@ -1174,7 +1203,7 @@ void Actor::read_event(const Event& event) {
     if (filter(event)) {
         return;
     }
-    int literacy = use_skill(Literacy);
+    int literacy = use_skill(Literacy,true);
     auto item = find_any_item(*(event.key_words.get()));
     if (item == nullptr) {
         Event read_room(event);
@@ -1382,6 +1411,11 @@ int Actor::attribute_modifier(int attribute_score) {
     return 10;
 }
 
+bool Actor::check_skill(Skill skill, int difficulty, bool average) {
+    int roll = use_skill(skill,average);
+    return roll >= difficulty;
+}
+
 int Actor::use_skill(Skill skill, bool average) {
     Dice die(1,20);
     int result = (average) ? 10 : die();
@@ -1405,6 +1439,11 @@ int Actor::use_skill(Skill skill, bool average) {
             result += skills[Literacy];
         }
         result += attribute_modifier(intelligence);
+    } else if (skill == Climbing) {
+        if (skills.find(Literacy) != skills.end()) {
+            result += skills[Literacy];
+        }
+        result += attribute_modifier(strength);
     }
     return std::max(0,result);
 }

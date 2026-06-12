@@ -29,6 +29,8 @@ Skill to_skill(std::string name) {
         return Swindle;
     } else if (name == "literacy") {
         return Literacy;
+    } else if (name == "climbing") {
+        return Climbing;
     }
     throw "bad skill name "+name;
     return NoSkill;
@@ -45,6 +47,8 @@ std::string from_skill(Skill skill) {
         return "swindle";
     } else if (skill == Literacy) {
         return "literacy";
+    } else if (skill == Climbing) {
+        return "climbing";
     }
     return "";
 }

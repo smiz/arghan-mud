@@ -155,6 +155,7 @@ class Actor: public Model {
     int melee_attack_delay(std::shared_ptr<Item>& item);
 
     int use_skill(Skill skill, bool average = false);
+    bool check_skill(Skill skill, int difficulty, bool average = false);
 
     /**
      * Find any item, included equipped items.

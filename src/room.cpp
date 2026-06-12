@@ -98,16 +98,29 @@ graph(graph) {
     for (int i = 0; i < 6; i++) {
         std::string key = direction_key[i];
         if (yaml[key]) {
-            direction_t dir {
-                .id = yaml[key]["node"].as<int>(),
-                .dir = Direction(i),
-                .description = yaml[key]["description"].as<std::string>()
-            };
-            group->add_direction(dir);
+            direction_t dir;
+            dir.id = yaml[key]["node"].as<int>();
+            dir.dir = Direction(i);
+            dir.description = yaml[key]["description"].as<std::string>();
             if (dir.id == MAZE_START_ROOM_NUMBER) {
                 std::cout << "Loading the Maze" << std::endl;
                 new Maze(graph,group->group_number());
             }
+            if (yaml[key]["skill"]) {
+                dir.skill = to_skill(yaml[key]["skill"].as<std::string>());
+                dir.difficulty = yaml[key]["difficulty"].as<int>();
+                if (yaml[key]["damage"]) {
+                    dir.dmg = std::make_shared<Dice>(yaml[key]["damage"].as<std::string>());
+                } else {
+                    dir.dmg = nullptr;
+                }
+                dir.go_on_fail = yaml[key]["go_on_fail"].as<bool>();
+                dir.success_msg1 = yaml[key]["success1"].as<std::string>();
+                dir.fail_msg1 = yaml[key]["fail1"].as<std::string>();
+                dir.success_msg2 = yaml[key]["success2"].as<std::string>();
+                dir.fail_msg2 = yaml[key]["fail2"].as<std::string>();
+            }
+            group->add_direction(dir);
         }
     }
     /// Get traps in the room. 
