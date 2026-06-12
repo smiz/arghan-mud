@@ -24,6 +24,15 @@ pending(false) {
     receive_from(group->pin);
 }
 
+void Trap::reset_zone_event(const Event& event) {
+    if (!group->zone_is_empty()) {
+        return;
+    }
+    group->remove_member(this);
+    do_not_receive_from(group->pin);
+    Model::leave_game();
+}
+
 void Trap::trap_event(const Event& event) {
     if (event.src_id == id()) {
         pending = false;

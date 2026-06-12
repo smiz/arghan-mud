@@ -1,4 +1,5 @@
 node: 32
+zone: 2
 short_description: Upstairs Hall of the Tavern
 description: |
   A sturdy flight of stairs ends at a hallway.

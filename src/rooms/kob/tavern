@@ -1,4 +1,5 @@
 node: 30
+zone: 2
 short_description: The Tavern
 description: |
   This tavern is the favorite of visitors and inhabitants

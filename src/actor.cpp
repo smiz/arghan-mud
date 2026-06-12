@@ -766,6 +766,16 @@ void Actor::schedule_destroyed() {
     sched_event(event); 
 }
 
+void Actor::reset_zone_event(const Event& event) {
+    assert(!pc || !group->zone_is_empty());
+    if (!group->zone_is_empty() || pc) {
+        return;
+    }
+    group->remove_member(this);
+    do_not_receive_from(group->pin);
+    Model::leave_game();
+}
+
 void Actor::destroyed_event(const Event& event) {
     if (filter(event)) {
         return;

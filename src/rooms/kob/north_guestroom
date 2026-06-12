@@ -1,4 +1,5 @@
 node: 33
+zone: 2
 short_description: North Guestroom
 description: |
   The north guestroom has a window that overlooks

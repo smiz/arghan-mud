@@ -69,7 +69,7 @@ class Actor: public Model {
     int get_fd() const { return fd; }
 
     /// Actors are counted toward zone occupancy
-    bool occupies_space() { return true; }
+    bool occupies_space() { return pc; }
     int hidden() const { return sneaking; }
     protected:
 
@@ -151,7 +151,7 @@ class Actor: public Model {
     void swindle_result_event(const Event& event);
     void lock_unlock_command_event(const Event& event);
     void read_event(const Event& event);
-
+    void reset_zone_event(const Event& event);
     /**
      * Return a skill roll for using an item. Returns
      * -1 if the item cannot be used.

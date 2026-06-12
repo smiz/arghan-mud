@@ -23,6 +23,7 @@ class Trap: public Model {
     /// A trap is part of a room or group and does not occupy it
     bool occupies_space() { return false; }
     Name get_name() const { return name; }
+    void reset_zone_event(const Event& event);
 
     private:
  

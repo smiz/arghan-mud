@@ -55,6 +55,13 @@ void Room::reload() {
         int number = yaml["coins"].as<int>();
         items.push_back(std::make_shared<Coins>(number));
     }
+    /// Get traps in the room. 
+    if (yaml["traps"]) {
+        const YAML::Node& trap_list = yaml["traps"];
+        for (const auto& trap : trap_list) {
+            new Trap(graph,"traps/"+trap.as<std::string>(),group->group_number());
+        }
+    }
 }
 
 int Room::next_free_room_number() {
@@ -64,7 +71,8 @@ int Room::next_free_room_number() {
 Room::Room(Graph& graph, std::string file, int node_id):
 Model(graph),
 file(file),
-graph(graph) {
+graph(graph),
+initial_load(true) {
     int zone = NO_ZONE;
     YAML::Node yaml = YAML::LoadFile(file.c_str());
     int prox_group_id = (node_id == -1) ? yaml["node"].as<int>() : node_id;
@@ -123,17 +131,11 @@ graph(graph) {
             group->add_direction(dir);
         }
     }
-    /// Get traps in the room. 
-    if (yaml["traps"]) {
-        const YAML::Node& trap_list = yaml["traps"];
-        for (const auto& trap : trap_list) {
-            new Trap(graph,"traps/"+trap.as<std::string>(),group->group_number());
-        }
-    }
     reload();
+    initial_load = false;
     if (zone != NO_ZONE) {
         Event event(Event::RESET_ZONE,id());
-        event.dst_id = id();
+        event.dst_id = ANY_ID;
         event.pin = group->pin;
         sched_event(event,reload_interval);
     }
@@ -157,9 +159,7 @@ void Room::read_event(const Event& event) {
 }
 
 void Room::reset_zone_event(const Event& event) {
-    Event reset(Event::RESET_ZONE,id());
-    reset.dst_id = id();
-    reset.pin = group->pin;
+    Event reset(event);
     if (group->zone_is_empty()) {
         reload();
     }
