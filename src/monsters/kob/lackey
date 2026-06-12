@@ -4,7 +4,7 @@ description: A lackey attends to his charges.
 detail: The stable lackey whistles a tune as he works.
 keywords:
   - lackey
-hit_points: 2
+hit_points: 3
 wield: pitchfork
 assist:
   - mule

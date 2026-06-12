@@ -11,6 +11,7 @@ keywords:
   - keep
 hit_points: 8
 str: 16
+con: 16
 wield: club
 rumors:
   - Someday my daugther will marry.

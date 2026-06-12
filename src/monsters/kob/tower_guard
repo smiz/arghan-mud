@@ -6,7 +6,7 @@ keywords:
   - man
   - man-at-arms
   - soldier
-hit_points: 5
+hit_points: 6
 wield: spear
 wear_body: chainmail
 hold: shield

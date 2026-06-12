@@ -11,3 +11,4 @@ skills:
   melee: 3
 assist:
   - merchant
+aggressive: true

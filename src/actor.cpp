@@ -169,7 +169,7 @@ void Actor::gain_xp(int xp) {
         level++;
         free_skill_slots++;
         xp -= xp_to_go;
-        xp_to_go = level*100;
+        xp_to_go = level*20;
         hit_points += std::max(1,hp_die()+attribute_modifier(constitution));
         message("You gained a level!");
         for (auto& skill: skills) {
@@ -882,6 +882,10 @@ void Actor::leave_mud_event(const Event& event) {
 }
 
 bool Actor::act_if_hostile(const Event& event) {
+    auto target = group->find_member(event.event_data.subject_id);
+    if (target == nullptr || assist.contains(target->get_name().get_name())) {
+        return false;
+    }
     if (!in_combat() && (aggressive || hates.contains(event.event_data.subject_id))
         && (event.stealthy == 0 || check_skill(Perception,event.stealthy,true))) {
             schedule_attack(event.event_data.subject_id,true);
