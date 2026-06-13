@@ -5,7 +5,8 @@ description: |
   A grassy field provides ample space for exercise. A
   well near the center of the field is used to by the
   occupants of the keep to draw water for drinking and
-  cooking.
+  cooking. The noisy sounds and delicious smells of a
+  market are evident to the south.
 down:
   node: 39
   description: You might be able to climb down the well.
@@ -18,7 +19,7 @@ down:
   fail1: falls down the well.
   damage: 1d2
 east:
-  node: 29
+  node: 40
   description: To the east is the entry yard and southern gate tower.
 south:
   node: 28

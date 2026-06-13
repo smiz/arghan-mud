@@ -1,0 +1,14 @@
+name: sargeant
+proper_name: false
+description: A barrel chested sargeant wonders if you'll make a promising recruit.
+detail: The sargeant ensure his men carry out the orders of the Captain.
+keywords:
+  - sargeant
+assist:
+  - aide
+  - captain
+hit_points: 10
+wield: sword
+wear_body: chainmail
+skills:
+  melee: 3

@@ -3,7 +3,10 @@ zone: 3
 short_description: The Cistern
 description: |
   You are swimming in the cistern. Up above you can see
-  light where a well admits residents to draw water.
+  light where a well admits residents to draw water. The
+  cistern water is COLD!
+traps:
+  - kob/cistern
 up:
   node: 27
   description: A rope supports a bucket. You might be able to climb up.

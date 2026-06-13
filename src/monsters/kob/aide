@@ -1,0 +1,15 @@
+name: aide
+proper_name: false
+description: An aide-de-camp is here assisting his captain and sargeant.
+detail: This soldier of the king looks harried. The captain and sargeant keep him busy!
+keywords:
+  - aide
+  - assistant
+assist:
+  - captain
+  - sargeant
+hit_points: 6
+wield: sword
+wear_body: chainmail
+skills:
+  melee: 2

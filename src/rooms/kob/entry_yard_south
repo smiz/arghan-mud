@@ -10,5 +10,5 @@ up:
   node: 25
   description: An arched passage way contains stairs that climb up into the southern tower.
 west:
-  node: 27
-  description: To the west you see a grassy field.
+  node: 40
+  description: The narrow path continues west.

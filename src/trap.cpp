@@ -11,6 +11,9 @@ pending(false) {
     description = yaml["description"].as<std::string>();
     name = Name(yaml["name"].as<std::string>(),yaml["proper_name"].as<bool>());
     delay = yaml["delay"].as<int>();
+    if (yaml["periodic"]) {
+        periodic = yaml["periodic"].as<bool>();
+    }
     dice = Dice(yaml["damage"].as<std::string>());
     save_number = yaml["save"].as<int>();
     if (yaml["skill"]) {
@@ -36,6 +39,11 @@ void Trap::reset_zone_event(const Event& event) {
 void Trap::trap_event(const Event& event) {
     if (event.src_id == id()) {
         pending = false;
+    }
+    if (periodic && !group->zone_is_empty()) {
+        pending = true;
+        Event trap_event(event);
+        sched_event(trap_event,delay);
     }
 }
 

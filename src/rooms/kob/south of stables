@@ -1,0 +1,16 @@
+node: 40
+zone: 1
+short_description: South of the Stables
+description: |
+  The wall of the stable building is to your north.
+  A wooden building of some kind with the sigil of
+  the Baron is to your south.
+east:
+  node: 29
+  description: The path goes east toward the southern tower.
+west:
+  node: 27
+  description: To the west is a broad courtyard.
+south:
+  node: 41
+  description: A door goes into a wooden building to the south.

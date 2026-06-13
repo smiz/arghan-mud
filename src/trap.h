@@ -35,6 +35,8 @@ class Trap: public Model {
     std::string description;
     /// @brief Delay from time triggered to activated
     int delay;
+    /// @brief Triggers periodically?
+    bool periodic;
     /// Damage dice for the trace
     Dice dice;
     /// Attribute for saving throw

@@ -1,0 +1,8 @@
+name: freezing cistern
+proper_name: false
+description: The cistern water is COLD!
+delay: 1000
+periodic: true
+attribute: con
+damage: 1d2
+save: 15

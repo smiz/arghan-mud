@@ -697,7 +697,7 @@ void Actor::melee_attack_event(const Event& event) {
         return;
     }
     result.pin = group->pin;
-    if (event.event_data.melee.atk_roll > total_ac()) {
+    if (event.event_data.melee.atk_roll >= total_ac()) {
         std::string wpn_name = "";
         std::string adj1, adj2;
         if (event.item != nullptr) {
@@ -733,13 +733,15 @@ void Actor::melee_attack_event(const Event& event) {
     } 
     // Stop sneaking in combat
     sneaking = 0;
+    /// Get our combat status before scheduling a RESULT
+    bool engaged = in_combat();
     sched_event(result);
     if (damage >= hit_points) {
         schedule_destroyed();
         return;
     }
     // If we are not in combat already (we were surprised for example)
-    if (!in_combat()) {
+    if (!engaged) {
         schedule_attack(event.src_id,false);
     }
 }
@@ -829,6 +831,10 @@ void Actor::kill_command_event(const Event& event) {
             message("You don't see anything like that.");
             return;
     } else {
+        if (in_combat()) {
+            message("You are fighting for your life!");
+            return;
+        }
         schedule_attack(target_id,true);
         if (sneaking > 0) {
             message("You creep up on your prey...");
@@ -849,9 +855,8 @@ void Actor::schedule_attack(int target_id, bool warn) {
     // Cancel any swindling attempts
     cancel_event(Event::SWINDLE);
     cancel_event(Event::START_SWINDLE);
-    if (in_combat()) {
-        return;
-    }
+    // Cancel any pending attack before starting another
+    cancel_event(Event::MELEE_ATTACK);
     // Start the attack
     Event attack(Event::MELEE_ATTACK,id());
     attack.dst_id = target_id;

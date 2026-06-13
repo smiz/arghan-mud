@@ -1,0 +1,16 @@
+node: 41
+zone: 1
+short_description: Officer Quarters
+description: |
+  This sturdy wooden building houses the Keep's officers.
+  The spartan but comfortable furnishings seems appropriate
+  to the remote setting of the Keep. The sounds of a market
+  can be heard faintly through the western wall of the
+  building.
+monsters:
+  - kob/sargeant
+  - kob/captain
+  - kob/aide
+north:
+  node: 40
+  description: A door leads outside to the north.

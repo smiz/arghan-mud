@@ -1,0 +1,14 @@
+name: captain
+proper_name: false
+description: A grizzled looking captain is here consulting with this officers.
+detail: The captain is older than most soldiers of the Keep. His scars speak of past glory.
+keywords:
+  - captain
+assist:
+  - aide
+  - sargaent
+hit_points: 14
+wield: sword
+wear_body: platemail
+skills:
+  melee: 4
