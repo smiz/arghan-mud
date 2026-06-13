@@ -209,6 +209,7 @@ class Actor: public Model {
 
     private:
 
+    void build_inventory(std::shared_ptr<Item>& item, std::vector<std::string>& item_files);
     void change_prox_groups(int new_group);
     void init(const initial_stats_t* const stats);
     void sched_save();

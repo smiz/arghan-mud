@@ -15,11 +15,10 @@ charisma: 15
 armor_class: 10
 hit_points: 18
 level: 4
-xp_to_go: 318
+xp_to_go: 273
 free_slots: 1
 items:
-  - limbo_note
-  - limbo_note
+  - characters/Jimmy-items/item-0
 skills:
   literacy: 1
   melee: 8

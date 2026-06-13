@@ -30,7 +30,10 @@ class Item {
     std::string detail() const { return m_detail; }
     Name name() const { return m_name; }
     int match_keywords(const KeyWordList& key_words) const;
+    void set_filename(std::string filename) { m_filename = filename; }
     std::string filename() const { return m_filename; }
+
+    void save();
 
     static const std::string items_directory;
 

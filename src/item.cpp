@@ -1,6 +1,7 @@
 #include "item.h"
 #include <yaml-cpp/yaml.h>
 #include <iostream>
+#include <fstream>
 
 const std::string Item::items_directory = "items/";
 
@@ -99,6 +100,47 @@ m_filename(file) {
     if (yaml["heavy"]) {
         heavy = yaml["heavy"].as<bool>();
     }
+}
+
+void Item::save() {
+    YAML::Node yaml;
+    yaml["name"] = m_name.get_name();
+    yaml["proper_name"] = m_name.is_proper();
+    yaml["description"] = m_description;
+    yaml["detail"] = m_detail;
+    yaml["keywords"] = *key_words;
+    if (xp > 0) {
+        yaml["xp"] = xp;
+    }
+    if (m_message.length() > 0) {
+        yaml["message"] = m_message;
+        yaml["message_complexity"] = m_message_complexity;
+    }
+    yaml["weapon_data"]["speed"] = m_weapon_info.speed;
+    yaml["weapon_data"]["damage"] = m_weapon_info.dmg_die.str();
+    yaml["weapon_data"]["ac"] = m_held_ac_bonus; 
+    if (m_modifier != NoAttr) {
+        yaml["attribute"] = from_monster_attribute(m_modifier);
+    }
+    if (m_skill != NoSkill) {
+        yaml["skill"] = from_skill(m_skill);
+    }
+    if (m_wearable != Unwearable) {
+        if (m_wearable == WearableSlots::Body) {
+            yaml["wearable"]["location"] = "body";
+        } else if (m_wearable == WearableSlots::Neck) {
+            yaml["wearable"]["location"] = "neck";
+        }
+        yaml["wearable"]["ac"] = m_worn_ac_bonus;
+    }
+    if (m_contents != nullptr) {
+        std::list<std::string> empty_list;
+        yaml["contents"] = empty_list;
+    }
+    yaml["cost"] = m_cost;
+    std::ofstream fout(m_filename.c_str());
+    fout << yaml;
+    fout.close();
 }
 
 std::shared_ptr<Item> Item::remove_item(const KeyWordList& key_words) {

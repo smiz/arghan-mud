@@ -1,5 +1,21 @@
 #include "types.h"
 
+std::string from_monster_attribute(MonsterAttributes attr) {
+    if (attr == Str) {
+        return "str";
+    } else if (attr == Dex) {
+        return "dex";
+    } else if (attr == Con) {
+        return "con";
+    } else if (attr == Int) {
+        return "int";
+    } else if (attr == Wis) {
+        return "wis";
+    } else {
+        return "chr";
+    }
+}
+
 MonsterAttributes to_monster_attribute(std::string name) {
     if (name == "strength" || name == "str") {
         return Str;

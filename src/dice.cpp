@@ -2,22 +2,44 @@
 #include <random>
 #include <cassert>
 #include <iostream>
+#include <sstream>
 
 static std::random_device r;
 static std::default_random_engine gen(r());
 
-Dice::Dice(int number, int die_type, int modifier):
-number(number),
-die(1,die_type),
-modifier(modifier) {
+Dice::Dice():
+number(0),
+die_sides(1),
+modifier(0),
+die(0,1) {
 
 }
 
+Dice::Dice(int number, int die_type, int modifier):
+number(number),
+die_sides(die_type),
+modifier(modifier),
+die(1,die_type) {
+
+}
+
+std::string Dice::str() {
+    std::ostringstream sout;
+    sout << number << "d" << die_sides;
+    if (modifier > 0) {
+        sout << "+" << modifier;
+    } else if (modifier < 0) {
+        sout << "-" << modifier;
+    }
+    return sout.str();
+}
+
 Dice::Dice(std::string die_type) {
-    int die_sides = 0;
+    die_sides = 0;
+    modifier = 0;
+    number = 0;
     unsigned i = 0;
     char mod_char = '+';
-    modifier = 0;
     std::string token;
     for (i = 0; i < die_type.length(); i++) {
         if (isdigit(die_type[i])) {

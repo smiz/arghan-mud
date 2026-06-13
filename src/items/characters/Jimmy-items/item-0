@@ -1,0 +1,15 @@
+name: letter
+proper_name: false
+description: Someone left a letter on the floor.
+detail: Should you be reading somebody elses letters?
+keywords:
+  - letter
+  - note
+message: Good luck!
+message_complexity: 0
+weapon_data:
+  speed: 0
+  damage: 0d1
+  ac: 0
+skill: melee
+cost: 0

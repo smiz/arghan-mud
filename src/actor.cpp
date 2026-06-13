@@ -3,6 +3,7 @@
 #include "corpse.h"
 #include "coins.h"
 #include "utils.h"
+#include <filesystem>
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
@@ -211,9 +212,14 @@ void Actor::init(const initial_stats_t* const stats) {
     key_words.push_back(name.lower_case());
 }
 
-static void build_inventory(std::shared_ptr<Item>& item, std::vector<std::string>& item_files) {
+void Actor::build_inventory(std::shared_ptr<Item>& item, std::vector<std::string>& item_files) {
     /// Don't include transient items (specifically, corpses and coins)
     if (!item->filename().empty()) {
+        std::ostringstream sout;
+        sout << "characters/" << name.get_name() << "-items/item-" << item_files.size();
+        item->set_filename("items/"+sout.str());
+        item->save();
+        item->set_filename(sout.str());
         item_files.push_back(item->filename());
     }
     if (!item->container()) {
@@ -248,6 +254,9 @@ void Actor::save() {
     config["level"] = level;
     config["xp_to_go"] = xp_to_go;
     config["free_slots"] = free_skill_slots;
+    std::filesystem::path item_path = "items/characters/"+name.get_name()+"-items";
+    std::filesystem::remove_all(item_path);
+    std::filesystem::create_directories(item_path);
     std::vector<std::string> item_files;
     for (auto item: items) {
         build_inventory(item,item_files);

@@ -10,7 +10,7 @@ class Dice {
     public:
 
     /// @brief Default always rolls a zero
-    Dice():die(0,1){}
+    Dice();
 
     /**
      * @brief A set of dice
@@ -36,12 +36,13 @@ class Dice {
     /// @brief Roll the die!
     /// @return The result of the roll
     int operator()();
+    std::string str();
 
     private:
 
     int number;
-    std::uniform_int_distribution<> die;
+    int die_sides;
     int modifier;
-
+    std::uniform_int_distribution<> die;
 };
 #endif

@@ -30,6 +30,7 @@ enum MonsterAttributes {
 };
 
 MonsterAttributes to_monster_attribute(std::string name);
+std::string from_monster_attribute(MonsterAttributes attr);
 
 enum Skill {
     Melee,
