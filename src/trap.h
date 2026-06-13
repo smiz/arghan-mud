@@ -47,6 +47,9 @@ class Trap: public Model {
     int save_number;
     /// Event is pending
     bool pending;
+    /// One trap event per target. This targets
+    /// the first actor into the room.
+    bool one_per_target;
 };
 
 #endif

@@ -1,0 +1,10 @@
+name: curate
+proper_name: false
+description: The chapel priest bids you welcome.
+detail: The priest looks concerned. Have you seen his dog, Pluto?
+keywords:
+  - curate
+  - priest
+assist:
+  - Pluto
+hit_points: 6

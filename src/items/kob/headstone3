@@ -1,0 +1,14 @@
+name: headstone
+proper_name: false
+description: A old grave marker has nearly fallen over.
+detail: |
+  This stone is very old and the markings very faint. A smaller
+  stone is nearby, and you sense that they are somehow connected.
+keywords:
+  - headstone
+  - old
+  - marker
+heavy: true
+message: |
+  The breaking bough,
+    broke her heart.

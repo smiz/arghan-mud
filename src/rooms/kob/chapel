@@ -1,5 +1,5 @@
 node: 38
-zone: 3
+zone: 1
 short_description: Chapel
 description: |
   This is the spiritual center of the Keep. This building
@@ -12,3 +12,5 @@ east:
   description: A courtyard is to the east.
 items:
   - kob/poor_box
+monsters:
+  - kob/curate

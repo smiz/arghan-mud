@@ -7,6 +7,9 @@ detail: |
 keywords:
   - pluto
   - dog
+assist:
+  - curate
+attack_dice: 1d2
 hit_points: 4
 str: 13
 wis: 3

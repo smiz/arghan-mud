@@ -1,0 +1,10 @@
+name: headstone
+proper_name: false
+description: An old headstone pokes out of the ground like a crooked tooth.
+detail: This headstone is worn, but the engraving is still visible.
+keywords:
+  - headstone
+  - stone
+  - old
+heavy: true
+message: Room to let. Call for terms.

@@ -1,7 +1,9 @@
 name: barmaid
 proper_name: false
 description: The tavern keeper's daughter serves drinks and food.
-detail: This buxom, raven haired beauty is the barkeep's daughter. Her name is Angela, if you must know.
+detail: |
+  This buxom, raven haired beauty is the barkeep's daughter. She
+  introduces herself as Angela and asks what you'll be having.
 keywords:
   - barmaid
   - daughter

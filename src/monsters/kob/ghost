@@ -1,0 +1,13 @@
+name: ghost
+proper_name: false
+description: A wispy apparition drifts between the gravestones.
+detail: |
+  On closer inspection, you see the faint outlines of a middle-aged
+  woman. Her face is alarmed and her lips move as if speaking with
+  some urgency, though no sound emerges.
+keywords:
+  - ghost
+  - woman
+  - apparition
+hit_points: 12
+attack_dice: 1d6

@@ -1,0 +1,22 @@
+node: 42
+zone: 1
+short_description: Cemetary
+description: |
+  This is the Keep's cemetary. There are dozens of burial plots,
+  some still covered by freshly turned earth. To the north you
+  see the southern flank of the inn. A small balcony on its 
+  upper story looks down upon the cemetary. An enormous oak
+  occupies the center of the graveyard and the ground is littered
+  with branches.
+east:
+  node: 28
+  description: East of the cemetary is the market.
+items:
+  - kob/headstone1
+  - kob/headstone2
+  - kob/headstone3
+  - kob/headstone4
+monsters:
+  - kob/ghost
+traps:
+  - kob/falling_branch

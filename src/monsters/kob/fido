@@ -7,5 +7,6 @@ detail: |
 keywords:
   - fido
   - dog
+attack_dice: 1d2
 hit_points: 2
 wanders: 5000

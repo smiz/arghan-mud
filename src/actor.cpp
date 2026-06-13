@@ -41,6 +41,7 @@ armor_class(10),
 wanders(0),
 aggressive(false),
 sneaking(0),
+unarmed_dmg(0,1),
 level(0),
 xp_to_go(INT_MAX),
 free_skill_slots(0),
@@ -57,6 +58,9 @@ short_descriptions(false) {
         const YAML::Node& keyword_list = yaml["keywords"];
         for (const auto& word : keyword_list) {
             key_words.push_back(word.as<std::string>());
+        }
+        if (yaml["attack_dice"]) {
+            unarmed_dmg = Dice(yaml["attack_dice"].as<std::string>());
         }
         if (yaml["aggressive"]) {
             aggressive = yaml["aggressive"].as<bool>();
@@ -866,7 +870,7 @@ void Actor::schedule_attack(int target_id, bool warn) {
             std::max(1,primary_hand->weapon_info().dmg_die()+attribute_modifier(strength));
             attack.event_data.melee.atk_roll = use_item(primary_hand);
     } else {
-        attack.event_data.melee.dmg_roll = std::max(1,attribute_modifier(strength));
+        attack.event_data.melee.dmg_roll = std::max(1,unarmed_dmg()+attribute_modifier(strength));
         attack.event_data.melee.atk_roll = std::max(1,Dice(1,20)()+attribute_modifier(strength));
     }
     attack.item = primary_hand;
@@ -932,7 +936,7 @@ void Actor::join_prox_group_event(const Event& event) {
                 "\n"+name.capitalized_name()+
                 " looks murderously at you.",event.src_id);
         } else {
-            emit_stealthy(description);
+            emit_stealthy(description,event.src_id);
         }
     }
 }

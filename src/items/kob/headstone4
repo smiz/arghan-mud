@@ -1,0 +1,15 @@
+name: headstone
+proper_name: false
+description: This small headstone must mark a child's grave.
+detail: |
+  This grave is very close to another old marker. You sense
+  that they are related in some way.
+keywords:
+  - headstone
+  - small
+  - child
+heavy: true
+message: |
+  Next time,
+    listen to your
+  mother.

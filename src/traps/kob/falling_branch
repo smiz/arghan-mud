@@ -1,0 +1,8 @@
+name: falling branch
+proper_name: false
+description: Snap! A branch of the oak comes crashing down!
+delay: 2000
+one_per_target: true
+attribute: dex
+damage: 2d3
+save: 10

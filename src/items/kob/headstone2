@@ -1,0 +1,13 @@
+name: headstone
+proper_name: false
+description: A heart shaped headstone adorns a fresh grave.
+detail: You can smell the fresh earth. The engraving on the stone stands out boldly.
+keywords:
+  - headstone
+  - stone
+  - heart
+heavy: true
+message: |
+  You stole my heart.
+     Turns out,
+  I needed it.

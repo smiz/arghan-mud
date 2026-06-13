@@ -7,6 +7,9 @@ description: |
 north:
   node: 27
   description: To the north is the practice yard.
+west:
+  node: 42
+  description: To the west is the Keep's cemetary.
 shop: true
 items:
   - knife

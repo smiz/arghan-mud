@@ -217,6 +217,8 @@ class Actor: public Model {
     void gain_xp(int xp);
  
 
+    // Unarmed damage die
+    Dice unarmed_dmg;
     // Character level
     int level;
     // XP for next level

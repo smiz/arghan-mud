@@ -3,8 +3,9 @@ zone: 2
 short_description: South Guestroom
 description: |
   The south guestroom has a balcony that overlooks
-  a busy bazaar. The smells wafting up from below
-  are delicious, but it is a bit noisy.
+  a small cemetary and the enormous oak tree that
+  is its chief adornment. The view gives this room a 
+  sober feel.
 north:
   node: 32
   description: North is the hall.

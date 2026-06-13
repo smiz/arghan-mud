@@ -6,7 +6,8 @@ Model(graph),
 file(file),
 attr(NoAttr),
 skill(NoSkill),
-pending(false) {
+pending(false),
+one_per_target(false) {
     YAML::Node yaml = YAML::LoadFile(file.c_str());
     description = yaml["description"].as<std::string>();
     name = Name(yaml["name"].as<std::string>(),yaml["proper_name"].as<bool>());
@@ -21,6 +22,9 @@ pending(false) {
     }
     if (yaml["attribute"]) {
         attr = to_monster_attribute(yaml["attribute"].as<std::string>());
+    }
+    if (yaml["one_per_target"]) {
+        one_per_target = yaml["one_per_target"].as<bool>();
     }
     group = prox_map[group_number];
     group->add_member(this);
@@ -52,7 +56,11 @@ void Trap::join_prox_group_event(const Event& event) {
         return;
     }
     Event trap(Event::TRAP,id());
-    trap.dst_id = ANY_ID;
+    if (one_per_target) {
+        trap.dst_id = event.src_id;
+    } else {
+        trap.dst_id = ANY_ID;
+    }
     trap.event_data.trap.dmg_roll = dice();
     trap.event_data.trap.attribute = attr;
     trap.event_data.trap.skill = skill;

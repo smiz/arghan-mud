@@ -33,6 +33,7 @@ heavy(false),
 m_message_complexity(0),
 m_wearable(WearableSlots::Unwearable),
 m_modifier(MonsterAttributes::NoAttr),
+m_skill(Skill::NoSkill),
 key_words(std::make_shared<KeyWordList>()),
 m_filename(file) {
     YAML::Node yaml = YAML::LoadFile(items_directory+file.c_str());
@@ -138,6 +139,9 @@ void Item::save() {
         yaml["contents"] = empty_list;
     }
     yaml["cost"] = m_cost;
+    if (m_key != 0) {
+        yaml["key"] = m_key;
+    }
     std::ofstream fout(m_filename.c_str());
     fout << yaml;
     fout.close();

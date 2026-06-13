@@ -6,3 +6,4 @@ keywords:
   - mule
 hit_points: 8
 str: 17
+attack_dice: 1d2

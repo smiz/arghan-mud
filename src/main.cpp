@@ -647,7 +647,11 @@ repeat_name:
                 if (read_line(fd,response) <= 0) {
                     return;
                 }
-            } while (response != "yes" && response != "no");
+            } while (response != "yes" && response != "no" && response != "quit");
+            if (response == "quit") {
+                close(fd);
+                return;
+            }
             if (response == "no") {
                 goto reroll;
             }
