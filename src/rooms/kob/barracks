@@ -1,0 +1,15 @@
+node: 43
+zone: 1
+short_description: Soldier Barrack
+description: |
+  This sturdy wooden building houses the Keep's soldiers.
+  The spartan but comfortable furnishings seems appropriate
+  to the remote setting of the Keep.
+monsters:
+  - kob/off_duty
+  - kob/off_duty
+  - kob/off_duty
+  - kob/off_duty
+north:
+  node: 29
+  description: A door leads outside to the north.

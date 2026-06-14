@@ -1,0 +1,15 @@
+name: six pointed star
+proper_name: false
+description: Someone gave a six pointed star fashioned from copper.
+detail: |
+  This piece of copper has been intricately worked into two overlapping
+  triangles that form a symmetric, six pointed star. Probably the symbol
+  of some strange cult. But the good copper would be worth something at
+  the market.
+keywords:
+  - star
+  - six
+  - pointed
+  - copper
+cost: 2
+xp: 1

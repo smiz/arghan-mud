@@ -12,3 +12,6 @@ up:
 west:
   node: 40
   description: The narrow path continues west.
+south:
+  node: 43
+  description: To the south is a sturdy wooden building.

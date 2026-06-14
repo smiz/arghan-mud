@@ -1,0 +1,15 @@
+name: pentacle
+proper_name: false
+description: Someone donated a copper pentacle.
+detail: |
+  This piece of copper has been intricately worked into a five pointed
+  star encompassed by a circle: a pentacle. Probably the symbol of some
+  strange cult. But the good copper would be worth something at the 
+  market.
+keywords:
+  - star
+  - five
+  - pentacle
+  - copper
+cost: 2
+xp: 1

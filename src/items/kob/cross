@@ -1,0 +1,13 @@
+name: tee
+proper_name: false
+description: Somebody gave a tarnished work of silver shaped like the letter 't'.
+detail: |
+  A piece of silver has been worked into the shape of the letter
+  't'. Probably the symbol of some strange cult. But the silver
+  would be worth something in the market.
+keywords:
+  - t
+  - tee
+  - silver
+cost: 2
+xp: 1

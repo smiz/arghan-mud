@@ -274,6 +274,9 @@ void Actor::save() {
     if (body != nullptr) {
         build_inventory(body,item_files);
     }
+    if (neck != nullptr) {
+        build_inventory(neck,item_files);
+    }
     config["items"] = item_files;
     std::map<std::string,int> skill_table;
     for (auto skill: skills) {
@@ -650,6 +653,13 @@ void Actor::enter_mud_event(const Event& event) {
     enter.dst_id = ANY_ID_BUT_SRC;
     enter.msg = name.capitalized_name()+" returns from the Real World!";
     sched_event(enter);
+    // Cancel and restart periodic events
+    cancel_event(Event::ROLL_PERIODIC_ATTRIBUTES);
+    cancel_event(Event::SAVE_MODEL);
+    Event periodic(Event::ROLL_PERIODIC_ATTRIBUTES,id());
+    periodic.dst_id = id();
+    periodic.pin = pin;
+    sched_event(periodic,1+rand()%60000);
     if (pc) {
         sched_save();
     }
@@ -905,8 +915,9 @@ void Actor::leave_mud_event(const Event& event) {
     leave.pin = group->pin;
     leave.dst_id = id();
     sched_event(leave);
+    cancel_event(Event::ROLL_PERIODIC_ATTRIBUTES);
+    cancel_event(Event::SAVE_MODEL);
     emit_stealthy(name.capitalized_name()+" mutters something about the Real World and vanishes!");
-    sched_event(leave);
 }
 
 bool Actor::act_if_hostile(const Event& event) {
@@ -1131,7 +1142,13 @@ void Actor::look_command_event(const Event& event) {
     } else if (event.event_data.transfer.first_keyword_is_container) {
         look.dst_id = group->first_member_id();
     } else {
-        /// Look at or in something specific
+        /// Are we carrying it?
+        auto item = find_any_item(*(event.key_words.get()));
+        if (item != nullptr) {
+            message(item->detail());
+            return;
+        }
+        /// Look at or in something specific in the room
         look.dst_id = group->find_best_match(*(event.key_words));
         if (!check_skill(Perception,group->find_member(look.dst_id)->hidden(),true)) {
             message("You don't see anything like that.");
@@ -1211,6 +1228,13 @@ void Actor::stow_command_event(const Event& event) {
             best_slot = body;
         }
     }
+    if (neck != nullptr) {
+        score = neck->match_keywords(*(event.key_words.get())); 
+        if (score > best_score) {
+            best_score = score;
+            best_slot = neck;
+        }
+    }
     if (best_slot == nullptr) {
         message("You aren't holding or wearing that.");
     } else {
@@ -1223,6 +1247,10 @@ void Actor::stow_command_event(const Event& event) {
             message("You stow "+secondary_hand->name().regular_name()+".");
             emit_stealthy(name.capitalized_name()+" stows "+secondary_hand->name().regular_name()+".");
             secondary_hand = nullptr;
+        } else if (best_slot == neck) {
+            message("You stow "+neck->name().regular_name()+".");
+            emit_stealthy(name.capitalized_name()+" stows "+neck->name().regular_name()+".");
+            neck = nullptr;
         } else {
             message("You remove "+body->name().regular_name()+".");
             emit_stealthy(name.capitalized_name()+" removes "+body->name().regular_name()+".");

@@ -1,0 +1,11 @@
+name: copper spoon
+proper_name: false
+description: A greenish copper spoon was donated by one of the faithful.
+detail: |
+  It was worth something to someone. It might fetch a coin or two for the parish.
+keywords:
+  - spoon
+  - copper
+  - green
+cost: 1
+xp: 1

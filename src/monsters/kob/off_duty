@@ -1,0 +1,22 @@
+name: soldier
+proper_name: false
+description: A soldier of the king lounges here.
+detail: This soldier is off duty. Best to let him rest.
+keywords:
+  - man
+  - soldier
+hit_points: 6
+skills:
+  melee: 1
+assist:
+  - soldier
+rumors:
+  - The barmaid smiled at me the other day. I think she likes me!
+  - That damn dog Odif bit my hand when I tried to feed him.
+  - I hear our pay is gonna be late ... again.
+  - A couple weeks ago a patrol went out and never came back.
+  - They say that the cemetary is haunted.
+  - If it weren't for us, the wildmen to the east would have their way!
+  - A wealthy merchant is staying at the inn. A fool to travel in this country.
+  - Don't believe everything you hear.
+  - When is the next shipment of good wine? I'm sick of the sour stuff.

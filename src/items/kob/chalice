@@ -1,0 +1,16 @@
+name: pendant
+proper_name: false
+description: Somebody gave a tarnished silver pendant.
+detail: |
+  The pendant is shaped like a flaming cup or bowl encased in a
+  circle. Probably the symbol of some strange cult. But the silver
+  would be worth something in the market.
+keywords:
+  - pendant
+  - silver
+  - chalice
+  - flaming
+  - cup
+  - bowl
+cost: 2
+xp: 1
