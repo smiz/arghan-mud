@@ -1,0 +1,13 @@
+name: bottle of beer
+proper_name: false
+description: You see a bottle of beer.
+detail: Boy, does this beer look refreshing!
+keywords:
+  - beer
+  - bottle
+effect:
+  name: refresh
+  intensity: 1
+  consumed: true
+  verb: drink
+cost: 1

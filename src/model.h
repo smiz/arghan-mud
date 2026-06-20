@@ -50,6 +50,8 @@ struct Event {
         DROP_COMMAND,
         /// @brief Command to pick up an item
         GET_COMMAND,
+        /// @brief Use an item that is held
+        USE_ITEM,
         /// @brief Move in a given direction
         MOVE,
         /// @brief Wandering monsters wander
@@ -657,6 +659,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void read_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void open_close_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void use_item_event(const Event& event){}
     /// @brief Our proximity group
     ProximityGroup* group;
     /**

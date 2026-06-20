@@ -19,6 +19,8 @@ m_wearable(WearableSlots::Unwearable),
 m_modifier(MonsterAttributes::NoAttr),
 m_skill(Skill::NoSkill),
 key_words(std::make_shared<KeyWordList>()) {
+    use_effect.type = NoEffect;
+    use_effect.difficulty = 0;
 }
 
 Item::Item(std::string file):
@@ -36,6 +38,8 @@ m_modifier(MonsterAttributes::NoAttr),
 m_skill(Skill::NoSkill),
 key_words(std::make_shared<KeyWordList>()),
 m_filename(file) {
+    use_effect.type = NoEffect;
+    use_effect.difficulty = 0;
     YAML::Node yaml = YAML::LoadFile(items_directory+file.c_str());
     this->m_name = Name(yaml["name"].as<std::string>(),yaml["proper_name"].as<bool>());
     m_description = yaml["description"].as<std::string>();
@@ -98,6 +102,15 @@ m_filename(file) {
     }
     if (yaml["heavy"]) {
         heavy = yaml["heavy"].as<bool>();
+    }
+    if (yaml["effect"]) {
+        use_effect.type = to_effect(yaml["effect"]["name"].as<std::string>());
+        use_effect.intensity = yaml["effect"]["intensity"].as<int>();
+        use_effect.consumed = yaml["effect"]["consumed"].as<bool>();
+        use_effect.verb = yaml["effect"]["verb"].as<std::string>();
+        if (yaml["effect"]["difficulty"]) {
+            use_effect.difficulty = yaml["effect"]["difficulty"].as<int>(); 
+        }
     }
 }
 

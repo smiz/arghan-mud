@@ -152,6 +152,8 @@ class Actor: public Model {
     void lock_unlock_command_event(const Event& event);
     void read_event(const Event& event);
     void reset_zone_event(const Event& event);
+    void use_item_event(const Event& event);
+    
     /**
      * Return a skill roll for using an item. Returns
      * -1 if the item cannot be used.
@@ -210,6 +212,7 @@ class Actor: public Model {
 
     private:
 
+    void apply_effect(Effect effect, int intensity);
     void build_inventory(std::shared_ptr<Item>& item, std::vector<std::string>& item_files);
     void change_prox_groups(int new_group);
     void init(const initial_stats_t* const stats);

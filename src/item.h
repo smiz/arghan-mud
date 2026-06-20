@@ -95,8 +95,19 @@ class Item {
     const std::string& get_message() const { return m_message; }
     int get_message_complexity() const { return m_message_complexity; }
 
+    struct UseEffect {
+        Effect type;
+        int intensity;
+        int difficulty;
+        std::string verb;
+        bool consumed;
+    };
+
+    UseEffect get_effect() { return use_effect; }
+
     protected:
 
+    UseEffect use_effect;
     int xp;
     int m_held_ac_bonus;
     int m_worn_ac_bonus;

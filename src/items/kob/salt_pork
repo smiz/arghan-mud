@@ -9,3 +9,8 @@ keywords:
   - barrel
 cost: 5
 xp: 2
+effect:
+  name: refresh
+  intensity: 3
+  consumed: true
+  verb: eat

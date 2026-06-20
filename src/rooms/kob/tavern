@@ -12,6 +12,11 @@ east:
 up:
   node: 32
   description: Stairs climb to the guestrooms.
+items:
+  - bottle_of_beer
+  - bottle_of_beer
+  - bottle_of_beer
+  - bottle_of_beer
 monsters:
   - kob/gossip
   - kob/gossip

@@ -213,6 +213,9 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::OPEN_CLOSE:
                 open_close_event(x.value);
                 break;
+            case Event::USE_ITEM:
+                use_item_event(x.value);
+                break;
             default:
                 break;
         }

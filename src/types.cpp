@@ -72,3 +72,11 @@ std::string from_skill(Skill skill) {
     }
     return "";
 }
+
+Effect to_effect(std::string name) {
+    if (name == "refresh") {
+        return Refresh;
+    }
+    throw "bad effect name "+name;
+    return NoEffect;
+}

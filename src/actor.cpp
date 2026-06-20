@@ -1399,6 +1399,50 @@ void Actor::lock_unlock_command_event(const Event& event) {
     sched_event(result);
 }
 
+void Actor::use_item_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    int primary_score = (primary_hand == nullptr) ? 0 : primary_hand->match_keywords(*(event.key_words.get()));
+    int secondary_score = (secondary_hand == nullptr) ? 0 : secondary_hand->match_keywords(*(event.key_words.get()));
+    if (primary_score == 0 && secondary_score == 0) {
+        message("You aren't holding that.");
+        return;
+    }
+    auto item = (primary_score > secondary_score) ? primary_hand : secondary_hand;
+    auto effect = item->get_effect();
+    if (effect.type == NoEffect) {
+        message("Nothing happens.");
+        return;
+    } else {
+        message("You "+effect.verb+" "+item->name().regular_name()+".");
+        emit_stealthy(name.capitalized_name()+" "+effect.verb+"s "+item->name().regular_name()+".");
+        if (use_item(item) >= effect.difficulty) {
+            apply_effect(effect.type,effect.intensity);
+        } else {
+            message("Nothing happens.");
+        }
+        if (effect.consumed) {
+            if (item == primary_hand) {
+                primary_hand = nullptr;
+            } else {
+                secondary_hand = nullptr;
+            }
+        }
+    }
+}
+
+void Actor::apply_effect(Effect effect, int intensity) {
+    switch(effect) {
+        case Refresh:
+            damage = std::max(0,damage-intensity);
+            message("You feel refreshed.");
+            break;
+        default:
+            break;
+    }
+}
+
 void Actor::sched_save() {
     Event save;
     save.type = Event::SAVE_MODEL;

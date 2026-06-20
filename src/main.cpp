@@ -127,6 +127,20 @@ void sneak(Actor* obj, bool try_to_sneak) {
     cv.notify_one();
 }
 
+void use_item(Actor* obj, std::list<std::string>& tokens) {
+    Event event(Event::USE_ITEM,obj->id());
+    event.pin = obj->pin;
+    event.dst_id = obj->id();
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto token: tokens) {
+        event.key_words->push_back(token);
+    }
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
 void kill(Actor* obj, std::list<std::string>& tokens) {
     Event event(Event::KILL_COMMAND,obj->id());
     event.pin = obj->pin;
@@ -407,6 +421,10 @@ bool parse_line_with_tokens(std::string& line, Actor* obj) {
     sin >> cmd;
     while (sin >> token) {
         tokens.push_back(token);
+    }
+    if (cmd == "use") {
+        use_item(obj,tokens);
+        return true;
     }
     if (cmd == "prac") {
         practice(obj,tokens);

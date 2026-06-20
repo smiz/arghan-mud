@@ -46,6 +46,13 @@ enum Skill {
 Skill to_skill(std::string name);
 std::string from_skill(Skill skill);
 
+enum Effect {
+    Refresh,
+    NoEffect
+};
+
+Effect to_effect(std::string name);
+
 /// @brief Slots for equipment that worn
 enum WearableSlots {
     Body,
