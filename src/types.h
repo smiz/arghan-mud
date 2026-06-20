@@ -39,6 +39,7 @@ enum Skill {
     Swindle,
     Literacy,
     Climbing,
+    Magic,
     NoSkill
 };
 

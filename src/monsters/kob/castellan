@@ -1,0 +1,12 @@
+name: The Castellan
+proper_name: true
+description: The Castellan of the Keep is here, catching up on his correspondances.
+detail: This soldier of the king looks tough. He is in charge of the Keep's defences.
+keywords:
+  - castellan
+hit_points: 18
+wield: sword
+skills:
+  melee: 5
+items:
+  - kob/keep_key

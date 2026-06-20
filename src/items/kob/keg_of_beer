@@ -1,0 +1,10 @@
+name: beerkeg
+proper_name: false
+description: A small wooden barrel is stamped with the image of a foaming mug.
+detail: This wooden keg is filled with beer! It might fetch some coin in the market.
+keywords:
+  - barrel
+  - keg
+  - beer
+cost: 5
+xp: 2

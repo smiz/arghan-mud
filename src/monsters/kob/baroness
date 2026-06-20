@@ -1,0 +1,16 @@
+name: Baroness Alegna
+proper_name: true
+description: The Baroness looks at you coldly, with the barest hint of a smile.
+detail: |
+  The likeness of the Baroness to the tavern barmaid is striking. You wonder if
+  they could be sisters. But barmaid was warm and welcoming, whereas the Baroness
+  is cold and distant.
+keywords:
+  - baroness
+  - alegna
+hit_points: 24
+magic: 6
+intelligence: 18
+wisdom: 18
+charisma: 18
+wield: kob/wand_of_striking

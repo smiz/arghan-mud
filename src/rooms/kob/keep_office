@@ -1,0 +1,12 @@
+node: 51
+zone: 4
+short_description: Castellan's Chamber
+description: |
+  This spartanly decorated office has a small desk, an uncomfortable
+  looking chair, and a small bed. The desk is stained with ink and
+  littered with correspondances.
+west:
+  node: 49
+  description: Through the western doorway is the hall.
+monsters:
+  - kob/castellan

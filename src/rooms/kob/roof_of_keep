@@ -1,0 +1,13 @@
+node: 52
+zone: 4
+short_description: Top of the Keep
+description: |
+  You have reached the top of the Keep. To the west you see
+  the civilized lands with their cultivated fields. In all
+  other directions is the untamed wilderness.
+down:
+  node: 49
+  description: The stairs go down into the Keep.
+monsters:
+  - kob/tower_guard
+  - kob/tower_guard

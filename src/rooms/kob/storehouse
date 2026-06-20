@@ -9,3 +9,7 @@ south:
   node: 44
   description: South of here is the tilt yard.
   door: kob/storehouse_door_interior
+items:
+  - kob/keg_of_beer
+  - kob/salt_pork
+  - kob/tobacco

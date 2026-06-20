@@ -1,0 +1,13 @@
+node: 50
+zone: 4
+short_description: Chamber of the Baroness
+description: |
+  You are in a comfortable bedroom. A large bed sits alongside
+  the northern wall. An opulent mirror hangs on the southern
+  wall over a wash basin.
+east:
+  node: 49
+  description: Through the eastern doorway is the hall.
+monsters:
+  - kob/baroness
+  - kob/baron

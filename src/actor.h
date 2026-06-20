@@ -179,6 +179,7 @@ class Actor: public Model {
     int total_ac();
 
     static int attribute_modifier(int attribute_score);
+    int attribute_adjustment(MonsterAttributes attr);
 
     /// Table containing all of the actor's skills
     std::map<Skill,int> skills;

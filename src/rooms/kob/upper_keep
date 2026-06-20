@@ -1,0 +1,18 @@
+node: 49
+zone: 4
+short_description: Upper Floor of the Keep
+description: |
+  This room is lit dimly by light filtering through arrow
+  slits at either end of a short hall. 
+west:
+  node: 50
+  description: Through the western portal you see a bedroom.
+east:
+  node: 51
+  description: Through the eastern portal you see a spartan office.
+down:
+  node: 48
+  description: The stairs go down to the ground floor.
+up:
+  node: 52
+  description: The stairs climp up to the roof.

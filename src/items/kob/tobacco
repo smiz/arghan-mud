@@ -1,0 +1,9 @@
+name: tobacco sack
+proper_name: false
+description: A sack here smells of strong tobacco.
+detail: This sack is filled with tobacco for your pipe.
+keywords:
+  - tobacco
+  - sack
+cost: 5
+xp: 2

@@ -1,0 +1,13 @@
+node: 48
+zone: 4
+short_description: Ground Floor of the Keep
+description: |
+  The ground floor of the keep has for its central feature
+  an enormous wooden table. The table is used for communal
+  meals, to hold court, and for general business.
+up:
+  node: 49
+  description: A spiralling set of stairs climbs to the Keep's upper level.
+south:
+  node: 46
+  description: South is the tiltyard.

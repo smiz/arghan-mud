@@ -1,0 +1,15 @@
+node: 46
+zone: 1
+short_description: Central Tilt Yard
+description: |
+  You stand in the middle of the tiltyard. To the south you 
+  see the sturdy wall of the stables.
+north:
+  node: 48
+  description: To the north you can enter the ground floor of the donjon.
+east:
+  node: 44
+  description: The yard continues east, where you see a wooden building.
+west:
+  node: 47
+  description: The yard extends to the west.

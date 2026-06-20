@@ -1,0 +1,16 @@
+name: slim wand
+proper_name: false
+description: A slim wand has been carelessly discarded here.
+detail: |
+  This wand is slender to the point of fragility, but it is
+  tipped with a piece of gleaming iron.
+skill: magic
+attr: int
+keywords:
+  - wand
+  - slim
+weapon_data:
+  speed: 1
+  damage: 3d5
+  ac: 0
+cost: 100 

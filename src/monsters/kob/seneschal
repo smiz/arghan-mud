@@ -1,0 +1,14 @@
+name: seneschal
+proper_name: false
+description: The senechal is busy with Keep's daily business.
+detail: The seneschal is responsible for logistics and maintenance. He is a busy man.
+keywords:
+  - man
+  - seneschal
+hit_points: 12
+wield: sword
+wanders: 6000
+skills:
+  melee: 3
+items:
+  - kob/storehouse_key

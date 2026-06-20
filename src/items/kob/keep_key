@@ -1,0 +1,13 @@
+name: key to the donjon
+proper_name: false
+description: This can only be the key to the central keep.
+detail: |
+  This enormous keep could only fit the enormous lock of the
+  central donjon.
+keywords:
+  - key
+  - keep
+  - enormous
+cost: 2
+xp: 5
+key: 899

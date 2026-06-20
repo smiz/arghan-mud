@@ -1,0 +1,11 @@
+node: 47
+zone: 1
+short_description: Western Tilt Yard
+description: |
+  You are at the western end of the tilt yard.
+east:
+  node: 46
+  description: The yard continues to the east.
+south:
+  node: 37
+  description: A grassy courtyard surrounded by several buildings is to the south.

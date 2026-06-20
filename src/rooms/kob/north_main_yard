@@ -12,5 +12,8 @@ south:
 west:
   node: 38
   description: The west is a chapel.
+north:
+  node: 47
+  description: North is the tiltyard.
 monsters:
   - kob/pluto

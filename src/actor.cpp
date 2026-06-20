@@ -877,7 +877,7 @@ void Actor::schedule_attack(int target_id, bool warn) {
     attack.pin = group->pin;
     if (primary_hand != nullptr) {
         attack.event_data.melee.dmg_roll =
-            std::max(1,primary_hand->weapon_info().dmg_die()+attribute_modifier(strength));
+            std::max(1,primary_hand->weapon_info().dmg_die()+attribute_adjustment(primary_hand->modifier()));
             attack.event_data.melee.atk_roll = use_item(primary_hand);
     } else {
         attack.event_data.melee.dmg_roll = std::max(1,unarmed_dmg()+attribute_modifier(strength));
@@ -1360,28 +1360,7 @@ void Actor::trap_event(const Event& event) {
     }
     Dice die(1,20);
     int save = die(), dmg = event.event_data.trap.dmg_roll;
-    switch(event.event_data.trap.attribute) {
-        case Str:
-            save += attribute_modifier(strength);
-            break;
-        case Dex:
-            save += attribute_modifier(dexterity);
-            break;
-        case Con:
-            save += attribute_modifier(constitution);
-            break;
-        case Int:
-            save += attribute_modifier(intelligence);
-            break;
-        case Wis:
-            save += attribute_modifier(wisdom);
-            break;
-        case Chr:
-            save += attribute_modifier(charisma);
-            break; 
-        default:
-            break;        
-    }
+    save += attribute_adjustment(event.event_data.trap.attribute);
     if (skills.find(event.event_data.trap.skill) != skills.end()) {
         save += skills[event.event_data.trap.skill];
     }
@@ -1431,6 +1410,32 @@ void Actor::save_model_event(const Event& event) {
     save();
     /// Save every second
     sched_save();
+}
+
+int Actor::attribute_adjustment(MonsterAttributes attr) {
+    switch(attr) {
+        case Str:
+            return attribute_modifier(strength);
+            break;
+        case Dex:
+            return attribute_modifier(dexterity);
+            break;
+        case Con:
+            return attribute_modifier(constitution);
+            break;
+        case Int:
+            return attribute_modifier(intelligence);
+            break;
+        case Wis:
+            return attribute_modifier(wisdom);
+            break;
+        case Chr:
+            return attribute_modifier(charisma);
+            break; 
+        default:
+            break;        
+    }
+    return 0;
 }
 
 int Actor::attribute_modifier(int attribute_score) {

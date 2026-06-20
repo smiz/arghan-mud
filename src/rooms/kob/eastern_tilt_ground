@@ -11,5 +11,8 @@ north:
   node: 45
   description: You see a wooden building with an open door to the north.
   door: kob/storehouse_door
-items:
-  - kob/storehouse_key
+west:
+  node: 46
+  description: The titlyard extends to the west.
+monsters:
+  - kob/seneschal

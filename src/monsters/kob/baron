@@ -1,0 +1,18 @@
+name: Baron Dodder
+proper_name: true
+description: The Baron sits here, doddering about the place.
+detail: The Baron is an old man, feeble now in mind and body.
+keywords:
+  - baron
+  - dodder
+assist:
+  - Baroness Alegna
+hit_points: 4
+wield: knife
+rumors:
+  - Where are my glasses?
+  - Oh, my joints!
+  - When I was a younger man ...
+  - The gout!
+  - My Baronness is an ageless beauty, no?
+  - The youth of today, pah! Coddled, all of them.

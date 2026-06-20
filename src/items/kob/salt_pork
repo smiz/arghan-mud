@@ -1,0 +1,11 @@
+name: saltpork
+proper_name: false
+description: A barrel is filled with salted pork.
+detail: The salt pork looks delicious. And salty.
+keywords:
+  - pork
+  - salt
+  - saltpork
+  - barrel
+cost: 5
+xp: 2
