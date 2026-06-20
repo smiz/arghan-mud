@@ -1,0 +1,11 @@
+name: wooden door
+proper_name: false
+description: To the south is a wooden door equipped with a solid lock.
+detail: |
+  The door is secured with a sturdy lock.
+keywords:
+  - wood
+  - door
+  - wooden
+heavy: true
+lock: 1000

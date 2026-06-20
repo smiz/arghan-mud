@@ -36,6 +36,7 @@ class Room: public Model {
     void destroyed_event(const Event& event);
     void lock_unlock_event(const Event& event);
     void read_event(const Event& event);
+    void open_close_event(const Event& event);
 
     /// A room does not occupy itself!
     bool occupies_space() { return false; }
@@ -43,7 +44,8 @@ class Room: public Model {
     static int next_free_room_number();
 
     private:
- 
+
+    std::shared_ptr<Item> doors[int(EndOfDirectionEnum)];
     /// @brief File to reload the room
     std::string file;
     /// @brief Graph for reloading monsters
@@ -55,6 +57,8 @@ class Room: public Model {
 
     std::string short_description;
 
+    std::shared_ptr<Item> find_item_or_door(const KeyWordList& key_words);
+    bool test_open_close(std::shared_ptr<Item> item);
     void sched_see_event(int src_id, const KeyWordList& key_words, bool first_word_is_container, int16_t flags = SEE_BOTH);
     void reload();
 

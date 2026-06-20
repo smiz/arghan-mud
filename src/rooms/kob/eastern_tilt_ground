@@ -1,0 +1,15 @@
+node: 44
+zone: 1
+short_description: East Tilt Yard
+description: |
+  This is the eastern end of the tilt yard. The tower wall rises high
+  above you here.
+south:
+  node: 3
+  description: South of here is the entrance to the Keep.
+north:
+  node: 45
+  description: You see a wooden building with an open door to the north.
+  door: kob/storehouse_door
+items:
+  - kob/storehouse_key

@@ -86,11 +86,9 @@ m_filename(file) {
             m_contents->push_back(new_item);
         }
     }
-    if (m_contents != nullptr) {
-        if (yaml["lock"]) {
-            m_lock = yaml["lock"].as<int>();
-            locked = true;
-        }
+    if (yaml["lock"]) {
+        m_lock = yaml["lock"].as<int>();
+        locked = true;
     }
     if (yaml["key"]) {
         m_key = yaml["key"].as<int>();

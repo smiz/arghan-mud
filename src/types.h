@@ -74,8 +74,10 @@ struct direction_t {
     /// @brief Message on success
     std::string success_msg1;
     std::string success_msg2;
+    /// @brief Is travel in this direction blocked?
+    bool blocked;
 
-    direction_t():skill(NoSkill){}
+    direction_t():skill(NoSkill),blocked(false){}
 };
 
 using KeyWordList = std::list<std::string>;

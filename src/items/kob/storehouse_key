@@ -1,0 +1,11 @@
+name: worn key
+proper_name: false
+description: A worn key has been left here.
+detail: |
+  The teeth of this key have been worn with use.
+keywords:
+  - key
+  - worn
+cost: 2
+xp: 5
+key: 1000

@@ -1,0 +1,11 @@
+node: 45
+zone: 1
+short_description: Storehouse
+description: |
+  You are inside the Keep's storehouse. The place is filled with sacks
+  of grain, barrels of beer, and the sundry other goods needed to sustain
+  life in the Keep.
+south:
+  node: 44
+  description: South of here is the tilt yard.
+  door: kob/storehouse_door_interior

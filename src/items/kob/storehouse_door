@@ -1,0 +1,12 @@
+name: wooden door
+proper_name: false
+description: The the north is a wooden door equipped with a solid lock.
+detail: |
+  The door is secured with a sturdy lock. Nonetheless, the worn handle
+  gives the impression of frequent access.
+keywords:
+  - wood
+  - door
+  - wooden
+heavy: true
+lock: 1000

@@ -94,6 +94,8 @@ struct Event {
         SEE1,
         /// @brief Hear something
         HEAR,
+        /// @brief A door opens or closes
+        OPEN_CLOSE,
         /// @brief Save the model to disk
         SAVE_MODEL,
         /// @brief Practice a skill
@@ -375,10 +377,22 @@ class ProximityGroup {
         for (auto exit_dir: exits) {
             if (exit_dir.dir == dir.dir) {
                 dir = exit_dir;
-                return true;
+                return !dir.blocked;
             }
         }
         return false;
+    }
+
+    /**
+     * Block or unblock a direction of travel.
+     */
+    void block_direction(Direction dir, bool blocked) {
+        for (auto& exit_dir: exits) {
+            if (exit_dir.dir == dir) {
+                exit_dir.blocked = blocked;
+                break;
+            }
+        }
     }
 
     /**
@@ -483,7 +497,6 @@ class ProximityGroup {
     std::list<ProximityGroupMember*> m_members;
     /// @brief Is this zone a shop?
     bool m_shop;
-
     /// @brief Globally visible map of zone occupancy counts
     static std::map<int,int> zone_occupancy;
 };
@@ -642,6 +655,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void lock_unlock_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void read_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void open_close_event(const Event& event){}
     /// @brief Our proximity group
     ProximityGroup* group;
     /**

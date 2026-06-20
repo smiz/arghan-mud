@@ -12,6 +12,25 @@ static const int reload_interval = 120000;
 
 int Room::max_room_number = 0;
 
+static Direction opposite_direction(Direction d) {
+    if (d == North) {
+        return South;
+    }
+    if (d == South) {
+        return North;
+    }
+    if (d == East) {
+        return West;
+    } 
+    if (d == West) {
+        return East;
+    }
+    if (d == Up) {
+        return Down;
+    }
+    return Up;
+}
+
 /// Must be in order of Direction enumeration in model.h!
 static const std::string direction_key[6] = {
     "north", "south", "east", "west", "up", "down"
@@ -62,6 +81,35 @@ void Room::reload() {
             new Trap(graph,"traps/"+trap.as<std::string>(),group->group_number());
         }
     }
+    /// Get our doors
+    for (int i = 0; i < int(EndOfDirectionEnum); i++) {
+        doors[i] = nullptr;
+        std::string key = direction_key[i];
+        if (yaml[key]) {
+            if (yaml[key]["door"]) {
+                doors[i] = std::make_shared<Item>(yaml[key]["door"].as<std::string>());
+                group->block_direction(Direction(i),doors[i]->is_locked());
+            }
+        }
+    }
+}
+
+std::shared_ptr<Item> Room::find_item_or_door(const KeyWordList& key_words) {
+    int score = 0;
+    auto result = Model::find_item(key_words);
+    if (result != nullptr) {
+        score = result->match_keywords(key_words);
+    }
+    for (int i = 0; i < int(EndOfDirectionEnum); i++) {
+        if (doors[i] != nullptr) {
+            int door_score = doors[i]->match_keywords(key_words);
+            if (door_score > score) {
+                score = door_score;
+                result = doors[i];
+            }
+        }
+    }
+    return result;
 }
 
 int Room::next_free_room_number() {
@@ -73,6 +121,9 @@ Model(graph),
 file(file),
 graph(graph),
 initial_load(true) {
+    for (int i = 0; i < int(EndOfDirectionEnum); i++) {
+        doors[i] = nullptr;
+    }
     int zone = NO_ZONE;
     YAML::Node yaml = YAML::LoadFile(file.c_str());
     int prox_group_id = (node_id == -1) ? yaml["node"].as<int>() : node_id;
@@ -145,7 +196,7 @@ void Room::read_event(const Event& event) {
     Event result(Event::SEE1,id());
     result.dst_id = event.src_id;
     result.pin = group->pin;
-    auto item = find_item(*(event.key_words.get()));
+    auto item = find_item_or_door(*(event.key_words.get()));
     if (item == nullptr) {
         result.msg = "You don't see that.";
     } else if (!item->is_heavy()) {
@@ -168,9 +219,10 @@ void Room::reset_zone_event(const Event& event) {
 
 void Room::lock_unlock_event(const Event& event) {
     Event result(Event::SEE1,id());
+    bool lock_state = true;
     result.event_data.subject_id = result.dst_id = event.src_id;
     result.pin = group->pin;
-    auto item = find_item(*(event.key_words.get()));
+    auto item = find_item_or_door(*(event.key_words.get()));
     if (item == nullptr) {
         result.msg = "You don't see that.";
         sched_event(result);
@@ -187,13 +239,18 @@ void Room::lock_unlock_event(const Event& event) {
         return;
     }
     if (item->get_lock_code() == event.item->get_key_code()) {
-        item->toggle_lock();
+        if (test_open_close(item)) {
+            lock_state = !item->is_locked();
+        } else {
+            item->toggle_lock();
+            lock_state = item->is_locked();
+        }
     } else {
         result.msg = "The key doesn't fit.";
         sched_event(result);
         return;
     }
-    if (item->is_locked()) {
+    if (lock_state) {
         result.msg = "You lock "+item->name().regular_name()+".";
         sched_event(result);
         result.msg = group->find_member(event.src_id)->get_name().capitalized_name()+ " locks " + item->name().regular_name()+".";
@@ -202,9 +259,47 @@ void Room::lock_unlock_event(const Event& event) {
         sched_event(result);
         result.msg = group->find_member(event.src_id)->get_name().capitalized_name()+ " unlocks " + item->name().regular_name()+".";
     }
+    result.exclude = std::make_shared<std::set<int>>();
+    result.exclude->insert(event.src_id);
     result.dst_id = ANY_ID_BUT_SRC;
     result.stealthy = event.stealthy;
     sched_event(result);
+}
+
+void Room::open_close_event(const Event& event) {
+    assert(doors[event.event_data.dir] != nullptr);
+    Event see(Event::SEE1,id());
+    see.dst_id = ANY_ID_BUT_SRC;
+    see.pin = group->pin;
+    auto door = doors[event.event_data.dir];
+    door->toggle_lock();
+    group->block_direction(event.event_data.dir,door->is_locked());
+    if (door->is_locked()) {
+        see.msg = door->name().capitalized_name()+" is closed.";
+    } else {
+        see.msg = door->name().capitalized_name()+" is open.";
+    }
+    sched_event(see);
+}
+
+bool Room::test_open_close(std::shared_ptr<Item> item) {
+    Event event(Event::OPEN_CLOSE,id());
+    for (int i = 0; i < int(EndOfDirectionEnum); i++) {
+        if (item == doors[i]) {
+            direction_t dir;
+            dir.dir = Direction(i);
+            group->find_direction(dir);
+            event.pin = group->pin;
+            event.event_data.dir = dir.dir;
+            event.dst_id = ANY_ID;
+            sched_event(event);
+            event.pin = prox_map[dir.id]->pin;
+            event.event_data.dir = opposite_direction(dir.dir);
+            sched_event(event);
+            return true;
+        }
+    }
+    return false;
 }
 
 void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_are_container, int16_t flags) {
@@ -214,7 +309,7 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
     see.dst_id = src_id;
     see.src_id = id();
     see.pin = group->pin;
-    auto item = find_item(key_words);
+    auto item = find_item_or_door(key_words);
     if (words_are_container) {
         if (item != nullptr) {
             if (item->container()) {
@@ -255,8 +350,16 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
         direction_t exit_dir;
         for (int i = 0; i < int(EndOfDirectionEnum); i++) {
             exit_dir.dir = Direction(i);
-            if (group->find_direction(exit_dir)) {
-                see.msg += exit_dir.description+'\n';
+            if (doors[i] != nullptr || group->find_direction(exit_dir)) {
+                if (doors[i] != nullptr) {
+                    if (doors[i]->is_locked()) {
+                        see.msg += doors[i]->description()+'\n';
+                    } else {
+                        see.msg += exit_dir.description+'\n';
+                    }
+                } else {
+                    see.msg += exit_dir.description+'\n';
+                }
             }
         }
         for (auto item: items) {

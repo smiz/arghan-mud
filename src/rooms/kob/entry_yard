@@ -15,5 +15,8 @@ west:
 south:
   node: 29
   description: The yard continues to the south.
+north:
+  node: 44
+  description: You see a grassy field to the north.
 monsters:
   - kob/odif
