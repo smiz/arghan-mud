@@ -9,7 +9,7 @@ sneak, nosneak                     Start and stop sneaking.
 short                              Toggle short descriptions.
 quit                               Exit the mud.
 swindle <mark> <item>              Try to swindle someone.
-word <word> <intensity> <target>   Use a word of power. Omit the target and it is you!
+word <word> <intensity> <target>   Use a word of power. Intensity starts at 1. Omit the target and it is you!
 use <obj>                          Use an item that you are holding or wielding.
 read <obj>                         Read a message written on an object.
 lock, unlock <obj>                 Lock, unlock a door or container.
