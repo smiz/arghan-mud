@@ -226,6 +226,9 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::EFFECT:
                 effect_event(x.value);
                 break;
+            case Event::SPEAK:
+                speak_event(x.value);
+                break;
             default:
                 break;
         }

@@ -155,7 +155,8 @@ class Actor: public Model {
     void use_item_event(const Event& event);
     void cast_spell_event(const Event& event);
     void effect_event(const Event& event);
-    
+    void speak_event(const Event& event);
+
     /**
      * Return a skill roll for using an item. Returns
      * -1 if the item cannot be used.

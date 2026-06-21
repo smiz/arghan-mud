@@ -94,6 +94,8 @@ struct Event {
         MELEE_RESULT,
         /// @brief See a description of something after all SEE are processed
         SEE1,
+        /// @brief Say something
+        SPEAK,
         /// @brief Hear something
         HEAR,
         /// @brief A door opens or closes
@@ -676,6 +678,8 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void cast_spell_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void effect_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void speak_event(const Event& event){}
     /// @brief Our proximity group
     ProximityGroup* group;
     /**

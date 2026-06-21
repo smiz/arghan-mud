@@ -15,3 +15,4 @@ read <obj>                         Read a message written on an object.
 lock, unlock <obj>                 Lock, unlock a door or container.
 prac <skill>                       Practice a skill.
 -- Skills are perception, melee, stealth, steal, swindle, literacy, climbing, swimming, and magic.
+The character ' followed by anything causes you to speak. For example, 'Hi!

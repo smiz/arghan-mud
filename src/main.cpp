@@ -39,11 +39,13 @@ Simulator* sim;
 /// @brief The graph that holds all of our objects in the simulation
 std::shared_ptr<Graph> graph;
 
+static const std::string newline = "\r\n";
+
 bool message_of_the_day(int fd) {
     std::string line;
     std::ifstream fin("motd");
     while (std::getline(fin,line)) {
-        line += '\n';
+        line += newline;
         if (write(fd,line.c_str(),line.length()) < 0) {
             close(fd);
             return false;
@@ -399,6 +401,17 @@ void read_obj(Actor* obj, std::list<std::string>& tokens) {
     cv.notify_one();
 }
 
+void speak(Actor* obj, std::string& line) {
+    Event event(Event::SPEAK,obj->id());
+    event.dst_id = obj->id();
+    event.pin = obj->pin;
+    event.msg = line.substr(1,line.length());
+    mutex.lock();
+    commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+    mutex.unlock();
+    cv.notify_one();
+}
+
 void dice(Actor* obj, std::list<std::string>& tokens) {
     if (tokens.empty()) {
         obj->message("Roll which dice?");
@@ -447,7 +460,7 @@ void help(Actor* obj) {
     std::ifstream fin("help");
     mutex.lock();
     while (std::getline(fin,line)) {
-        line += "\n";
+        line += newline;
         if (write(obj->get_fd(),line.c_str(),line.size()) < 0) {
             break;
         }
@@ -583,7 +596,8 @@ bool parse_line(std::string& line, Actor* obj) {
         skills(obj);
         return true;
     }
-    if (parse_line_with_tokens(line,obj)) {
+    if (line[0] == '\'') {
+        speak(obj,line);
         return true;
     }
     if (line == "help") {
@@ -596,6 +610,9 @@ bool parse_line(std::string& line, Actor* obj) {
     }
     if (line == "nosneak") {
         sneak(obj,false);
+        return true;
+    }
+    if (parse_line_with_tokens(line,obj)) {
         return true;
     }
     return false;
@@ -655,7 +672,7 @@ void client(int fd) {
 repeat_name:
     bytes = read_line(fd,line);
     if (bytes <= 0) {
-        line = "Goodbye!\n";
+        line = "Goodbye!"+newline;
         bytes = write(fd,line.c_str(),line.size());
         return;
     }
@@ -667,7 +684,7 @@ repeat_name:
     for (auto character: characters) {
         if (character.first == lower_case(line)) {
             obj = character.second;
-            line = "Welcome back " + obj->get_name().capitalized_name() + "!\n";
+            line = "Welcome back " + obj->get_name().capitalized_name() + "!"+newline;
             bytes = write(fd,line.c_str(),line.size());
             if (bytes < 0) {
                 return;
@@ -680,7 +697,7 @@ repeat_name:
         initial_stats_t stats;
         std::string response;
         std::string name = line, passwd;
-        line = "Welcome " + name +"!\n";
+        line = "Welcome " + name +"!"+newline;
         bytes = write(fd,line.c_str(),line.size());
         if (bytes < 0) {
             return;
@@ -698,13 +715,13 @@ repeat_name:
         {
             line.clear();
             std::ostringstream sout(line);
-            sout << "str: " << stats.str << std::endl;
-            sout << "dex: " << stats.dex << std::endl;
-            sout << "con: " << stats.con << std::endl;
-            sout << "int: " << stats.intel << std::endl;
-            sout << "wis: " << stats.wis << std::endl;
-            sout << "chr: " << stats.chr << std::endl;
-            sout << "hp : " << stats.hp << std::endl;
+            sout << "str: " << stats.str << newline;
+            sout << "dex: " << stats.dex << newline;
+            sout << "con: " << stats.con << newline;
+            sout << "int: " << stats.intel << newline; 
+            sout << "wis: " << stats.wis << newline;
+            sout << "chr: " << stats.chr << newline;
+            sout << "hp : " << stats.hp << newline;
             line = sout.str();
             if (write(fd,line.c_str(),line.size()) < 0) {
                 return;
@@ -761,7 +778,7 @@ repeat_name:
             if (line == "quit") {
                 break;
             } else {
-                line = "What?\n";
+                line = "What?"+newline;
                 bytes = write(fd,line.c_str(),line.size());
                 if (bytes < 0) {
                     break;

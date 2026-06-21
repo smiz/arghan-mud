@@ -387,6 +387,7 @@ void Actor::report_inventory() {
 }
 
 void Actor::message(std::string msg) {
+    std::string to_print;
     static const char newline = '\n';
     if (fd != -1) {
         // Make sure we end with one newline
@@ -394,7 +395,14 @@ void Actor::message(std::string msg) {
             msg.pop_back();
         }
         msg += newline;
-        if (write(fd,msg.c_str(),msg.size()) < 0) {
+        // Replace all newlines with \r\n
+        for (auto c: msg) {
+            if (c == newline) {
+                to_print.push_back('\r');
+            }
+            to_print.push_back(c);
+        }
+        if (write(fd,to_print.c_str(),to_print.size()) < 0) {
             fd = -1;
         }
     }
@@ -638,6 +646,21 @@ void Actor::swindle_steal_command_event(const Event& event) {
         }
     }
     sched_event(swindle);
+}
+
+void Actor::speak_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    sneaking = 0;
+    Event hear(event);
+    hear.type = Event::HEAR;
+    hear.src_id = id();
+    hear.dst_id = ANY_ID_BUT_SRC;
+    hear.pin = group->pin;
+    hear.msg = name.capitalized_name()+" says \'" + event.msg + "'";
+    message("You say '" + event.msg +"'");
+    sched_event(hear);
 }
 
 void Actor::hear_event(const Event& event) {
