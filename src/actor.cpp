@@ -177,8 +177,12 @@ int Actor::match_keywords(const KeyWordList& key_words) const {
 void Actor::lose_level() {
     Skill worst_skill = NoSkill;
     int worst_skill_level = 99999;
+    if (level == 0) {
+        xp_to_go = 10;
+        return;
+    }
     Dice hp_die(1,6);
-    level = std::max(0,level-1);
+    level--;
     hit_points -= attribute_modifier(constitution);
     hit_points = std::max(hit_points-hp_die(),(level+1)*attribute_modifier(constitution)+level);
     if (hit_points <= 0) {
