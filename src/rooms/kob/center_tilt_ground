@@ -2,7 +2,7 @@ node: 46
 zone: 1
 short_description: Central Tilt Yard
 description: |
-  You stand in the middle of the tiltyard. To the south you 
+  You stand in the middle of a muddy tiltyard. To the south you 
   see the sturdy wall of the stables. The tall donjon rises
   above the Keep's walls to the north. A massive door controls
   access to the donjon.
@@ -18,3 +18,4 @@ west:
   description: The yard extends to the west.
 monsters:
   - cat
+  - dog

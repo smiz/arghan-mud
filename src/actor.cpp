@@ -181,13 +181,8 @@ void Actor::lose_level() {
         xp_to_go = 10;
         return;
     }
-    Dice hp_die(1,6);
-    level--;
-    hit_points -= attribute_modifier(constitution);
-    hit_points = std::max(hit_points-hp_die(),(level+1)*attribute_modifier(constitution)+level);
-    if (hit_points <= 0) {
-        hit_points = 1;
-    }
+    int avg = hit_points/(level+1);
+    hit_points -= avg;
     for (auto& skill: skills) {
         if (skill.second > 1) {
             skill.second--;
