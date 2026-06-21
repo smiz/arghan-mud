@@ -12,4 +12,5 @@ Item() {
         key_words->push_back(name.lower_case());
     }
     m_contents = std::make_shared<std::list<std::shared_ptr<Item>>>();
+    m_cost = 1;
 }

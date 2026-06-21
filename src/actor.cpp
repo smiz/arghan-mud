@@ -1829,7 +1829,7 @@ void Actor::account_for_cost(const std::shared_ptr<Item>& item, bool selling) {
     }
     if (selling) {
         int value = item->get_cost()/2;
-        if (item->get_cost() > 0 && value == 0 && attribute_modifier(charisma) > 0) {
+        if (item->get_cost() > 0 && value == 0) {
             value = 1;
         }
         if (items.empty()) {
