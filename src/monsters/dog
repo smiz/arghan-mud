@@ -1,8 +1,10 @@
 name: wet dog
 proper_name: false
-description: A dog splashes happily in the mud!
+description: A dog splashes happily in a muddy puddle!
 detail: The muddy, soaked mutt wags its tail happily!
 keywords:
   - dog
   - wet
   - muddy
+hit_points: 3
+attack_dice: 1d1

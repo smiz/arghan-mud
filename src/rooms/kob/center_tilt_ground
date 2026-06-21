@@ -16,3 +16,5 @@ east:
 west:
   node: 47
   description: The yard extends to the west.
+monsters:
+  - cat

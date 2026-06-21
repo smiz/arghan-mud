@@ -15,3 +15,5 @@ west:
 south:
   node: 43
   description: To the south is a sturdy wooden building.
+monsters:
+  - dog

@@ -1,9 +1,11 @@
 name: wet cat
 proper_name: false
 description: A wet pussy ... cat sits forlorn in the sun, wishing to be dry.
-detail: The clining fur makes the cat look scrawny. It is very unhappy.
+detail: The clinging fur makes the cat look scrawny. It is very unhappy.
 keywords:
   - cat
   - pussy
   - wet
   - forlorn
+hit_points: 2
+attack_dice: 1d1
