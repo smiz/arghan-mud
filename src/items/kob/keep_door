@@ -1,0 +1,10 @@
+name: sturdy door
+proper_name: false
+description: The entrance to the donjon a protected by a massive door.
+detail: |
+  This door is secured with a complex lock of steel. You'll never get it!
+keywords:
+  - door
+  - sturdy
+heavy: true
+lock: 899

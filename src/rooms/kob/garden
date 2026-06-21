@@ -1,0 +1,21 @@
+node: 55
+zone: 3
+short_description: The Garden
+description: |
+  Bright sunlight streams into this cave, which is carved into the
+  side of the mesa on which rests the Keep. This must be the garden
+  of the Baroness! It is filled with wondorous an exotic plants,
+  many of which you cannot recognize. The air is thick with pollen.
+south:
+  node: 54
+  description: A rivulet of water streams south into an earthy tunnel.
+items:
+  - kob/exotic_orchid1
+  - kob/exotic_orchid2
+  - kob/exotic_orchid3
+  - kob/exotic_orchid4
+  - kob/exotic_orchid5
+traps:
+  - kob/poison_plant
+monsters:
+  - kob/thornman

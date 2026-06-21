@@ -461,9 +461,11 @@ void Room::transfer_item_event(const Event& event) {
                 " puts " + event.item->name().regular_name()+" into "+container->name().regular_name()+".";
             see.src_id = event.src_id;
             see.dst_id = ANY_ID_BUT_SRC;
+            see.stealthy = event.stealthy;
             sched_event(see);
             see.msg = "You put " + event.item->name().regular_name()+" into "+container->name().regular_name()+".";
             see.dst_id = event.src_id;
+            see.stealthy = 0;
             sched_event(see);
         } else {
             items.push_back(event.item);
@@ -471,10 +473,12 @@ void Room::transfer_item_event(const Event& event) {
                 " drops " + event.item->name().regular_name()+".";
             see.src_id = event.src_id;
             see.dst_id = ANY_ID_BUT_SRC;
+            see.stealthy = event.stealthy;
             sched_event(see);
             if (!missed_container) {
                 see.msg = "You drop " + event.item->name().regular_name()+".";
                 see.dst_id = event.src_id;
+                see.stealthy = 0;
                 sched_event(see);
             }
         }
@@ -516,9 +520,11 @@ void Room::transfer_item_event(const Event& event) {
             }
             if (container == nullptr) {
                 items.remove(transfer.item);
+                see.stealthy = event.stealthy;
                 see.msg = target->get_name().capitalized_name()+
                     " picks up " + transfer.item->name().regular_name()+".";
             } else {
+                see.stealthy = event.stealthy;
                 see.msg = target->get_name().capitalized_name()+
                     " gets " + transfer.item->name().regular_name()+" from " + container->name().regular_name()+".";
             }
@@ -534,6 +540,7 @@ void Room::transfer_item_event(const Event& event) {
             } else {
                 see.msg = "You get it from "+container->name().regular_name()+".";
             }
+            see.stealthy = 0;
             sched_event(see);
         }
     }

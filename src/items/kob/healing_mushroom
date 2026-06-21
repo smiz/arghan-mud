@@ -1,0 +1,14 @@
+name: purple mushroom
+proper_name: false
+description: An intensely purple mushroom sprouts from the soil.
+detail: The mushroom looks delicious.
+keywords:
+  - purple
+  - mushroom
+cost: 5
+xp: 2
+effect:
+  name: refresh
+  intensity: 10
+  consumed: true
+  verb: eat

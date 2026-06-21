@@ -49,7 +49,8 @@ fd(-1),
 exit_node_id(regen_room_number),
 regen_node_number(regen_room_number),
 pc(pc),
-short_descriptions(false) {
+short_descriptions(false),
+poison_protect(0) {
     if (load) {
         YAML::Node yaml = YAML::LoadFile(file.c_str());
         this->name = Name(yaml["name"].as<std::string>(),yaml["proper_name"].as<bool>());
@@ -58,6 +59,11 @@ short_descriptions(false) {
         const YAML::Node& keyword_list = yaml["keywords"];
         for (const auto& word : keyword_list) {
             key_words.push_back(word.as<std::string>());
+        }
+        if (yaml["immune_to_poison"]) {
+            if (yaml["immune_to_poison"]) {
+                poison_protect = INT_MAX;
+            }
         }
         if (yaml["attack_dice"]) {
             unarmed_dmg = Dice(yaml["attack_dice"].as<std::string>());
@@ -166,6 +172,42 @@ int Actor::match_keywords(const KeyWordList& key_words) const {
         }
     }
     return score;
+}
+
+void Actor::lose_level() {
+    Skill worst_skill = NoSkill;
+    int worst_skill_level = 99999;
+    Dice hp_die(1,6);
+    level = std::max(0,level-1);
+    hit_points -= attribute_modifier(constitution);
+    hit_points = std::max(hit_points-hp_die(),level*attribute_modifier(constitution)+level);
+    if (hit_points < 0) {
+        hit_points = 1;
+    }
+    for (auto& skill: skills) {
+        if (skill.second > 1) {
+            skill.second--;
+        }
+        if (worst_skill_level > skill.second) {
+            worst_skill_level = skill.second;
+            worst_skill = skill.first;
+        }
+    }
+    if (free_skill_slots > 0) {
+        free_skill_slots--;
+    } else if (worst_skill != NoSkill) {
+        int new_skill = skills[worst_skill]-1;
+        if (new_skill == 0) {
+            skills.erase(worst_skill);
+        } else {
+            skills[worst_skill] = new_skill;
+        }
+    }
+    if (level == 0) {
+        xp_to_go = 10;
+    } else {
+        xp_to_go = level*20;
+    }
 }
 
 void Actor::gain_xp(int xp) {
@@ -409,34 +451,44 @@ void Actor::sneak_command_event(const Event& event) {
     }
 }
 
-void Actor::swindle_result_event(const Event& event) {
+void Actor::swindle_steal_result_event(const Event& event) {
     if (filter(event)) {
         return;
     }
     gain_xp(event.item->claim_xp());
     items.push_back(event.item);
-    message("You con the mark and get "+event.item->name().regular_name()+"!");
+    if (event.event_data.swindling.steal) {
+        message("You steal "+event.item->name().regular_name()+"!");
+    } else {
+        message("You con the mark and get "+event.item->name().regular_name()+"!");
+    }
 }
 
-void Actor::start_swindle_event(const Event& event) {
+void Actor::start_steal_swindle_event(const Event& event) {
     if (filter(event)) {
         return;
     }
     if (sneaking > event.perceptive) {
-        Model::start_swindle_event(event);
+        Model::start_steal_swindle_event(event);
         return;
     }
     Name swindler_name = group->find_member(event.src_id)->get_name();
-    emit(swindler_name.capitalized_name()+ " whispers something to " + name.regular_name()+".",
-        ANY_ID_BUT_SRC,event.src_id);
+    if (!event.event_data.swindling.steal) {
+        emit(swindler_name.capitalized_name()+ " whispers something to " + name.regular_name()+".",
+            ANY_ID_BUT_SRC,event.src_id);
+    }
     Event result(Event::SEE1,id());
     result.event_data.subject_id = id();
     result.dst_id = event.src_id;
     result.pin = group->pin;
-    result.msg = "You attempt to swindle "+name.regular_name()+" ...";
+    if (event.event_data.swindling.steal) {
+        result.msg = "You attempt to steal from "+name.regular_name()+" ...";
+    } else {
+        result.msg = "You attempt to swindle "+name.regular_name()+" ...";
+    }
     sched_event(result);
     Event swindle(event);
-    swindle.type = Event::SWINDLE;
+    swindle.type = Event::SWINDLE_STEAL;
     swindle.dst_id = id();
     swindle.pin = group->pin;
     sched_event(swindle,1000);
@@ -486,7 +538,7 @@ std::shared_ptr<Item> Actor::find_any_item(const KeyWordList& key_words) {
     return item;
 }
 
-void Actor::swindle_event(const Event& event) {
+void Actor::swindle_steal_event(const Event& event) {
     if (filter(event)) {
         return;
     }
@@ -495,13 +547,21 @@ void Actor::swindle_event(const Event& event) {
         Event result(Event::SEE1,id());
         result.event_data.subject_id = id();
         result.dst_id = event.src_id;
-        result.msg = name.capitalized_name()+" is too busy to talk to you!";
+        if (event.event_data.swindling.steal) {
+            result.msg = name.capitalized_name()+" won't stay still!";
+        } else {
+            result.msg = name.capitalized_name()+" is too busy to talk to you!";
+        }
         result.pin = group->pin;
         sched_event(result);
         return;
     }
-    std::shared_ptr<Item> item = find_any_item(*(event.key_words.get()));
-
+    std::shared_ptr<Item> item = nullptr;
+    if (event.event_data.swindling.steal) {
+        item = find_item(*(event.key_words.get()));
+    } else {
+        item = find_any_item(*(event.key_words.get()));
+    }
     if (item == nullptr) {
         Event result(Event::SEE1,id());
         result.event_data.subject_id = id();
@@ -515,14 +575,18 @@ void Actor::swindle_event(const Event& event) {
     if (swindler == nullptr) {
         return;
     }
-    if (check_skill(Perception,event.event_data.swindling+item->get_cost()/5,true)) {
-        Event result(Event::SWINDLE_RESULT,id());
+    if (!check_skill(Perception,event.event_data.swindling.skill+item->get_cost()/5,true)) {
+        Event result(event);
+        result.type = Event::SWINDLE_STEAL_RESULT;
+        result.src_id = id();
         result.dst_id = event.src_id;
         result.pin = group->pin;
         result.item = item;
-        message(swindler->get_name().capitalized_name()+" talks you out of "+item->name().regular_name()+".");
-        emit(name.capitalized_name()+" gives "+item->name().regular_name()+" to "+swindler->get_name().regular_name()+".",
-            ANY_ID_BUT_SRC,event.src_id);
+        if (!event.event_data.swindling.steal) {
+            message(swindler->get_name().capitalized_name()+" talks you out of "+item->name().regular_name()+".");
+            emit(name.capitalized_name()+" gives "+item->name().regular_name()+" to "+swindler->get_name().regular_name()+".",
+                ANY_ID_BUT_SRC,event.src_id);
+        }
         if (item == neck) {
             neck = nullptr;
         } else if (item == body) {
@@ -536,30 +600,43 @@ void Actor::swindle_event(const Event& event) {
         }
         sched_event(result);
     } else {
-        message(swindler->get_name().capitalized_name()+" attempts to swindle you!");
+        if (!event.event_data.swindling.steal) {
+            message(swindler->get_name().capitalized_name()+" attempts to swindle you!");
+        } else {
+            message(swindler->get_name().capitalized_name()+" attempts to steal from you!");
+        }
         if (!pc) {
             schedule_attack(event.src_id,true);
         }
     }
 }
 
-void Actor::swindle_command_event(const Event& event) {
+void Actor::swindle_steal_command_event(const Event& event) {
     bool combat = in_combat();
     if (combat) {
         message("You are fighting for your life!");
         return;
     }
     int target = group->find_best_match(*(event.key_words2.get()));
+    if (target == group->first_member_id() || 
+            !check_skill(Perception,group->find_member(target)->hidden(),true)) {
+            message("You don't see anything like that.");
+            return;
+    }
     Event swindle(event);
-    swindle.type = Event::START_SWINDLE;
+    swindle.type = Event::START_STEAL_SWINDLE;
     swindle.pin = group->pin;
     swindle.dst_id = target;
     swindle.perceptive = use_skill(Perception,true);
-    swindle.event_data.swindling = use_skill(Swindle);
-    if (sneaking > 0) {
-        sneaking = 0;
-        message("You emerge from hiding.");
-        emit(name.capitalized_name()+" emerges from hiding.");
+    if (event.event_data.swindling.steal) {
+        swindle.event_data.swindling.skill = use_skill(Steal);
+    } else {
+        swindle.event_data.swindling.skill = use_skill(Swindle);
+        if (sneaking > 0) {
+            sneaking = 0;
+            message("You emerge from hiding.");
+            emit(name.capitalized_name()+" emerges from hiding.");
+        }
     }
     sched_event(swindle);
 }
@@ -808,6 +885,7 @@ void Actor::destroyed_event(const Event& event) {
     group->remove_member(this);
     do_not_receive_from(group->pin);
     if (pc) {
+        poison_protect = 0;
         sneaking = 0;
         group = prox_map[regen_node_number];
         receive_from(group->pin);
@@ -817,6 +895,7 @@ void Actor::destroyed_event(const Event& event) {
         message("Try looking around.");
         exit_node_id = regen_node_number;
         damage = 0;
+        lose_level();
     } else {
         Model::leave_game();
     }
@@ -867,8 +946,8 @@ void Actor::kill_command_event(const Event& event) {
 
 void Actor::schedule_attack(int target_id, bool warn) {
     // Cancel any swindling attempts
-    cancel_event(Event::SWINDLE);
-    cancel_event(Event::START_SWINDLE);
+    cancel_event(Event::SWINDLE_STEAL);
+    cancel_event(Event::START_STEAL_SWINDLE);
     // Cancel any pending attack before starting another
     cancel_event(Event::MELEE_ATTACK);
     // Start the attack
@@ -1088,6 +1167,7 @@ void Actor::get_command_event(const Event& event) {
     get.event_data.transfer.coins_in_purse = consolidate_coins();
     get.src_id = id();
     get.event_data.transfer.src_to_dst = false;
+    get.stealthy = sneaking;
     sched_event(get);
 }
 
@@ -1106,6 +1186,7 @@ void Actor::drop_command_event(const Event& event) {
     drop.src_id = id();
     drop.item = find_any_item(*(event.key_words.get()));
     drop.event_data.transfer.src_to_dst = true;
+    drop.stealthy = sneaking;
     // We have something
     if (drop.item != nullptr) {
         // On our person
@@ -1354,6 +1435,69 @@ void Actor::hold_command_event(const Event& event) {
     }
 }
 
+void Actor::effect_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    int damage_before = damage;
+    apply_effect(event.event_data.trap.effect,event.event_data.trap.intensity);
+    if (damage >= hit_points) {
+        emit_stealthy(name.capitalized_name()+ " is killed!");
+        message("You are dead!");
+        schedule_destroyed();
+    }
+    if (damage > damage_before) {
+        schedule_attack(event.src_id,true);
+    }
+}
+
+void Actor::cast_spell_event(const Event& event) {
+    if (filter(event)) {
+        return;
+    }
+    Effect effect = word_to_effect(event.msg);
+    if (effect == NoEffect) {
+        message("That would certainly sound foolish!");
+        return;
+    }
+    int target = -1;
+    if (!event.key_words->empty()) {
+        target = group->find_best_match(*(event.key_words.get()));
+        if (target == group->first_member_id() || 
+            !check_skill(Perception,group->find_member(target)->hidden(),true)) {
+            message("You don't see anything like that.");
+            return;
+        }
+    }
+    std::string utter = event.msg;
+    int intensity = event.event_data.trap.intensity;
+    int difficulty = 10+2*intensity;
+    sneaking = 0;
+    for (auto word: *(event.key_words)) {
+        utter += " "+word;
+    }
+    message("You utter '"+utter+"'");
+    emit(name.capitalized_name()+" utters '"+utter+"'");
+    if (!check_skill(Magic,difficulty)) {
+        message("Your body and soul are wracked with pain!");
+        damage += intensity;
+        emit("Wild magical energies "+damage_adjective().second+" "+name.regular_name()+"!");
+        message("Wild magical energies "+damage_adjective().first+" you!");
+        if (damage >= hit_points) {
+            schedule_destroyed();
+        }
+    } else if (target == -1) {
+        apply_effect(effect,intensity);
+    } else {
+        Event result(Event::EFFECT,id());
+        result.dst_id = target;
+        result.pin = group->pin;
+        result.event_data.trap.effect = effect;
+        result.event_data.trap.intensity = intensity;
+        sched_event(result);
+    }
+}
+
 void Actor::trap_event(const Event& event) {
     if (filter(event)) {
         return;
@@ -1370,8 +1514,11 @@ void Actor::trap_event(const Event& event) {
     damage += dmg;
     message(event.msg);
     auto trap_name = group->find_member(event.src_id)->get_name();
-    emit(trap_name.capitalized_name()+" "+damage_adjective().second+" "+name.regular_name()+"!");
-    message(trap_name.capitalized_name()+" "+damage_adjective().first+" you!");
+    apply_effect(event.event_data.trap.effect,event.event_data.trap.intensity);
+    if (dmg > 0) {
+        emit(trap_name.capitalized_name()+" "+damage_adjective().second+" "+name.regular_name()+"!");
+        message(trap_name.capitalized_name()+" "+damage_adjective().first+" you!");
+    }
     if (damage >= hit_points) {
         schedule_destroyed();
     }
@@ -1433,10 +1580,30 @@ void Actor::use_item_event(const Event& event) {
 }
 
 void Actor::apply_effect(Effect effect, int intensity) {
+    static const int generic_save_target = 15;
+    Dice save_die(1,20);
     switch(effect) {
         case Refresh:
             damage = std::max(0,damage-intensity);
             message("You feel refreshed.");
+            break;
+        case ResistPoison:
+            poison_protect = std::max(poison_protect,intensity*5);
+            message("You feel healthy!");
+            break;
+        case Poison:
+            {
+                int poison_damage = intensity*5;
+                if (save_die()+attribute_adjustment(Con) >= generic_save_target) {
+                    poison_damage /= 2;
+                }
+                int applied_damage = poison_damage - poison_protect;
+                poison_protect = std::max(0,poison_protect-poison_damage);
+                if (applied_damage > 0) {
+                    damage += applied_damage;
+                    message("You feel sick.");
+                }
+            }
             break;
         default:
             break;
@@ -1543,16 +1710,31 @@ int Actor::use_skill(Skill skill, bool average) {
             result += skills[Swindle];
         }
         result += attribute_modifier(charisma);
+    } else if (skill == Steal) {
+        if (skills.find(Steal) != skills.end()) {
+            result += skills[Steal];
+        }
+        result += attribute_modifier(dexterity);
     } else if (skill == Literacy) {
         if (skills.find(Literacy) != skills.end()) {
             result += skills[Literacy];
         }
         result += attribute_modifier(intelligence);
     } else if (skill == Climbing) {
-        if (skills.find(Literacy) != skills.end()) {
-            result += skills[Literacy];
+        if (skills.find(Climbing) != skills.end()) {
+            result += skills[Climbing];
         }
-        result += attribute_modifier(strength);
+        result += attribute_modifier((strength+dexterity)/2);
+    } else if (skill == Magic) {
+        if (skills.find(Magic) != skills.end()) {
+            result += skills[Magic];
+        }
+        result += attribute_modifier((intelligence+wisdom)/2);
+    } else if (skill == Swimming) {
+        if (skills.find(Swimming) != skills.end()) {
+            result += skills[Swimming];
+        }
+        result += attribute_modifier((strength+constitution)/2);
     }
     return std::max(0,result);
 }

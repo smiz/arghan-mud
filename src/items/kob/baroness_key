@@ -1,0 +1,12 @@
+name: ornate key
+proper_name: false
+description: A fantastic key has been twisted into the shape of a flower.
+detail: |
+  This key is shaped into the likeness of a flower. The detail is amazing.
+keywords:
+  - key
+  - ornate
+  - flower
+cost: 20
+xp: 10
+key: 999

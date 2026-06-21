@@ -1,7 +1,7 @@
 name: letter
 proper_name: false
 description: Someone left a letter on the floor. 
-detail: Should you be reading somebody elses letters?
+detail: Should you be reading a letter that isn't yours?
 message: Good luck!
 message_complexity: 0
 cost: 0

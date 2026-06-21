@@ -1,0 +1,15 @@
+name: splotchy mushroom
+proper_name: false
+description: A piebald, splotchy mushroom grows in the dirt.
+detail: The mushroom looks delicious.
+keywords:
+  - splotchy
+  - piebald
+  - mushroom
+cost: 5
+xp: 2
+effect:
+  name: poison
+  intensity: 2
+  consumed: true
+  verb: eat

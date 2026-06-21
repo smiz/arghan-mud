@@ -39,6 +39,20 @@ Simulator* sim;
 /// @brief The graph that holds all of our objects in the simulation
 std::shared_ptr<Graph> graph;
 
+bool message_of_the_day(int fd) {
+    std::string line;
+    std::ifstream fin("motd");
+    while (std::getline(fin,line)) {
+        line += '\n';
+        if (write(fd,line.c_str(),line.length()) < 0) {
+            close(fd);
+            return false;
+        }
+    }
+    fin.close();
+    return true;
+}
+
 // Intended to support an orderly shutdown, but it doesn't
 // work at the moment. The port can still be hung after 
 // the server quits.
@@ -155,13 +169,14 @@ void kill(Actor* obj, std::list<std::string>& tokens) {
     cv.notify_one();
 }
 
-void swindle(Actor* obj, std::list<std::string>& tokens) {
+void swindle(Actor* obj, std::list<std::string>& tokens, bool steal) {
     Event event;
-    event.type = Event::SWINDLE_COMMAND;
+    event.type = Event::SWINDLE_STEAL_COMMAND;
     event.src_id = event.dst_id = obj->id();
     event.pin = obj->pin;
     event.key_words = std::make_shared<KeyWordList>();
     event.key_words2 = std::make_shared<KeyWordList>();
+    event.event_data.swindling.steal = steal;
     if (tokens.size() < 2) {
         mutex.lock();
         obj->message("You need to specify a mark and an item.");
@@ -297,6 +312,35 @@ void stow(Actor* obj, std::list<std::string>& tokens) {
     cv.notify_one();
 }
 
+void word(Actor* obj, std::list<std::string>& tokens) {
+    Event event(Event::CAST_SPELL,obj->id());
+    event.dst_id = obj->id();
+    event.pin = obj->pin;
+    event.event_data.trap.intensity = 1;
+    if (!tokens.empty()) {
+        event.msg = tokens.front();
+        tokens.pop_front();
+    } else {
+        event.msg = "";
+    }
+    if (!tokens.empty()) {
+        event.event_data.trap.intensity = atoi(tokens.front().c_str());
+        if (event.event_data.trap.intensity == 0) {
+            event.event_data.trap.intensity = 1;
+        } else {
+            tokens.pop_front();
+        }
+    }
+    event.key_words = std::make_shared<KeyWordList>();
+    for (auto word: tokens) {
+        event.key_words->push_back(word);
+    }
+   mutex.lock();
+   commands.push_back(std::pair<adevs::pin_t,Event>(obj->pin,event));
+   mutex.unlock();
+   cv.notify_one();
+}
+
 void practice(Actor* obj, std::list<std::string>& tokens) {
    Event event(Event::PRACTICE,obj->id());
    event.dst_id = obj->id();
@@ -425,8 +469,10 @@ bool parse_line_with_tokens(std::string& line, Actor* obj) {
     if (cmd == "use") {
         use_item(obj,tokens);
         return true;
-    }
-    if (cmd == "prac") {
+    } else if (cmd == "word") {
+        word(obj,tokens);
+        return true;
+    } else if (cmd == "prac") {
         practice(obj,tokens);
         return true;
     } else if (cmd == "lock") {
@@ -436,7 +482,10 @@ bool parse_line_with_tokens(std::string& line, Actor* obj) {
         unlock_obj(obj,tokens);
         return true;
     } else if (cmd == "swindle") {
-        swindle(obj,tokens);
+        swindle(obj,tokens,false);
+        return true;
+    } else if (cmd == "steal") {
+        swindle(obj,tokens,true);
         return true;
     } else if (cmd == "look") {
         look(obj,tokens);
@@ -594,6 +643,9 @@ int read_line(int fd, std::string& line) {
 
 void client(int fd) {
     int bytes;
+    if (!message_of_the_day(fd)) {
+        return;
+    }
     std::string line = "What is your name? ";
     // recieving data
     bytes = write(fd,line.c_str(),line.size());

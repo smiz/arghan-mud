@@ -92,7 +92,7 @@ class Item {
     int get_lock_code() const { return m_lock; }
     bool is_heavy() const { return heavy; }
     void toggle_lock() { locked = !locked; }
-    const std::string& get_message() const { return m_message; }
+    std::string get_message() const { return m_message+m_message2; }
     int get_message_complexity() const { return m_message_complexity; }
 
     struct UseEffect {
@@ -101,6 +101,7 @@ class Item {
         int difficulty;
         std::string verb;
         bool consumed;
+        bool word;
     };
 
     UseEffect get_effect() { return use_effect; }
@@ -115,7 +116,7 @@ class Item {
     int m_lock, m_key;
     bool locked;
     bool heavy;
-    std::string m_message;
+    std::string m_message, m_message2;
     int m_message_complexity;
     WearableSlots m_wearable;
     MonsterAttributes m_modifier;

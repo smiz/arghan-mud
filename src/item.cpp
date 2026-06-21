@@ -108,9 +108,15 @@ m_filename(file) {
         use_effect.intensity = yaml["effect"]["intensity"].as<int>();
         use_effect.consumed = yaml["effect"]["consumed"].as<bool>();
         use_effect.verb = yaml["effect"]["verb"].as<std::string>();
+        use_effect.word = false;
         if (yaml["effect"]["difficulty"]) {
             use_effect.difficulty = yaml["effect"]["difficulty"].as<int>(); 
         }
+        if (yaml["effect"]["word_of_power"]) {
+            use_effect.word = yaml["effect"]["word_of_power"].as<bool>();
+            m_message2 = " The word is " + effect_to_word(use_effect.type);
+        }
+
     }
 }
 
@@ -152,6 +158,14 @@ void Item::save() {
     yaml["cost"] = m_cost;
     if (m_key != 0) {
         yaml["key"] = m_key;
+    }
+    if (use_effect.type != NoEffect) {
+        yaml["effect"]["name"] = from_effect(use_effect.type);
+        yaml["effect"]["intensity"] = use_effect.intensity;
+        yaml["effect"]["consumed"] = use_effect.consumed;
+        yaml["effect"]["verb"] = use_effect.verb;
+        yaml["effect"]["difficulty"] = use_effect.difficulty;
+        yaml["effect"]["word_of_power"] = use_effect.word;
     }
     std::ofstream fout(m_filename.c_str());
     fout << yaml;

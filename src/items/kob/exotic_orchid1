@@ -1,0 +1,14 @@
+name: orange orchid
+proper_name: false
+description: This dark orange orchid is the prize of the garden.
+detail: This orchid is fantastical! I bet it would fetch a good price in the market.
+keywords:
+  - orange
+  - orchid
+cost: 20
+xp: 4
+effect:
+  name: poison
+  intensity: 10
+  consumed: true
+  verb: eat

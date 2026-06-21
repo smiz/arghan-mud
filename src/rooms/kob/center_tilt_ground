@@ -3,10 +3,13 @@ zone: 1
 short_description: Central Tilt Yard
 description: |
   You stand in the middle of the tiltyard. To the south you 
-  see the sturdy wall of the stables.
+  see the sturdy wall of the stables. The tall donjon rises
+  above the Keep's walls to the north. A massive door controls
+  access to the donjon.
 north:
   node: 48
   description: To the north you can enter the ground floor of the donjon.
+  door: kob/keep_door
 east:
   node: 44
   description: The yard continues east, where you see a wooden building.

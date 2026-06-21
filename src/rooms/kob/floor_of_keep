@@ -4,10 +4,15 @@ short_description: Ground Floor of the Keep
 description: |
   The ground floor of the keep has for its central feature
   an enormous wooden table. The table is used for communal
-  meals, to hold court, and for general business.
+  meals, to hold court, and for general business. A massive
+  door to the south controls access to the donjon.
 up:
   node: 49
   description: A spiralling set of stairs climbs to the Keep's upper level.
 south:
   node: 46
   description: South is the tiltyard.
+  door: kob/keep_door
+down:
+  node: 53
+  description: The stairs descend down into darkness.

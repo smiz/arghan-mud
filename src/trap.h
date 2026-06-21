@@ -50,6 +50,9 @@ class Trap: public Model {
     /// One trap event per target. This targets
     /// the first actor into the room.
     bool one_per_target;
+
+    Effect effect;
+    int intensity;
 };
 
 #endif

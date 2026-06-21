@@ -18,3 +18,13 @@ up:
   fail2: fall down the well.
   fail1: falls down the well.
   damage: 1d2
+north:
+  node: 53
+  description: You might be able to swim north to safety.
+  difficulty: 15
+  skill: swimming
+  go_on_fail: false
+  success2: swim out of the cistern.
+  success1: swims out of the cistern.
+  fail2: splash helplessly.
+  fail1: splashes helplessly.

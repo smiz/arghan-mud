@@ -1,0 +1,14 @@
+name: chromatic orchid
+proper_name: false
+description: A brilliantly chromatic orchid dazzle you with its intensity.
+detail: This orchid is fantastical! I bet it would fetch a good price in the market.
+keywords:
+  - chromatic
+  - orchid
+cost: 20
+xp: 4
+effect:
+  name: poison
+  intensity: 10
+  consumed: true
+  verb: eat

@@ -70,14 +70,14 @@ struct Event {
         KILL_COMMAND,
         /// @brief Sneak command issued by a player
         SNEAK_COMMAND,
-        /// @brief Swindle command
-        SWINDLE_COMMAND,
+        /// @brief Swindle/steal command
+        SWINDLE_STEAL_COMMAND,
         /// @brief Start of a swindle
-        START_SWINDLE,
+        START_STEAL_SWINDLE,
         /// @brief Do the swindle
-        SWINDLE,
+        SWINDLE_STEAL,
         /// @brief Result of a swindle
-        SWINDLE_RESULT, 
+        SWINDLE_STEAL_RESULT, 
         /// @brief Lock or unlock command
         LOCK_UNLOCK_COMMAND,
         /// @brief Do the lock or unlock of something
@@ -104,6 +104,10 @@ struct Event {
         PRACTICE,
         /// @brief Read something
         READ,
+        /// @brief Cast a spell
+        CAST_SPELL,
+        /// @brief Induce an effect
+        EFFECT,
         /// @brief Used for periodic actions, like healing
         ROLL_PERIODIC_ATTRIBUTES,
         /// @brief The model was killed, disintegrated, etc.
@@ -158,7 +162,10 @@ struct Event {
         /// @brief Who is the subject of a SEE or SEE1 event?
         int subject_id;
         /// @brief What is the swindling skill roll?
-        int swindling;
+        struct {
+            int skill;
+            bool steal;
+        } swindling;
         /// @brief What is the literacy skill roll?
         int literacy;
         /// @brief Prox group to enter or leave
@@ -195,6 +202,10 @@ struct Event {
             Skill skill;
             /// Save target
             int save;
+            /// @brief special effects, if any
+            Effect effect;
+            /// @brief effect intensity
+            int intensity;
         } trap;
     } event_data;
 };
@@ -644,13 +655,13 @@ class Model: public Atomic, public ProximityGroupMember {
     /// @brief Default behavior does nothing
     virtual void hear_event(const Event& event){}
     /// @brief Default behavior does nothing
-    virtual void swindle_command_event(const Event& event){}
+    virtual void swindle_steal_command_event(const Event& event){}
     /// @brief Default behavior does nothing
-    virtual void swindle_result_event(const Event& event){}
+    virtual void swindle_steal_result_event(const Event& event){}
     /// @brief Default behavior does nothing
-    virtual void swindle_event(const Event& event){}
+    virtual void swindle_steal_event(const Event& event){}
     /// @brief Default behavior does nothing
-    virtual void start_swindle_event(const Event& event);
+    virtual void start_steal_swindle_event(const Event& event);
     /// @brief Default behavior does nothing
     virtual void lock_unlock_command_event(const Event& event){}
     /// @brief Default behavior does nothing
@@ -661,6 +672,10 @@ class Model: public Atomic, public ProximityGroupMember {
     virtual void open_close_event(const Event& event){}
     /// @brief Default behavior does nothing
     virtual void use_item_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void cast_spell_event(const Event& event){}
+    /// @brief Default behavior does nothing
+    virtual void effect_event(const Event& event){}
     /// @brief Our proximity group
     ProximityGroup* group;
     /**

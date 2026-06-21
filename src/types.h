@@ -40,6 +40,8 @@ enum Skill {
     Literacy,
     Climbing,
     Magic,
+    Swimming,
+    Steal,
     NoSkill
 };
 
@@ -48,10 +50,18 @@ std::string from_skill(Skill skill);
 
 enum Effect {
     Refresh,
+    ResistPoison,
+    Poison,
     NoEffect
 };
 
 Effect to_effect(std::string name);
+std::string from_effect(Effect effect);
+
+/// @brief Generate or retrieve the 'spell' that creates the effect 
+std::string effect_to_word(Effect effect);
+/// @brief Generate or retrieve the effect caused by the spell
+Effect word_to_effect(std::string word);
 
 /// @brief Slots for equipment that worn
 enum WearableSlots {

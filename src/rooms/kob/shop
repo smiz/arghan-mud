@@ -1,4 +1,5 @@
 node: 28
+zone: 1
 short_description: The Bazaar
 description: |
   A cavernous warehouse contains numerous vendors hawking their wares.

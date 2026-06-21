@@ -1,0 +1,15 @@
+name: thornman
+proper_name: false
+description: A thorny vine, thick and shaped vaguely like a man, menaces you.
+detail: This thornman, to coin a name, is covered in viscious thorns.
+keywords:
+  - vine
+  - thorny
+  - man
+hit_points: 20
+armor_class: 15
+attack_dice: 2d4
+immune_to_poison: true
+aggressive: true
+skills:
+  melee: 5

@@ -1,0 +1,11 @@
+name: flowery door
+proper_name: false
+description: Further travel along the tunnel is blocked by a intricately carved door.
+detail: |
+  This door is engraved with the likenesses of strange plants and brilliantly
+  painted flowers. There is a keyhole, which must work the lock.
+keywords:
+  - flowery
+  - door
+heavy: true
+lock: 999

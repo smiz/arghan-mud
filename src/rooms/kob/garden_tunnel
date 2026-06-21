@@ -1,0 +1,20 @@
+node: 54
+zone: 3
+short_description: The Garden Tunnel
+description: |
+  This damp tunnel is illuminated slightly by daylight
+  that comes through an opening further north. Mushrooms
+  and strangely phosporescent plants grow in the cracks
+  and nooks of the tunnel wall.
+south:
+  node: 53
+  description: A rivulet of water goes south towards the cistern.
+  door: kob/garden_door
+north:
+  node: 55
+  description: There is daylight to the north.
+items:
+  - kob/poison_mushroom
+  - kob/healing_mushroom
+traps:
+  - kob/poison_plant

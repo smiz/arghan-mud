@@ -1,0 +1,11 @@
+name: miasma
+proper_name: false
+description: A noxiuous miasma makes your head swim!
+delay: 1000
+periodic: true
+attribute: con
+damage: 1d1
+save: 0
+effect:
+  name: poison
+  intensity: 3

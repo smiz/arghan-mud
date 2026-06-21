@@ -145,14 +145,16 @@ class Actor: public Model {
     void hear_event(const Event& event);
     void schedule_destroyed();
     void schedule_attack(int target_id, bool warn = true);
-    void swindle_command_event(const Event& event);
-    void swindle_event(const Event& event);
-    void start_swindle_event(const Event& event);
-    void swindle_result_event(const Event& event);
+    void swindle_steal_command_event(const Event& event);
+    void swindle_steal_event(const Event& event);
+    void start_steal_swindle_event(const Event& event);
+    void swindle_steal_result_event(const Event& event);
     void lock_unlock_command_event(const Event& event);
     void read_event(const Event& event);
     void reset_zone_event(const Event& event);
     void use_item_event(const Event& event);
+    void cast_spell_event(const Event& event);
+    void effect_event(const Event& event);
     
     /**
      * Return a skill roll for using an item. Returns
@@ -219,7 +221,7 @@ class Actor: public Model {
     void sched_save();
 
     void gain_xp(int xp);
- 
+    void lose_level();
 
     // Unarmed damage die
     Dice unarmed_dmg;
@@ -241,6 +243,8 @@ class Actor: public Model {
     std::string password;
 
     bool short_descriptions;
+
+    int poison_protect;
 };
 
 #endif

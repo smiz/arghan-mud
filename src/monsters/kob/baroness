@@ -14,3 +14,6 @@ intelligence: 18
 wisdom: 18
 charisma: 18
 wield: kob/wand_of_striking
+items:
+  - kob/baroness_key
+  - scroll_of_resist_poison

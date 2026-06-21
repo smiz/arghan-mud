@@ -47,13 +47,17 @@ void Model::leave_game() {
     me = nullptr;
 }
 
-void Model::start_swindle_event(const Event& event) {
+void Model::start_steal_swindle_event(const Event& event) {
     if (filter(event)) {
         return;
     }
     Event result(Event::SEE1,id());
     result.dst_id = event.src_id;
-    result.msg = "You can't swindle that!";
+    if (event.event_data.swindling.steal) {
+        result.msg = "You can't steal that!";
+    } else {
+        result.msg = "You can't swindle that!";
+    }
     result.pin = group->pin;
     sched_event(result);
 }
@@ -192,17 +196,17 @@ void Model::delta_ext(Time e, const Bag& input) {
             case Event::ROLL_PERIODIC_ATTRIBUTES:
                 roll_periodic_attributes_event(x.value);
                 break;
-            case Event::SWINDLE:
-                swindle_event(x.value);
+            case Event::SWINDLE_STEAL:
+                swindle_steal_event(x.value);
                 break;
-            case Event::SWINDLE_COMMAND:
-                swindle_command_event(x.value);
+            case Event::SWINDLE_STEAL_COMMAND:
+                swindle_steal_command_event(x.value);
                 break;
-            case Event::SWINDLE_RESULT:
-                swindle_result_event(x.value);
+            case Event::SWINDLE_STEAL_RESULT:
+                swindle_steal_result_event(x.value);
                 break;
-            case Event::START_SWINDLE:
-                start_swindle_event(x.value);
+            case Event::START_STEAL_SWINDLE:
+                start_steal_swindle_event(x.value);
                 break;
             case Event::LOCK_UNLOCK_COMMAND:
                 lock_unlock_command_event(x.value);
@@ -215,6 +219,12 @@ void Model::delta_ext(Time e, const Bag& input) {
                 break;
             case Event::USE_ITEM:
                 use_item_event(x.value);
+                break;
+            case Event::CAST_SPELL:
+                cast_spell_event(x.value);
+                break;
+            case Event::EFFECT:
+                effect_event(x.value);
                 break;
             default:
                 break;

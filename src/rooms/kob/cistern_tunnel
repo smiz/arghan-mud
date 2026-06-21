@@ -1,0 +1,17 @@
+node: 53
+zone: 3
+short_description: The Cistern Tunnel
+description: |
+  A long, damp tunnel connects the cistern to stairs that climb up,
+  you presume up into the keep. The tunnel appears to continue
+  past a door to the north.
+north:
+  node: 54
+  description: The passage continues north. An earthy smell wafts from that direction.
+  door: kob/garden_door
+south:
+  node: 39
+  description: To the south you can wade into the cistern.
+up:
+  node: 48
+  description: A set of stairs climbs upwards. 

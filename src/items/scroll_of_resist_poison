@@ -1,0 +1,21 @@
+name: scroll
+proper_name: false
+description: A scroll covered in strange runes has been left here.
+detail: |
+  This scroll is covered in arcane markings. In several places,
+  deep stains in the fabric of the writing material threaten
+  to completely obscure the message.
+message: This scroll contains arcane invocations to resist poison.
+skill: magic
+attr: int
+difficulty: 10
+keywords:
+  - scroll
+  - arcane
+effect:
+  name: resist poison
+  intensity: 3
+  consumed: true
+  verb: invoke
+  word_of_power: true
+cost: 100 

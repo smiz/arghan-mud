@@ -7,7 +7,9 @@ file(file),
 attr(NoAttr),
 skill(NoSkill),
 pending(false),
-one_per_target(false) {
+one_per_target(false),
+effect(NoEffect),
+intensity(0) {
     YAML::Node yaml = YAML::LoadFile(file.c_str());
     description = yaml["description"].as<std::string>();
     name = Name(yaml["name"].as<std::string>(),yaml["proper_name"].as<bool>());
@@ -25,6 +27,10 @@ one_per_target(false) {
     }
     if (yaml["one_per_target"]) {
         one_per_target = yaml["one_per_target"].as<bool>();
+    }
+    if (yaml["effect"]) {
+        effect = to_effect(yaml["effect"]["name"].as<std::string>());
+        intensity = yaml["effect"]["intensity"].as<int>();
     }
     group = prox_map[group_number];
     group->add_member(this);
@@ -61,6 +67,8 @@ void Trap::join_prox_group_event(const Event& event) {
     } else {
         trap.dst_id = ANY_ID;
     }
+    trap.event_data.trap.effect = effect;
+    trap.event_data.trap.intensity = intensity;
     trap.event_data.trap.dmg_roll = dice();
     trap.event_data.trap.attribute = attr;
     trap.event_data.trap.skill = skill;

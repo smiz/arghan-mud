@@ -1,30 +1,17 @@
-For comprehensive help, see our website. But this list
-of commands will you started.
-n, s, e, w, u, d        Go north, south, east, west, up, and down.
-flee                    Try to escape from combat.
-i                       Inventory.
-stat                    List your attributes.
-skills                  List your skills.
-kill <obj>              Attack the <obj>.
-look                    Look around you.
-look <obj>              Look at an object.
-look in <obj>           Look inside an object.
-get <obj>               Pick something up.
-get from <obj1> <obj2>  Get <obj2> out of <obj1>.
-drop <obj>              Drop something.
-drop in <obj1> <obj2>   Put <obj2> into <obj1>.
--- Note that look in, get from, and drop in
--- don't work on objects in your inventory!
--- You have to drop the container before
--- mucking around inside of it.
-stow <obj>              Return <obj> to inventory. 
-wield <obj>             Use <obj> as a weapon.
-hold <obj>              Hold <obj> in your off hand.
-wear <obj>              Wear <obj> on your person.
--- Dropping or stowing and object is the same as
--- taking it off your body or ceasing to wield or
--- hold it.
-sneak, nosneak          Start and stop sneaking.
-short                   Toggle short descriptions.
-quit                    Exit the mud.
-swindle <mark> <item>   Try to swindle someone.
+n, s, e, w, u, d, flee             Go north, south, east, west, up, down, or flee from combat.
+i, stat, skills                    List your inventory, character abilities, or skills.
+kill, look (in), get, drop <obj>   Attack, look at (in), pick up, or drop <obj>. Look alone looks around.
+get from <obj1> <obj2>             Get <obj2> out of <obj1>.
+drop in <obj1> <obj2>              Put <obj2> into <obj1>.
+-- Note that look in, get from, and drop in only work for objects on the ground.
+stow, wield, hold, wear <obj>      Self explanatory I hope.
+sneak, nosneak                     Start and stop sneaking.
+short                              Toggle short descriptions.
+quit                               Exit the mud.
+swindle <mark> <item>              Try to swindle someone.
+word <word> <intensity> <target>   Use a word of power. Omit the target and it is you!
+use <obj>                          Use an item that you are holding or wielding.
+read <obj>                         Read a message written on an object.
+lock, unlock <obj>                 Lock, unlock a door or container.
+prac <skill>                       Practice a skill.
+-- Skills are perception, melee, stealth, steal, swindle, literacy, climbing, swimming, and magic.
