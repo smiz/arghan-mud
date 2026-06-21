@@ -651,9 +651,19 @@ int read_line(int fd, std::string& line) {
     const int buf_size = 128;
     char buffer[buf_size];
     int bytes = 0;
+    line.clear();
     memset(buffer,0,buf_size);
-    bytes = read(fd,buffer,buf_size);
-    line = buffer;
+    for(;;) {
+        int new_bytes = read(fd,buffer,buf_size);
+        if (new_bytes < 0) {
+            break;
+        }
+        bytes += new_bytes;
+        line += buffer;
+        if (line.back() == '\n' || line.back() == '\r') {
+            break;
+        }
+    }
     trim(line);
     return bytes;
 }
