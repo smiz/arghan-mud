@@ -659,7 +659,9 @@ int read_line(int fd, std::string& line) {
             break;
         }
         bytes += new_bytes;
-        line += buffer;
+        for (int i = 0; i < new_bytes; i++) {
+            line += buffer[i];
+        }
         if (line.back() == '\n' || line.back() == '\r') {
             break;
         }
