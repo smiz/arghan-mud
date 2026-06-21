@@ -4,6 +4,7 @@
 #include "maze.h"
 #include "coins.h"
 #include "utils.h"
+#include <cassert>
 #include <yaml-cpp/yaml.h>
 
 static const int reload_interval = 120000;
@@ -390,6 +391,7 @@ void Room::look_event(const Event& event) {
     if (event.dst_id != id() && event.dst_id != ANY_ID_BUT_SRC && event.dst_id != ANY_ID) {
         return;
     }
+    assert(event.key_words != nullptr);
     sched_see_event(event.src_id, *(event.key_words.get()),event.event_data.transfer.first_keyword_is_container);
 }
 

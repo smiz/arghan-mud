@@ -1,7 +1,7 @@
 # Compiler
 CXX = g++
 # Compiler flags
-CXXFLAGS = -std=c++20 -Wall -O -g -I$(HOME)/Code/adevs/include -I.
+CXXFLAGS = -std=c++20 -Wall -Ofast -I$(HOME)/Code/adevs/include -I.
 # Target executable
 TARGET = server
 LIBS = -ladevs -lyaml-cpp -L$(HOME)/Code/adevs
