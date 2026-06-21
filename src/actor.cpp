@@ -211,7 +211,7 @@ void Actor::lose_level() {
 
 void Actor::gain_xp(int xp) {
     Dice hp_die(1,6);
-    while (xp > xp_to_go) {
+    while (xp >= xp_to_go) {
         level++;
         free_skill_slots++;
         xp -= xp_to_go;
