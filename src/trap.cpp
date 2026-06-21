@@ -4,6 +4,8 @@
 Trap::Trap(Graph& graph, std::string file, int group_number):
 Model(graph),
 file(file),
+delay(0),
+periodic(false),
 attr(NoAttr),
 skill(NoSkill),
 pending(false),
