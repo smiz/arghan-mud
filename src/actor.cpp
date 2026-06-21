@@ -180,8 +180,8 @@ void Actor::lose_level() {
     Dice hp_die(1,6);
     level = std::max(0,level-1);
     hit_points -= attribute_modifier(constitution);
-    hit_points = std::max(hit_points-hp_die(),level*attribute_modifier(constitution)+level);
-    if (hit_points < 0) {
+    hit_points = std::max(hit_points-hp_die(),(level+1)*attribute_modifier(constitution)+level);
+    if (hit_points <= 0) {
         hit_points = 1;
     }
     for (auto& skill: skills) {
