@@ -9,7 +9,7 @@
  * Directions of travel in the mud.
  */
 enum Direction {
-    North,
+    North = 0,
     South,
     East,
     West,
@@ -20,7 +20,7 @@ enum Direction {
 };
 
 enum MonsterAttributes {
-    Str,
+    Str = 0,
     Dex,
     Con,
     Int,
@@ -33,7 +33,7 @@ MonsterAttributes to_monster_attribute(std::string name);
 std::string from_monster_attribute(MonsterAttributes attr);
 
 enum Skill {
-    Melee,
+    Melee = 0,
     Perception,
     Stealth,
     Swindle,
@@ -49,7 +49,7 @@ Skill to_skill(std::string name);
 std::string from_skill(Skill skill);
 
 enum Effect {
-    Refresh,
+    Refresh = 0,
     ResistPoison,
     Poison,
     NoEffect
@@ -65,7 +65,7 @@ Effect word_to_effect(std::string word);
 
 /// @brief Slots for equipment that worn
 enum WearableSlots {
-    Body,
+    Body = 0,
     Neck,
     Unwearable
 };

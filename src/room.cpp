@@ -31,9 +31,9 @@ static Direction opposite_direction(Direction d) {
     return Up;
 }
 
-/// Must be in order of Direction enumeration in model.h!
-static const std::string direction_key[6] = {
-    "north", "south", "east", "west", "up", "down"
+/// Must be in order of Direction enumeration in types.h!
+static const std::string direction_key[int(EndOfDirectionEnum)] = {
+    "north", "south", "east", "west", "up", "down", "flee"
 };
 
 void Room::reload() {
