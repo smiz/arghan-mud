@@ -2,19 +2,19 @@ node: 3
 zone: 1
 short_description: Entry Yard
 description: |
-  This narrow place is paved. The walls of the keep tower above.
+  The entrance yard is paved with red bricks. The walls of the Keep tower above.
 east:
   node: 0
-  description: To the east you can pass out of the keep through its gate.
+  description: To the east you can pass out of the Keep through its gate.
 up:
   node: 2
-  description: An arched passage way contains stairs that climb up into the northern tower.
+  description: An arched passage contains stairs that climb up into the northern tower.
 west:
   node: 4
-  description: Through an archway to the west you pens for horses and mules.
+  description: Through an archway to the west you the Keep's stables.
 south:
   node: 29
-  description: The yard continues to the south.
+  description: The brick path continues to the south.
 north:
   node: 44
   description: You see a grassy field to the north.

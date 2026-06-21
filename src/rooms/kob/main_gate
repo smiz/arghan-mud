@@ -2,23 +2,17 @@ node: 0
 zone: 0
 short_description: Main Gate
 description: |
-  Two towers 30’ high with battlements,
-  flank a gatehouse 20’ high. All have holes for bow and
-  crossbow fire. A deep crevice in front of the place is
-  spanned by a drawbridge (usually up). There is a
-  portcullis’ at the entry and large gates at the far end of
-  the passage. The passage is about 10’ wide and high,
-  the ceiling above pierced with murder holes, and
-  walls to either side slitted for archery. It is obvious that
-  the building is constructed of great blocks of the
-  hardest granite, undoubtedly common throughout the
-  entire fortress.
+  Two towers 30' high with battlements flank a stout gatehouse.
+  Towers and gatehouse have holes for bow and crossbow fire.
+  A deep crevice in front of the gate is spanned by a drawbridge.
+  Lastly, a portcullis, now raised, offers a final barrier to
+  would be intruders.
 monsters:
   - kob/man_at_arms
   - kob/man_at_arms
 west:
   node: 3
-  description: West of the main gate you see a small yard.
+  description: Through the gate to the west is a small yard.
 south:
   node: 31
-  description: The path turns southward, where it descends from the high mount of the Keep.
+  description: The path turns south, descending from the high mount of the Keep.

@@ -2,9 +2,8 @@ node: 31
 zone: 0
 short_description: Road to the Keep.
 description: |
-  The high walls and towers of the keep are visible to
-  the north. The sounds of construction fill the deep
-  gorge to the south.
+  The high walls and towers of the Keep are visible to the north.
+  The sounds of construction fill the deep gorge to the south.
 north:
   node: 0
   description: The path climbs north to the Keep.
