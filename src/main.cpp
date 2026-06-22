@@ -619,7 +619,7 @@ bool parse_line(std::string& line, Actor* obj) {
 }
 
 bool bad_character(char c) {
-    return c == ' ' || c == '\n' || c == '\r' || c == '\t';
+    return isprint(c) == 0;
 }
 
 void trim(std::string& str) {
