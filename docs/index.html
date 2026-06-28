@@ -105,13 +105,14 @@
 </table>
 
 <p>You character has a level, which begins at zero. Initially and with
-    each subsequent level, you gain 1d6 hit points plus your attribute
-    modifier. With each level gained, the skills you already possess each
-    improve by a point. You also gain a practice slot that can be expended
-    to increase an existing skill or learn a new skill. To advance from
-    level zero to level one requires 10 experience points. Each subsequent
-    level requires your current level times 20 to advance. For example, to
-    advance from level 3 to 4 requires 60 experience points.</p>
+    each subsequent level, you gain 1d6 hit points plus your Constitution
+    modifier (but always at least 1). With each level gained, the skills 
+    you already possess each improve by a point. You also gain a practice
+    slot that can be expended to increase an existing skill or learn a new 
+    skill. To advance from level zero to level one requires 10 experience
+    points. Each subsequent level requires your current level times 20 to
+     advance. For example, to advance from level 3 to 4 requires 60
+     experience points.</p>
     
 <p>How do you gain experience points? In two ways. Successfully scoring
     damage in combat gains experience equal to the number of points of
@@ -120,5 +121,72 @@
     that is claimed by the first person to pickup the item. The experience
     point value of the item is commensurate with the difficulty of acquiring
     it.</p>
+  
+  <p>Can you lose levels and experience? Absolutely! If your character is
+    killed, you automatically lose one level of experience. Your experience
+    needed to advance is reset as if you had just attained that level. With
+    this loss of level, you lose the hit points, skill points, and practice
+    slots earned when the leveling up.
+  </p>
+
+  <h2>Skill checks and saving throws</h2>
+  <p>A skill check involve rolling 1d20 plus the skill points plus an 
+    attribute modifier and comparing this to a target for success. A
+    saving throw is identical expect that it may or may not involve a
+    skill. Saving throws happen automatically, usually in response to
+    traps or special effects. Skill checks happen whenever you attempt
+    to use the skill or enter into a situation that requires the skill
+    to process; e.g., the climb a wall or swim across a body of water.
+    The specific skills available in the MUD are described in the sections
+    below.
+  </p>
+  <h4>Climbing</h4>
+  <p>This skill allows you to traverse sheer surfaces. The target is set
+    by the surface you are attempting to climb. The skill modifier
+    is determined by the average of your Strength and Dexterity.
+  </p>
+  <h4>Literacy</h4>
+  <p>Your ability to read. The modifier for this skill is Intelligence.
+  The target is determined by the difficulty of the text you are trying
+  to comprehend. This skill complements the magic skill. You must read
+  scrolls and books to learn spells. The magic skill is used to cast them.</p>
+  <h4>Magic</h4>
+  <p>This is your skill at shaping the word with words of power. The difficulty
+    of a skill check is determined by the intensity of the effect you desire to achieve.
+    Specifically, the target is 10 + 2 * intensity. Success results in the effect;
+    failure causes a loss of hit points as uncontrolled magic tears through your
+    body.
+  </p>
+  <h4>Melee</h4>
+  <p>This is the skill of hand to hand combat. Your target to succeed is
+  the armor class of your opponent. Success means you hit the target.
+  The skill modifier is Strength for heavy weapons, like swords and axes.
+  The modifier is Dexterity for light weapons, like knives and daggers.</p>
+  <h4>Perception</h4>
+  <p>This is your ability to perceive subtle actions and events. This skill
+    is used to spot sneaking monsters, to sense when someone is trying to
+    steal from or swindle you, and anytime you face subtlety and subterfuge.
+    The modifying attribute is Wisdom.</p>
+  <h4>Steal</h4>
+  <p>You have light fingers. This skill is used to take an item from 
+    the target's inventory. The steal check is opposed to the target's
+    perception check. The modifying attribute is Dexterity. 
+  </p>
+  <h4>Stealth</h4>
+  <p>You can move unseen and unheard. The modifier is your Dexterity. A stealth
+    check is pitted against a Perception check of the monster who may detect
+    your presence. A sneaking monster remains hidden until they take some action
+    that gives them away, such as attacking or speaking. If you attack while
+    sneaking, then you have the advantage of surprise.</p>
+  <h4>Swimming</h4>
+  <p>This skill allows you to move through water. The target will be set
+  by the body of water that you are attempting to cross. The skill modifier
+  is determined by the average of your Strength and Constitution.</p>
+  <h4>Swindle</h4>
+  <p>You have a forked tongue and you use it to part fools from their treasure.
+    If you successfully swindle an monster, you can acquire an item from their
+    person. Your swindle check is opposed to the marks perception check.
+    The modifying attribute is Charisma.
+  </p>
 </body>
 </html>
