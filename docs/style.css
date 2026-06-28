@@ -1,0 +1,4 @@
+/* Centers text in every header and data cell */
+th, td {
+  text-align: center;
+}
