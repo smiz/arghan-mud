@@ -351,17 +351,11 @@ void Room::sched_see_event(int src_id, const KeyWordList& key_words, bool words_
         direction_t exit_dir;
         for (int i = 0; i < int(EndOfDirectionEnum); i++) {
             exit_dir.dir = Direction(i);
-            group->find_direction(exit_dir);
-            if (doors[i] != nullptr) {
-                if (doors[i] != nullptr) {
-                    if (doors[i]->is_locked()) {
-                        see.msg += doors[i]->description()+'\n';
-                    } else {
-                        see.msg += exit_dir.description+'\n';
-                    }
-                } else {
-                    see.msg += exit_dir.description+'\n';
-                }
+            bool valid_exit = group->find_direction(exit_dir);
+            if (doors[i] != nullptr && doors[i]->is_locked()) {
+                see.msg += doors[i]->description()+'\n';
+            } else if (valid_exit) {
+                see.msg += exit_dir.description+'\n';
             }
         }
         for (auto item: items) {
